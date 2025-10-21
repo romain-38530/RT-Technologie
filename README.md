@@ -66,11 +66,26 @@ pip install -r requirements.txt
 
 ## Démarrage Rapide
 
+### 🌐 Interface Web (NOUVEAU!)
+
 ```bash
+# Lancer l'interface web
+python web_app.py
+
+# Puis ouvrir dans votre navigateur:
+# http://localhost:5000
+```
+
+### 💻 Ligne de Commande
+
+```bash
+# Menu interactif
+python quick_start.py
+
 # Workflow complet de sourcing
 python examples/example_complete_workflow.py
 
-# Découverte automatique de fournisseurs (NOUVEAU!)
+# Découverte automatique de fournisseurs
 python examples/example_supplier_discovery.py
 ```
 

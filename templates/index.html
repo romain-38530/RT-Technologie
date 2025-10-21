@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Sourcing Permanent - RT-Technologie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .supplier-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .supplier-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .supplier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .supplier-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .score-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .supplier-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon {
+            font-size: 1.2em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                width: 100%;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 Système de Sourcing Permanent</h1>
+            <p>RT-Technologie - Usine Agroalimentaire</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('discovery')">
+                🔍 Découverte Fournisseurs
+            </button>
+            <button class="tab" onclick="showTab('forecast')">
+                📊 Prévisions
+            </button>
+            <button class="tab" onclick="showTab('quality')">
+                ✅ Contrôle Qualité
+            </button>
+        </div>
+
+        <!-- TAB 1: Découverte de fournisseurs -->
+        <div id="discovery" class="content active">
+            <h2 style="margin-bottom: 20px;">🔍 Recherche Automatique de Fournisseurs</h2>
+
+            <div class="form-group">
+                <label>Type de fournisseur</label>
+                <select id="type_fournisseur">
+                    <option value="matiere_premiere">Matières Premières (Semoule, Farine)</option>
+                    <option value="ingredient">Ingrédients (Œufs, Légumes)</option>
+                    <option value="emballage">Emballages</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Rayon de recherche (km)</label>
+                <input type="number" id="rayon" value="500" placeholder="500">
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="bio">
+                    <label for="bio" style="margin:0;">Certification BIO obligatoire</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="local" checked>
+                    <label for="local" style="margin:0;">Privilégier fournisseurs locaux</label>
+                </div>
+            </div>
+
+            <button class="btn" onclick="rechercherFournisseurs()">
+                🔍 Lancer la recherche
+            </button>
+
+            <div class="loading" id="loading-discovery">
+                <div class="spinner"></div>
+                <p>Recherche en cours...</p>
+            </div>
+
+            <div class="results" id="results-discovery">
+                <!-- Les résultats seront affichés ici -->
+            </div>
+        </div>
+
+        <!-- TAB 2: Prévisions -->
+        <div id="forecast" class="content">
+            <h2 style="margin-bottom: 20px;">📊 Prévisions de Consommation</h2>
+
+            <div class="form-group">
+                <label>Matière première</label>
+                <select id="matiere_forecast">
+                    <option value="SEM_001">Semoule de blé dur</option>
+                    <option value="OEUFS_001">Œufs</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Horizon de prévision (jours)</label>
+                <input type="number" id="horizon" value="30" min="1" max="180">
+            </div>
+
+            <div class="form-group">
+                <label>Stock actuel (kg)</label>
+                <input type="number" id="stock_actuel" value="25000" min="0">
+            </div>
+
+            <button class="btn" onclick="calculerPrevisions()">
+                📊 Générer les prévisions
+            </button>
+
+            <div class="loading" id="loading-forecast">
+                <div class="spinner"></div>
+                <p>Calcul des prévisions...</p>
+            </div>
+
+            <div class="results" id="results-forecast">
+                <!-- Les résultats seront affichés ici -->
+            </div>
+        </div>
+
+        <!-- TAB 3: Contrôle Qualité -->
+        <div id="quality" class="content">
+            <h2 style="margin-bottom: 20px;">✅ Contrôle Qualité - Réception Lot</h2>
+
+            <div class="form-group">
+                <label>Numéro de lot</label>
+                <input type="text" id="numero_lot" value="IT-TEST-001">
+            </div>
+
+            <div class="form-group">
+                <label>Quantité reçue (kg)</label>
+                <input type="number" id="quantite" value="25000">
+            </div>
+
+            <h3 style="margin: 20px 0 15px;">Résultats d'analyse</h3>
+
+            <div class="form-group">
+                <label>Humidité (%)</label>
+                <input type="number" id="humidite" value="13.2" step="0.1">
+                <small style="color: #666;">Spécification: ≤ 14.5%</small>
+            </div>
+
+            <div class="form-group">
+                <label>Protéines (%)</label>
+                <input type="number" id="proteines" value="13.5" step="0.1">
+                <small style="color: #666;">Spécification: ≥ 12.5%</small>
+            </div>
+
+            <div class="form-group">
+                <label>Aflatoxines (ppb)</label>
+                <input type="number" id="aflatoxines" value="2.1" step="0.1">
+                <small style="color: #666;">Spécification: ≤ 5.0 ppb</small>
+            </div>
+
+            <button class="btn" onclick="verifierQualite()">
+                ✅ Vérifier la conformité
+            </button>
+
+            <div class="loading" id="loading-quality">
+                <div class="spinner"></div>
+                <p>Vérification en cours...</p>
+            </div>
+
+            <div class="results" id="results-quality">
+                <!-- Les résultats seront affichés ici -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Masquer tous les contenus
+            document.querySelectorAll('.content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Désactiver tous les onglets
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Activer l'onglet et le contenu sélectionnés
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function rechercherFournisseurs() {
+            const loading = document.getElementById('loading-discovery');
+            const results = document.getElementById('results-discovery');
+
+            loading.classList.add('show');
+            results.classList.remove('show');
+
+            const data = {
+                type: document.getElementById('type_fournisseur').value,
+                rayon: parseInt(document.getElementById('rayon').value) || null,
+                bio: document.getElementById('bio').checked,
+                local: document.getElementById('local').checked,
+                max_resultats: 10
+            };
+
+            try {
+                const response = await fetch('/api/discover', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                loading.classList.remove('show');
+
+                if (result.success) {
+                    afficherResultatsDecouver te(result);
+                } else {
+                    results.innerHTML = `<div class="alert alert-danger">Erreur: ${result.error}</div>`;
+                    results.classList.add('show');
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                results.innerHTML = `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+                results.classList.add('show');
+            }
+        }
+
+        function afficherResultatsDecouverte(result) {
+            const results = document.getElementById('results-discovery');
+
+            let html = `
+                <div class="alert alert-success">
+                    ✓ ${result.total} fournisseur(s) trouvé(s)
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${result.total}</div>
+                        <div class="stat-label">Fournisseurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${result.statistiques.score_moyen?.toFixed(1) || 0}</div>
+                        <div class="stat-label">Score Moyen</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(result.statistiques.distance_moyenne_km || 0)}</div>
+                        <div class="stat-label">Distance Moy. (km)</div>
+                    </div>
+                </div>
+            `;
+
+            result.fournisseurs.forEach((f, idx) => {
+                html += `
+                    <div class="supplier-card">
+                        <div class="supplier-header">
+                            <div>
+                                <div class="supplier-name">${idx + 1}. ${f.nom}</div>
+                            </div>
+                            <div class="score-badge">${f.score}/100</div>
+                        </div>
+                        <div class="supplier-details">
+                            <div class="detail-item">
+                                <span class="icon">📍</span>
+                                <span>${f.ville}, ${f.pays}</span>
+                            </div>
+                            ${f.distance ? `
+                            <div class="detail-item">
+                                <span class="icon">🚚</span>
+                                <span>${f.distance} km</span>
+                            </div>
+                            ` : ''}
+                            ${f.certifications?.length ? `
+                            <div class="detail-item">
+                                <span class="icon">📜</span>
+                                <span>${f.certifications.slice(0, 2).join(', ')}</span>
+                            </div>
+                            ` : ''}
+                            ${f.site_web ? `
+                            <div class="detail-item">
+                                <span class="icon">🌐</span>
+                                <span><a href="${f.site_web}" target="_blank">${f.site_web}</a></span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        ${f.raisons?.length ? `
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <strong>✓ Points forts:</strong> ${f.raisons.join(', ')}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            if (result.actions?.length) {
+                html += `
+                    <div class="card">
+                        <h3>💡 Actions recommandées</h3>
+                        <ul>
+                            ${result.actions.map(a => `<li>${a}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            results.innerHTML = html;
+            results.classList.add('show');
+        }
+
+        async function calculerPrevisions() {
+            const loading = document.getElementById('loading-forecast');
+            const results = document.getElementById('results-forecast');
+
+            loading.classList.add('show');
+            results.classList.remove('show');
+
+            const data = {
+                matiere_id: document.getElementById('matiere_forecast').value,
+                horizon_days: parseInt(document.getElementById('horizon').value),
+                stock_actuel: parseFloat(document.getElementById('stock_actuel').value)
+            };
+
+            try {
+                const response = await fetch('/api/forecast', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                loading.classList.remove('show');
+
+                if (result.success) {
+                    afficherResultatsPrevisions(result);
+                } else {
+                    results.innerHTML = `<div class="alert alert-danger">Erreur: ${result.error}</div>`;
+                    results.classList.add('show');
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                results.innerHTML = `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+                results.classList.add('show');
+            }
+        }
+
+        function afficherResultatsPrevisions(result) {
+            const results = document.getElementById('results-forecast');
+            const plan = result.plan;
+
+            let alertClass = 'alert-success';
+            let alertIcon = '✓';
+            if (plan.urgence === 'high') {
+                alertClass = 'alert-danger';
+                alertIcon = '⚠️';
+            } else if (plan.urgence === 'medium') {
+                alertClass = 'alert-warning';
+                alertIcon = '⚡';
+            }
+
+            let html = `
+                <div class="alert ${alertClass}">
+                    ${alertIcon} ${plan.recommandation}
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${result.prevision.total.toLocaleString()}</div>
+                        <div class="stat-label">Prévision (kg)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${result.prevision.moyenne_jour.toLocaleString()}</div>
+                        <div class="stat-label">Consommation/jour</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${result.stock_securite.toLocaleString()}</div>
+                        <div class="stat-label">Stock Sécurité</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📈 Prévisions</h3>
+                    <p><strong>Tendance:</strong> ${result.prevision.tendance.toUpperCase()}</p>
+                    <p><strong>Fourchette:</strong> ${result.prevision.min.toLocaleString()} - ${result.prevision.max.toLocaleString()} kg</p>
+                </div>
+
+                <div class="card">
+                    <h3>📦 Plan d'Approvisionnement</h3>
+                    <p><strong>Stock actuel:</strong> ${plan.stock_actuel.toLocaleString()} kg</p>
+                    <p><strong>Point de commande:</strong> ${plan.point_commande.toLocaleString()} kg</p>
+                    <p><strong>Besoin:</strong> ${plan.besoin.toLocaleString()} kg</p>
+                    ${plan.commander ? '<p style="color: #dc3545; font-weight: 700;">⚠️ COMMANDER MAINTENANT</p>' : ''}
+                    ${plan.rupture_prevue ? `<p><strong>Rupture prévue:</strong> ${plan.rupture_prevue}</p>` : ''}
+                </div>
+            `;
+
+            results.innerHTML = html;
+            results.classList.add('show');
+        }
+
+        async function verifierQualite() {
+            const loading = document.getElementById('loading-quality');
+            const results = document.getElementById('results-quality');
+
+            loading.classList.add('show');
+            results.classList.remove('show');
+
+            const data = {
+                numero_lot: document.getElementById('numero_lot').value,
+                quantite: parseFloat(document.getElementById('quantite').value),
+                humidite: parseFloat(document.getElementById('humidite').value),
+                proteines: parseFloat(document.getElementById('proteines').value),
+                aflatoxines: parseFloat(document.getElementById('aflatoxines').value)
+            };
+
+            try {
+                const response = await fetch('/api/quality', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                loading.classList.remove('show');
+
+                if (result.success) {
+                    afficherResultatsQualite(result);
+                } else {
+                    results.innerHTML = `<div class="alert alert-danger">Erreur: ${result.error}</div>`;
+                    results.classList.add('show');
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                results.innerHTML = `<div class="alert alert-danger">Erreur: ${error.message}</div>`;
+                results.classList.add('show');
+            }
+        }
+
+        function afficherResultatsQualite(result) {
+            const results = document.getElementById('results-quality');
+
+            const alertClass = result.conforme ? 'alert-success' : 'alert-danger';
+            const icon = result.conforme ? '✅' : '❌';
+
+            let html = `
+                <div class="alert ${alertClass}">
+                    ${icon} ${result.decision}
+                </div>
+
+                <div class="card">
+                    <h3>🔬 Résultats d'Analyse</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 10px;"><strong>Humidité</strong></td>
+                            <td style="padding: 10px;">${result.analyses.humidite}%</td>
+                            <td style="padding: 10px; color: ${result.analyses.humidite <= 14.5 ? '#28a745' : '#dc3545'};">
+                                ${result.analyses.humidite <= 14.5 ? '✓' : '✗'} (≤ 14.5%)
+                            </td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 10px;"><strong>Protéines</strong></td>
+                            <td style="padding: 10px;">${result.analyses.proteines}%</td>
+                            <td style="padding: 10px; color: ${result.analyses.proteines >= 12.5 ? '#28a745' : '#dc3545'};">
+                                ${result.analyses.proteines >= 12.5 ? '✓' : '✗'} (≥ 12.5%)
+                            </td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 10px;"><strong>Aflatoxines</strong></td>
+                            <td style="padding: 10px;">${result.analyses.aflatoxines} ppb</td>
+                            <td style="padding: 10px; color: ${result.analyses.aflatoxines <= 5.0 ? '#28a745' : '#dc3545'};">
+                                ${result.analyses.aflatoxines <= 5.0 ? '✓' : '✗'} (≤ 5.0 ppb)
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                ${result.actions ? `
+                <div class="card">
+                    <h3>📋 Actions</h3>
+                    <ul>
+                        ${result.actions.map(a => `<li>${a}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            `;
+
+            results.innerHTML = html;
+            results.classList.add('show');
+        }
+    </script>
+</body>
+</html>
