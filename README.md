@@ -1,2 +1,130 @@
-# RT-Technologie
-Referenciel RT technologie
+# Système de Sourcing Permanent - Usine Agroalimentaire
+
+## Description
+
+Système complet de gestion des approvisionnements pour une usine de production de pâtes alimentaires en Europe.
+
+Ce système couvre l'ensemble de la chaîne d'approvisionnement :
+- 🏭 Identification et qualification des fournisseurs
+- 📋 Appels d'offres avec analyse automatique
+- 🤝 Attribution des lots et gestion commerciale
+- 📊 Prévisions et planification automatique
+- ✅ Contrôle qualité et traçabilité complète
+
+## Fonctionnalités Principales
+
+### 1. Gestion des Fournisseurs
+- Référencement et qualification
+- Évaluation périodique des performances
+- Gestion des certifications (IFS, BRC, ISO 22000, Bio)
+- Suivi des audits
+
+### 2. Appels d'Offres Automatisés
+- Création et publication d'appels d'offres
+- Analyse automatique multi-critères (prix, qualité, délais, RSE)
+- Scoring et classement des offres
+- Génération de rapports d'attribution
+
+### 3. Gestion Commerciale
+- Contrats cadres pluriannuels
+- Prix indexés et paliers de volume
+- Négociations et avenants
+- Suivi des performances contractuelles
+
+### 4. Prévisions et Approvisionnement
+- Prévisions de consommation (tendances, saisonnalité)
+- Calcul automatique des stocks de sécurité
+- Point de commande automatique
+- Quantité économique de commande (EOQ)
+
+### 5. Qualité et Traçabilité
+- Contrôle qualité à réception
+- Traçabilité complète des lots (origine → utilisation)
+- Gestion des non-conformités
+- Conformité réglementaire européenne
+
+## Installation
+
+```bash
+# Cloner le repository
+git clone https://github.com/votre-org/RT-Technologie.git
+cd RT-Technologie
+
+# Installer les dépendances
+pip install -r requirements.txt
+```
+
+## Démarrage Rapide
+
+```python
+# Voir l'exemple complet
+python examples/example_complete_workflow.py
+```
+
+## Structure du Projet
+
+```
+RT-Technologie/
+├── src/
+│   ├── models/           # Modèles de données
+│   │   ├── supplier.py       # Fournisseurs
+│   │   ├── raw_material.py   # Matières premières
+│   │   ├── rfq.py            # Appels d'offres
+│   │   ├── contract.py       # Contrats
+│   │   └── procurement.py    # Approvisionnements
+│   ├── services/         # Services métier
+│   │   ├── supplier_manager.py    # Gestion fournisseurs
+│   │   ├── rfq_analyzer.py        # Analyse offres
+│   │   ├── forecast_engine.py     # Prévisions
+│   │   └── quality_manager.py     # Qualité/traçabilité
+│   ├── config/           # Configuration
+│   └── utils/            # Utilitaires
+├── data/                 # Données
+│   ├── suppliers/
+│   ├── raw_materials/
+│   ├── orders/
+│   └── quality/
+├── docs/                 # Documentation
+│   └── DOCUMENTATION.md
+├── examples/             # Exemples d'utilisation
+│   └── example_complete_workflow.py
+├── tests/                # Tests
+└── requirements.txt      # Dépendances
+
+```
+
+## Matières Premières pour Pâtes
+
+Le système est configuré pour gérer les matières premières spécifiques à la production de pâtes :
+
+- **Semoule de blé dur** (principale) - Critères : taux de protéines, granulométrie
+- **Œufs** (pâtes aux œufs)
+- **Légumes** (épinards, tomates - pâtes colorées)
+- **Eau de process**
+- **Emballages** (cartons, films, étiquettes)
+
+## Conformité Réglementaire
+
+Le système assure la conformité avec les réglementations européennes :
+
+- ✅ Traçabilité (Règlement UE 178/2002)
+- ✅ Sécurité alimentaire (ISO 22000, HACCP)
+- ✅ Contrôle des contaminants (aflatoxines, ochratoxine, métaux lourds)
+- ✅ Certifications (IFS Food, BRC, FSSC 22000)
+
+## Documentation
+
+Documentation complète disponible dans `/docs/DOCUMENTATION.md`
+
+Voir également :
+- [Exemple complet de workflow](examples/example_complete_workflow.py)
+- [Modèles de données](src/models/)
+- [Services métier](src/services/)
+
+## Auteurs
+
+RT-Technologie
+
+## Licence
+
+Propriétaire - Tous droits réservés
