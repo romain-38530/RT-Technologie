@@ -129,7 +129,7 @@ class MatierePremiere(BaseModel):
     # Prix
     prix_unitaire_eur: float
     devise: str = "EUR"
-    prix_derniere_maj: datetime
+    prix_derniere_maj: datetime = Field(default_factory=datetime.now)
 
     # Stockage
     condition_stockage: StorageCondition

@@ -272,9 +272,9 @@ class EvaluationOffre(BaseModel):
     points_faibles: List[str] = []
 
     # Évaluation commerciale
-    competitivite_prix: int = Field(ge=1, le=5)
-    conditions_paiement_score: int = Field(ge=1, le=5)
-    flexibilite_fournisseur: int = Field(ge=1, le=5)
+    competitivite_prix: int = Field(default=3, ge=1, le=5)
+    conditions_paiement_score: int = Field(default=3, ge=1, le=5)
+    flexibilite_fournisseur: int = Field(default=3, ge=1, le=5)
 
     # Score global
     note_technique: Optional[float] = None

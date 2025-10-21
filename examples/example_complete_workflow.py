@@ -327,7 +327,7 @@ def main():
                 unite="kg",
                 delai_livraison_jours=10,
                 date_livraison_proposee=date(2025, 1, 15),
-                certifications=["IFS Food Higher Level", "Bio EU", "ISO 9001"],
+                certifications=["IFS Food", "ISO 22000", "Bio EU"],
                 origine="Italie - Basilicata",
                 references_clients="Barilla, De Cecco, Panzani"
             )
@@ -358,7 +358,7 @@ def main():
                 unite="kg",
                 delai_livraison_jours=5,  # Plus rapide car France
                 date_livraison_proposee=date(2025, 1, 10),
-                certifications=["ISO 22000", "HACCP"],
+                certifications=["IFS Food", "ISO 22000", "HACCP"],
                 origine="France - Beauce",
                 references_clients="Lustucru, Panzani France"
             )
@@ -401,9 +401,9 @@ def main():
     print()
     for idx, result in enumerate(comparison, 1):
         print(f"{idx}. {result['nom_fournisseur']}")
-        print(f"   Note finale : {result['note_finale']:.1f}/100")
-        print(f"   Note technique : {result['note_technique']:.1f}/100")
-        print(f"   Note commerciale : {result['note_commerciale']:.1f}/100")
+        print(f"   Note finale : {result['note_finale'] or 0:.1f}/100")
+        print(f"   Note technique : {result['note_technique'] or 0:.1f}/100")
+        print(f"   Note commerciale : {result['note_commerciale'] or 0:.1f}/100")
         print(f"   Montant HT : {result['montant_ht']:,.2f} €")
         print(f"   Recommandation : {result['recommandation'].upper()}")
         if result['points_forts']:
