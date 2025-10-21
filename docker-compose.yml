@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Application Web
+  web:
+    build: .
+    container_name: sourcing-web
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-changez-cette-cle-en-production}
+      - DEFAULT_LOCATION_LAT=45.7640
+      - DEFAULT_LOCATION_LON=4.8357
+    volumes:
+      # Monter les logs pour persistance
+      - ./logs:/var/log/gunicorn
+      # Monter les données si nécessaire
+      - ./data:/app/data
+    networks:
+      - sourcing-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx (optionnel, recommandé pour production)
+  nginx:
+    image: nginx:alpine
+    container_name: sourcing-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./static:/usr/share/nginx/html/static:ro
+      # Pour HTTPS (décommenter si certificats disponibles)
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+    networks:
+      - sourcing-network
+
+networks:
+  sourcing-network:
+    driver: bridge
+
+volumes:
+  logs:
+  data:

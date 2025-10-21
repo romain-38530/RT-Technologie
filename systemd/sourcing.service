@@ -1,0 +1,52 @@
+[Unit]
+Description=Système de Sourcing Permanent - RT-Technologie
+Documentation=https://github.com/VOTRE_COMPTE/RT-Technologie
+After=network.target
+
+[Service]
+Type=notify
+User=sourcing
+Group=sourcing
+WorkingDirectory=/home/sourcing/RT-Technologie
+Environment="PATH=/home/sourcing/RT-Technologie/venv/bin"
+Environment="PYTHONPATH=/home/sourcing/RT-Technologie"
+
+# Charger les variables d'environnement depuis .env
+EnvironmentFile=/home/sourcing/RT-Technologie/.env
+
+# Commande de démarrage
+ExecStart=/home/sourcing/RT-Technologie/venv/bin/gunicorn \
+          --config gunicorn_config.py \
+          wsgi:application
+
+# Commande de rechargement (graceful reload)
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# Redémarrage automatique en cas d'échec
+Restart=always
+RestartSec=10
+
+# Mode d'arrêt
+KillMode=mixed
+TimeoutStopSec=5
+
+# Sécurité
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/sourcing/RT-Technologie/logs
+ReadWritePaths=/home/sourcing/RT-Technologie/data
+ReadWritePaths=/home/sourcing/RT-Technologie/run
+
+# Limites de ressources (optionnel)
+# LimitNOFILE=65536
+# LimitNPROC=512
+
+# Standard output et error vers journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sourcing
+
+[Install]
+WantedBy=multi-user.target
