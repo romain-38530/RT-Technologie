@@ -1,5 +1,4 @@
 const http = require('http');
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { validateVAT } = require('../../../packages/vat-client/src/index.js');
@@ -8,7 +7,6 @@ const { addSecurityHeaders, handleCorsPreflight, requireAuth, limitBodySize, rat
 function json(res, status, body) {
   const data = JSON.stringify(body);
   addSecurityHeaders(res);
-  if (handleCorsPreflight(req, res)) return;
   res.writeHead(status, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) });
   res.end(data);
 }
@@ -66,10 +64,11 @@ async function statusForCarrier(carrierId, { refreshVAT = false } = {}) {
   return { carrierId, status, reasons, sources };
 }
 
+const limiter = rateLimiter({ windowMs: 60000, max: 240 });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   addSecurityHeaders(res);
-  const limiter = rateLimiter({ windowMs: 60000, max: 240 });
+  if (handleCorsPreflight(req, res)) return;
   if (!limiter(req, res)) return;
   const method = req.method || 'GET';
   const traceIdHdr = req.headers['x-trace-id'];

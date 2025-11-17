@@ -21,18 +21,6 @@ function json(res, status, body, traceId) {
   res.end(data);
 }
 
-function parseBody(req) {
-  return new Promise((resolve, reject) => {
-    let buf = '';
-    req.on('data', (c) => (buf += c));
-    req.on('end', () => {
-      if (!buf) return resolve(null);
-      try { resolve(JSON.parse(buf)); } catch (e) { reject(e); }
-    });
-    req.on('error', reject);
-  });
-}
-
 function uid(prefix) { return `${prefix}-${crypto.randomBytes(6).toString('hex')}`; }
 
 function signJWT(payload, expSec = 3600) {
@@ -53,7 +41,7 @@ async function notify(to, subject, text, traceId) {
   }
 }
 
-const parseBody = limitBodySize(512 * 1024);
+const parseJson = limitBodySize(512 * 1024);
 const limiter = rateLimiter({ windowMs: 60000, max: 120 });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -67,7 +55,7 @@ const server = http.createServer(async (req, res) => {
   // Register
   if (method === 'POST' && url.pathname === '/auth/register') {
     try {
-      const body = (await parseBody(req)) || {};
+      const body = (await parseJson(req)) || {};
       const role = body.role;
       const orgName = body.orgName;
       const contactEmail = body.contactEmail;
@@ -94,7 +82,7 @@ const server = http.createServer(async (req, res) => {
   // Verify (GET or POST)
   if ((method === 'GET' && url.pathname === '/auth/verify') || (method === 'POST' && url.pathname === '/auth/verify')) {
     try {
-      const token = method === 'GET' ? url.searchParams.get('token') : ((await parseBody(req)) || {}).token;
+      const token = method === 'GET' ? url.searchParams.get('token') : ((await parseJson(req)) || {}).token;
       if (!token) return json(res, 400, { error: 'token requis', traceId: tid || null }, tid);
       const rec = store.tokens.get(token);
       if (!rec) return json(res, 404, { error: 'token inconnu', traceId: tid || null }, tid);
@@ -116,7 +104,7 @@ const server = http.createServer(async (req, res) => {
   // Login
   if (method === 'POST' && url.pathname === '/auth/login') {
     try {
-      const body = (await parseBody(req)) || {};
+      const body = (await parseJson(req)) || {};
       const orgId = body.orgId;
       const email = body.email;
       if (!orgId || !email) return json(res, 400, { error: 'orgId/email requis', traceId: tid || null }, tid);
@@ -135,7 +123,7 @@ const server = http.createServer(async (req, res) => {
   // Admin login (simple API key based, returns ADMIN role JWT)
   if (method === 'POST' && url.pathname === '/auth/admin/login') {
     try {
-      const body = (await parseBody(req)) || {};
+      const body = (await parseJson(req)) || {};
       const email = body.email;
       const adminKey = body.adminKey;
       if (!email || !adminKey) return json(res, 400, { error: 'email/adminKey requis', traceId: tid || null }, tid);
@@ -190,7 +178,7 @@ const server = http.createServer(async (req, res) => {
     const authResult = requireAuth(req, res, { optionalEnv: 'SECURITY_ENFORCE' });
     if (authResult === null) return;
     try {
-      const body = (await parseBody(req)) || {};
+      const body = (await parseJson(req)) || {};
       const plan = (body.plan || '').toUpperCase();
       if (!plan || !['FREE','PRO','ENTERPRISE'].includes(plan)) return json(res, 400, { error: 'plan invalide', traceId: tid || null }, tid);
       const addons = Array.isArray(body.addons) ? body.addons : [];
