@@ -1,0 +1,9 @@
+[
+  {
+    "ownerOrgId": "IND-1",
+    "lines": [
+      { "from": "Paris", "to": "Munich", "mode": "FTL", "price": 950, "currency": "EUR" },
+      { "from": "Lyon", "to": "Milan", "mode": "FTL", "price": 820, "currency": "EUR" }
+    ]
+  }
+]

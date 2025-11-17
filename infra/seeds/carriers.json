@@ -1,5 +1,5 @@
 [
-  { "id": "A", "name": "Carrier A", "email": "carrierA@example.com", "vat": "FR12345678901", "blocked": true,  "scoring": 82, "grid_ref": "grid-A" },
-  { "id": "B", "name": "Carrier B", "email": "carrierB@example.com", "vat": "FR12345678902", "blocked": false, "scoring": 88, "grid_ref": "grid-B" },
-  { "id": "C", "name": "Carrier C", "email": "carrierC@example.com", "vat": "FR12345678903", "blocked": false, "scoring": 75, "grid_ref": "grid-C" }
+  { "id": "A", "name": "Carrier A", "email": "carrierA@example.com", "vat": "FR12345678901", "blocked": true,  "scoring": 82, "grid_ref": "grid-A", "premium": false },
+  { "id": "B", "name": "Carrier B", "email": "carrierB@example.com", "vat": "FR12345678902", "blocked": false, "scoring": 88, "grid_ref": "grid-B", "premium": true },
+  { "id": "C", "name": "Carrier C", "email": "carrierC@example.com", "vat": "FR12345678903", "blocked": false, "scoring": 75, "grid_ref": "grid-C", "premium": true }
 ]
