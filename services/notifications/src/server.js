@@ -75,7 +75,7 @@ function sendMailgun({ to, subject, text, html }) {
   });
 }
 
-let parseBody = limitBodySize(256 * 1024);
+var parseBody = limitBodySize(256 * 1024);
 const limiter = rateLimiter({ windowMs: 60000, max: 600 });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
