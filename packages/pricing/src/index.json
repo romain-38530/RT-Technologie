@@ -1,13 +1,13 @@
-{
+﻿{
   "version": "0.1.0",
   "currency": "EUR",
   "plans": {
-    "INDUSTRY_BASE": { "monthly": 499, "label": "Industrie - Base" },
-    "TRANSPORTER_BASE": { "monthly": 499, "label": "Transporteur - Base" }
+    "INDUSTRY_BASE":    { "monthly": 499, "label": "Industrie - Base" },
+    "TRANSPORTER_BASE": { "monthly": 499, "label": "Transporteur - Base (panel sous-traitants)" }
   },
   "addons": {
-    "AFFRET_IA": { "monthly": 200, "label": "Affret.IA" },
-    "PREMIUM_MARKETPLACE": { "monthly": 200, "label": "Premium Marketplace" }
+    "AFFRET_IA":           { "monthly": 200, "label": "Affret.IA (dépôt de commandes)" },
+    "PREMIUM_MARKETPLACE": { "monthly": 299, "label": "Marketplace Affret.IA (voir/postuler offres industriels)" }
   },
-  "notes": "Tarifs indicatifs de base pour avancer; sujets à ajustements ultérieurs."
+  "notes": "Tarifs indicatifs : base industrie/transporteur 499€/mois ; Affret.IA dépôt 200€/mois ; marketplace transporteur 299€/mois."
 }

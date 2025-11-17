@@ -6,7 +6,6 @@ const path = require('path');
 const { sendEmail } = require('../../../packages/notify-client/src/index.js');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, limitBodySize, rateLimiter } = require('../../../packages/security/src/index.js');
 const { hasFeature, FEATURES } = require('../../../packages/entitlements/src/index.js');
-const { hasFeature, FEATURES } = require('../../../packages/entitlements/src/index.js');
 
 // In-memory stores
 const store = {
@@ -18,7 +17,8 @@ const store = {
   vigCache: new Map(), // carrierId -> { status, expiresAt }
   invited: new Map(), // industryOrgId -> Set(carrierId)
   orgCache: new Map(), // orgId -> { org, expiresAt }
-  grids: new Map(), // ownerOrgId -> [{from,to,mode,price,currency}]
+  origins: new Map(), // ownerOrgId -> [{ id, label, country, city }]
+  grids: new Map(),   // ownerOrgId -> [{ origin, mode, lines: [...] }]
 };
 
 function loadJSON(p) {
@@ -38,11 +38,12 @@ async function loadSeeds() {
       const mongo = require('../../../packages/data-mongo/src/index.js');
       await mongo.connect();
       const db = await mongo.getDb();
-      const [orders, carriers, vigs, policies, invit] = await Promise.all([
+      const [orders, carriers, vigs, policies, origins, grids, invit] = await Promise.all([
         db.collection('orders').find({}).toArray(),
         db.collection('carriers').find({}).toArray(),
         db.collection('vigilance').find({}).toArray(),
         db.collection('dispatch_policies').find({}).toArray(),
+        db.collection('origins').find({}).toArray(),
         db.collection('grids').find({}).toArray(),
         db.collection('invitations').find({}).toArray(),
       ]);
@@ -50,7 +51,8 @@ async function loadSeeds() {
       store.carriers = carriers || [];
       (vigs||[]).forEach((v)=>store.vigilance.set(v.carrierId, v.status || v.state || 'UNKNOWN'));
       (policies||[]).forEach((p)=>store.dispatchPolicies.set(p.orderId, p));
-      (grids||[]).forEach((g)=>store.grids.set(g.ownerOrgId, g.lines || []));
+      (origins||[]).forEach((o)=>{ const arr = store.origins.get(o.ownerOrgId) || []; arr.push(o); store.origins.set(o.ownerOrgId, arr); });
+      (grids||[]).forEach((g)=>{ const arr = store.grids.get(g.ownerOrgId) || []; arr.push(g); store.grids.set(g.ownerOrgId, arr); });
       (invit||[]).forEach((r)=>{ const set = new Set(r.invitedCarriers || []); store.invited.set(r.industryOrgId, set); });
       console.log(`[core-orders] Mongo chargés: ${store.orders.size} commandes, ${store.carriers.length} transporteurs.`);
       return;
@@ -65,8 +67,10 @@ async function loadSeeds() {
   vig.forEach((v) => store.vigilance.set(v.carrierId, v.status));
   const policies = loadJSON(path.join(base, 'dispatch-policies.json')) || [];
   policies.forEach((p) => store.dispatchPolicies.set(p.orderId, p));
+  const originsSeed = loadJSON(path.join(base, 'origins.json')) || [];
+  originsSeed.forEach((o) => { const arr = store.origins.get(o.ownerOrgId) || []; arr.push(o); store.origins.set(o.ownerOrgId, arr); });
   const gridsSeed = loadJSON(path.join(base, 'grids.json')) || [];
-  gridsSeed.forEach((g) => store.grids.set(g.ownerOrgId, g.lines || []));
+  gridsSeed.forEach((g) => { const arr = store.grids.get(g.ownerOrgId) || []; arr.push(g); store.grids.set(g.ownerOrgId, arr); });
   const invit = loadJSON(path.join(base, 'invitations.json')) || [];
   invit.forEach((r) => {
     const set = new Set(r.invitedCarriers || []);
@@ -162,6 +166,53 @@ function httpGetJson(targetUrl, headers = {}) {
     req.on('error', reject);
     req.end();
   });
+}
+
+function streamToString(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (c) => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    req.on('error', reject);
+  });
+}
+
+function parseCsvLines(text, mode, originFallback) {
+  const lines = [];
+  const rows = text.trim().split(/\r?\n/);
+  if (!rows.length) return lines;
+  const header = rows.shift().split(',').map((s) => s.trim().toLowerCase());
+  const getIdx = (k) => header.indexOf(k);
+  const idxOrigin = getIdx('origin');
+  const idxTo = getIdx('to');
+  const idxPrice = getIdx('price');
+  const idxCurrency = getIdx('currency');
+  const idxMin = getIdx('minpallets');
+  const idxMax = getIdx('maxpallets');
+  const idxPricePP = getIdx('priceperpallet');
+  for (const row of rows) {
+    if (!row.trim()) continue;
+    const cols = row.split(',').map((s) => s.trim());
+    const origin = idxOrigin >= 0 ? cols[idxOrigin] : originFallback;
+    if (mode === 'FTL') {
+      lines.push({
+        origin,
+        to: idxTo >= 0 ? cols[idxTo] : '',
+        price: idxPrice >= 0 ? Number(cols[idxPrice] || 0) : 0,
+        currency: idxCurrency >= 0 ? (cols[idxCurrency] || 'EUR') : 'EUR'
+      });
+    } else {
+      lines.push({
+        origin,
+        to: idxTo >= 0 ? cols[idxTo] : '',
+        minPallets: idxMin >= 0 ? Number(cols[idxMin] || 0) : 0,
+        maxPallets: idxMax >= 0 ? Number(cols[idxMax] || 0) : 0,
+        pricePerPallet: idxPricePP >= 0 ? Number(cols[idxPricePP] || 0) : 0,
+        currency: idxCurrency >= 0 ? (cols[idxCurrency] || 'EUR') : 'EUR'
+      });
+    }
+  }
+  return lines;
 }
 
 async function checkVigilance(carrierId) {
@@ -421,25 +472,79 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // POST /industry/lines/grids/import
-  // body: { ownerOrgId, lines:[{from,to,mode,price,currency}] }
-  if (method === 'POST' && pathname === '/industry/lines/grids/import') {
+  // POST /industry/origins { ownerOrgId, id, label, country, city }
+  if (method === 'POST' && pathname === '/industry/origins') {
     try {
       const body = (await parseBody(req)) || {};
       const ownerOrgId = body.ownerOrgId || 'IND-1';
-      const lines = Array.isArray(body.lines) ? body.lines : [];
-      store.grids.set(ownerOrgId, lines);
+      if (!body.id || !body.label) return json(res, 400, { error: 'id/label requis' });
+      const origin = { ownerOrgId, id: body.id, label: body.label, country: body.country || null, city: body.city || null };
+      const arr = store.origins.get(ownerOrgId) || [];
+      const existingIdx = arr.findIndex((o) => o.id === origin.id);
+      if (existingIdx >= 0) arr[existingIdx] = origin; else arr.push(origin);
+      store.origins.set(ownerOrgId, arr);
       if (process.env.MONGODB_URI) {
         try {
           const mongo = require('../../../packages/data-mongo/src/index.js');
           const db = await mongo.getDb();
-          await db.collection('grids').updateOne({ ownerOrgId }, { $set: { ownerOrgId, lines } }, { upsert: true });
+          await db.collection('origins').updateOne({ ownerOrgId, id: origin.id }, { $set: origin }, { upsert: true });
+        } catch (e) { console.warn('[origins] save mongo failed', e.message); }
+      }
+      return json(res, 200, { ok: true, origin });
+    } catch (e) { return json(res, 400, { error: 'Invalid JSON' }); }
+  }
+
+  // GET /industry/origins?ownerOrgId=IND-1
+  if (method === 'GET' && pathname === '/industry/origins') {
+    const ownerOrgId = parsed.query.ownerOrgId;
+    if (ownerOrgId) return json(res, 200, { items: store.origins.get(ownerOrgId) || [] });
+    const all = [];
+    for (const [k,v] of store.origins.entries()) all.push(...v);
+    return json(res, 200, { items: all });
+  }
+
+  // POST /industry/grids/upload?mode=FTL|LTL&origin=XXXX&ownerOrgId=...
+  if (method === 'POST' && pathname === '/industry/grids/upload') {
+    const mode = (parsed.query.mode || '').toUpperCase();
+    const origin = parsed.query.origin || null;
+    const ownerOrgId = parsed.query.ownerOrgId || 'IND-1';
+    if (!mode || !origin) return json(res, 400, { error: 'mode/origin requis' });
+    try {
+      let lines = [];
+      const contentType = req.headers['content-type'] || '';
+      if (contentType.includes('text/csv')) {
+        const buf = await streamToString(req);
+        lines = parseCsvLines(buf, mode, origin);
+      } else {
+        const body = (await parseBody(req)) || {};
+        lines = Array.isArray(body.lines) ? body.lines : [];
+      }
+      const grid = { ownerOrgId, origin, mode, lines };
+      const arr = store.grids.get(ownerOrgId) || [];
+      const idx = arr.findIndex((g) => g.origin === origin && g.mode === mode);
+      if (idx >= 0) arr[idx] = grid; else arr.push(grid);
+      store.grids.set(ownerOrgId, arr);
+      if (process.env.MONGODB_URI) {
+        try {
+          const mongo = require('../../../packages/data-mongo/src/index.js');
+          const db = await mongo.getDb();
+          await db.collection('grids').updateOne({ ownerOrgId, origin, mode }, { $set: grid }, { upsert: true });
         } catch (e) { console.warn('[grids] save mongo failed', e.message); }
       }
-      return json(res, 200, { ok: true, ownerOrgId, linesCount: lines.length });
+      return json(res, 200, { ok: true, ownerOrgId, origin, mode, linesCount: lines.length });
     } catch (e) {
-      return json(res, 400, { error: 'Invalid JSON' });
+      return json(res, 400, { error: 'Invalid grid', detail: e.message });
     }
+  }
+
+  // GET /industry/grids?ownerOrgId=...&origin=...&mode=FTL|LTL
+  if (method === 'GET' && pathname === '/industry/grids') {
+    const ownerOrgId = parsed.query.ownerOrgId || 'IND-1';
+    const origin = parsed.query.origin;
+    const mode = parsed.query.mode ? parsed.query.mode.toUpperCase() : null;
+    const arr = store.grids.get(ownerOrgId) || [];
+    const filtered = arr.filter((g) => (!origin || g.origin === origin) && (!mode || g.mode === mode));
+    return json(res, 200, { items: filtered });
   }
 
   // POST /industry/orders/:id/dispatch

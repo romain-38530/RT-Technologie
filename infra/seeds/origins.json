@@ -1,0 +1,4 @@
+[
+  { "ownerOrgId": "IND-1", "id": "PARIS", "label": "Paris Hub", "country": "FR", "city": "Paris" },
+  { "ownerOrgId": "IND-1", "id": "LYON",  "label": "Lyon Hub",  "country": "FR", "city": "Lyon" }
+]

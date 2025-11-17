@@ -13,9 +13,10 @@ let mongo = null;
 const store = {
   orders: new Map(),
   carriers: [],
-  policies: new Map(),  // orderId -> { chain: [] }
-  bids: new Map(),      // orderId -> [{carrierId, price, currency, scoring, at}]
-  assignments: new Map()// orderId -> { carrierId, price, currency, at, source }
+  policies: new Map(),   // orderId -> { chain: [] }
+  grids: new Map(),      // ownerOrgId -> [{ origin, mode, lines }]
+  bids: new Map(),       // orderId -> [{carrierId, price, currency, scoring, at}]
+  assignments: new Map() // orderId -> { carrierId, price, currency, at, source }
 };
 
 function loadSeeds() {
@@ -26,6 +27,13 @@ function loadSeeds() {
     store.carriers = JSON.parse(fs.readFileSync(path.join(base, 'carriers.json'), 'utf-8')) || [];
     const pol = JSON.parse(fs.readFileSync(path.join(base, 'dispatch-policies.json'), 'utf-8')) || [];
     pol.forEach((p) => store.policies.set(p.orderId, p));
+    const gridsSeed = JSON.parse(fs.readFileSync(path.join(base, 'grids.json'), 'utf-8')) || [];
+    gridsSeed.forEach((g) => {
+      if (!Array.isArray(g.grids)) return;
+      const arr = store.grids.get(g.ownerOrgId) || [];
+      arr.push(...g.grids);
+      store.grids.set(g.ownerOrgId, arr);
+    });
     console.log(`[affret-ia] Seeds chargées: ${store.orders.size} ordres, ${store.carriers.length} transporteurs`);
   } catch (e) { console.warn('[affret-ia] Seeds manquantes:', e.message); }
 }
@@ -35,16 +43,25 @@ async function loadMongo() {
   try {
     mongo = require('../../../packages/data-mongo/src/index.js');
     const db = await mongo.connect();
-    const [orders, carriers, policies, bids, assigns] = await Promise.all([
+    const [orders, carriers, policies, grids, bids, assigns] = await Promise.all([
       db.collection('orders').find({}).toArray(),
       db.collection('carriers').find({}).toArray(),
       db.collection('dispatch_policies').find({}).toArray(),
+      db.collection('grids').find({}).toArray(),
       db.collection('affret_bids').find({}).toArray(),
       db.collection('affret_assignments').find({}).toArray(),
     ]);
     (orders || []).forEach((o) => store.orders.set(o.id, o));
     if (carriers?.length) store.carriers = carriers;
     (policies || []).forEach((p) => store.policies.set(p.orderId, p));
+    (grids || []).forEach((g) => {
+      let gridsArr = [];
+      if (Array.isArray(g.grids)) gridsArr = g.grids;
+      else if (Array.isArray(g.lines)) gridsArr = [{ origin: g.origin || '', mode: g.mode || 'FTL', lines: g.lines }];
+      const arr = store.grids.get(g.ownerOrgId) || [];
+      arr.push(...gridsArr);
+      store.grids.set(g.ownerOrgId, arr);
+    });
     (bids || []).forEach((b) => {
       if (!store.bids.has(b.orderId)) store.bids.set(b.orderId, []);
       store.bids.get(b.orderId).push({ carrierId: b.carrierId, price: b.price, currency: b.currency, scoring: b.scoring, at: b.at });
@@ -82,6 +99,33 @@ function isPremiumCarrier(id) {
   return !!(c && c.premium === true);
 }
 
+function findGridPrice(order) {
+  if (!order) return null;
+  const owner = order.ownerOrgId || 'IND-1';
+  const origin = order.origin || order.ship_from || '';
+  const destination = (order.ship_to || '').toLowerCase();
+  const pallets = Number(order.pallets || 0);
+  const grids = store.grids.get(owner) || [];
+  const isFTL = pallets >= 33 || (order.weight && order.weight > 12000);
+  const mode = isFTL ? 'FTL' : 'LTL';
+  const grid = grids.find((g) => g.origin && g.origin.toLowerCase() === origin.toLowerCase() && g.mode === mode);
+  if (!grid) return null;
+  if (mode === 'FTL') {
+    const line = (grid.lines || []).find((l) => (l.to || '').toLowerCase() === destination);
+    if (line) return { price: line.price, currency: line.currency || 'EUR', mode };
+  } else {
+    const line = (grid.lines || []).find((l) => {
+      const to = (l.to || '').toLowerCase();
+      const min = Number(l.minPallets || 0), max = Number(l.maxPallets || 0);
+      return to === destination && pallets >= min && pallets <= max;
+    });
+    if (line) {
+      return { price: line.pricePerPallet * pallets, currency: line.currency || 'EUR', mode, pricePerPallet: line.pricePerPallet };
+    }
+  }
+  return null;
+}
+
 const limiter = rateLimiter({ windowMs: 60000, max: 120 });
 const parseBody = limitBodySize(512 * 1024);
 const server = http.createServer(async (req, res) => {
@@ -108,12 +152,15 @@ const server = http.createServer(async (req, res) => {
     if (!premiumAllowed.length) return json(res, 403, { error: 'no_premium_carrier' });
     try {
       let q = null;
+      const gridRef = findGridPrice(order);
       if (process.env.OPENROUTER_API_KEY) {
         q = await quoteWithAI(order);
       }
       if (!q) {
-        const base = 1.1 * (order.weight || 1000) / 10 + (order.pallets || 1) * 5;
-        q = { price: Math.round(base), currency: 'EUR', suggestedCarriers: premiumAllowed.slice(0, 2) };
+        const base = gridRef?.price || (1.1 * (order.weight || 1000) / 10 + (order.pallets || 1) * 5);
+        q = { price: Math.round(base), currency: gridRef?.currency || 'EUR', suggestedCarriers: premiumAllowed.slice(0, 2), priceRef: gridRef || null };
+      } else if (gridRef) {
+        q.priceRef = gridRef;
       }
       if (traceId) res.setHeader('x-trace-id', traceId);
       return json(res, 200, { orderId, ...q, traceId: traceId || null });
@@ -161,16 +208,18 @@ const server = http.createServer(async (req, res) => {
       if (mongo) { try { const db = await mongo.getDb(); await db.collection('affret_bids').insertOne({ orderId, ...bid }); } catch {} }
 
       const bids = (store.bids.get(orderId) || []).filter((b) => isPremiumCarrier(b.carrierId) && allowedCarriersForOrder(orderId).includes(b.carrierId));
-      const avg = bids.length ? (bids.reduce((s, b) => s + (b.price || 0), 0) / bids.length) : bid.price;
-      const withinRange = bid.price <= avg * (1 + PRICE_MARGIN);
+      const gridRef = findGridPrice(order);
+      const avgBids = bids.length ? (bids.reduce((s, b) => s + (b.price || 0), 0) / bids.length) : bid.price;
+      const refPrice = gridRef?.price || avgBids;
+      const withinRange = bid.price <= refPrice * (1 + PRICE_MARGIN);
       const scoringOk = scoring == null || scoring >= SCORING_THRESHOLD;
       let assignment = store.assignments.get(orderId) || null;
       if (!assignment && withinRange && scoringOk) {
-        assignment = { orderId, carrierId, price: bid.price, currency, at: new Date().toISOString(), source: 'bid' };
+        assignment = { orderId, carrierId, price: bid.price, currency, at: new Date().toISOString(), source: 'bid', priceRef: gridRef || null };
         store.assignments.set(orderId, assignment);
         if (mongo) { try { const db = await mongo.getDb(); await db.collection('affret_assignments').updateOne({ orderId }, { $set: assignment }, { upsert: true }); } catch {} }
       }
-      return json(res, 200, { ok: true, orderId, bid, stats: { avgPrice: avg, bids: bids.length }, assigned: assignment || null, traceId: traceId || null });
+      return json(res, 200, { ok: true, orderId, bid, stats: { avgBids: avgBids, refPrice }, assigned: assignment || null, traceId: traceId || null });
     } catch (e) {
       return json(res, 400, { error: 'Invalid JSON', traceId: traceId || null });
     }
@@ -190,16 +239,19 @@ const server = http.createServer(async (req, res) => {
       const allowedPremium = allowedCarriersForOrder(order.id).filter((id) => isPremiumCarrier(id));
       if (!allowedPremium.length) return json(res, 403, { error: 'no_premium_carrier' });
 
-      const quote = await (process.env.OPENROUTER_API_KEY ? quoteWithAI(order) : null);
-      // choisir un carrier premium autorisé
+      const gridRef = findGridPrice(order);
+      let quote = null;
+      if (process.env.OPENROUTER_API_KEY) {
+        quote = await quoteWithAI(order);
+      }
       let chosen = quote?.suggestedCarriers?.find((c) => allowedPremium.includes(c)) || allowedPremium.find((c) => c) || null;
       if (chosen) {
-        const assignment = { orderId: body.orderId, carrierId: chosen, price: quote?.price || null, currency: quote?.currency || 'EUR', at: new Date().toISOString(), source: quote ? 'ai' : 'fallback' };
+        const assignment = { orderId: body.orderId, carrierId: chosen, price: quote?.price || gridRef?.price || null, currency: quote?.currency || gridRef?.currency || 'EUR', at: new Date().toISOString(), source: quote ? 'ai' : 'fallback', priceRef: gridRef || null };
         store.assignments.set(body.orderId, assignment);
         if (mongo) { try { const db = await mongo.getDb(); await db.collection('affret_assignments').updateOne({ orderId: body.orderId }, { $set: assignment }, { upsert: true }); } catch {} }
       }
       if (traceId) res.setHeader('x-trace-id', traceId);
-      return json(res, 200, { assignedCarrierId: chosen, quote: quote || null, traceId: traceId || null });
+      return json(res, 200, { assignedCarrierId: chosen, quote: quote || null, priceRef: gridRef || null, traceId: traceId || null });
     } catch (e) {
       if (traceId) res.setHeader('x-trace-id', traceId);
       return json(res, 400, { error: 'Invalid JSON', traceId: traceId || null });
