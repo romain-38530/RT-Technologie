@@ -1,0 +1,15 @@
+openapi: 3.0.3
+info: { title: RT Technologie - Tracking IA API, version: "1.0" }
+paths:
+  /tracking/start:
+    post:
+      responses:
+        "200": { description: "Tracking démarré" }
+  /tracking/position:
+    post:
+      responses:
+        "200": { description: "Position enregistrée" }
+  /tracking/stop:
+    post:
+      responses:
+        "200": { description: "Tracking arrêté" }

@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info: { title: RT Technologie - eCPMR API, version: "1.0" }
+paths:
+  /ecmr/sign-at-dock:
+    post:
+      responses:
+        "200": { description: "Signé au quai" }
+  /ecmr/sign-at-delivery:
+    post:
+      responses:
+        "200": { description: "Signé à la livraison" }

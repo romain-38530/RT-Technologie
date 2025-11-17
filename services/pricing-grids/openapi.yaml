@@ -1,0 +1,7 @@
+openapi: 3.0.3
+info: { title: RT Technologie - Pricing Grids API, version: "1.0" }
+paths:
+  /industry/lines/grids/import:
+    post:
+      responses:
+        "200": { description: "Grilles importées" }

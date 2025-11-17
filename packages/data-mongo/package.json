@@ -1,0 +1,10 @@
+{
+  "name": "@rt/data-mongo",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.js",
+  "type": "commonjs",
+  "dependencies": {
+    "mongodb": "^5.9.0"
+  }
+}

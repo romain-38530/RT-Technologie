@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "pnpm --filter @rt/backoffice-admin build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_ADMIN_GATEWAY_URL": "${NEXT_PUBLIC_ADMIN_GATEWAY_URL}",
+    "NEXT_PUBLIC_AUTHZ_URL": "${NEXT_PUBLIC_AUTHZ_URL}",
+    "NEXT_PUBLIC_SUPPORT_URL": "${NEXT_PUBLIC_SUPPORT_URL}"
+  }
+}

@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info: { title: RT Technologie - Planning API, version: "1.0" }
+paths:
+  /planning/rdv/propose:
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, leg, proposedAt]
+              properties:
+                orderId: { type: string }
+                leg: { type: string, enum: [PICKUP, DELIVERY] }
+                proposedAt: { type: string, format: date-time }
+      responses:
+        "200": { description: "RDV proposé" }
+  /planning/rdv/confirm:
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, leg, slot]
+              properties:
+                orderId: { type: string }
+                leg: { type: string, enum: [PICKUP, DELIVERY] }
+                slot:
+                  type: object
+                  properties:
+                    start: { type: string, format: date-time }
+                    end:   { type: string, format: date-time }
+      responses:
+        "200": { description: "RDV confirmé" }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

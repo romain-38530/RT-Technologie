@@ -1,0 +1,8 @@
+{
+  "name": "@rt/ai-client",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": { "build": "echo noop" }
+}

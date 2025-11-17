@@ -1,0 +1,8 @@
+{
+  "id": "LOGI-1",
+  "name": "Logisticien FR",
+  "docks": [
+    { "id": "D1" }, { "id": "D2" }, { "id": "D3" }
+  ],
+  "slotMinutes": 30
+}

@@ -1,0 +1,4 @@
+[
+  { "orderId": "ORD-Paris-Munich", "chain": ["A", "B", "C"], "slaAcceptHours": 2 },
+  { "orderId": "ORD-Lyon-Milan",  "chain": ["A", "B", "C"], "slaAcceptHours": 2 }
+]

@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info: { title: RT Technologie - Affret.IA API, version: "1.0" }
+paths:
+  /affret-ia/dispatch:
+    post:
+      responses:
+        "200": { description: "Dispatch proposé" }
+  /affret-ia/quote/{orderId}:
+    get:
+      parameters: [{ name: orderId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: "Devis" }

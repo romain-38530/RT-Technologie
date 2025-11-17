@@ -1,0 +1,8 @@
+{
+  "id": "IND-1",
+  "name": "Industriel FR",
+  "sites": [
+    { "id": "SITE-FR-EXP", "type": "SHIP_FROM", "city": "Paris" },
+    { "id": "SITE-FR-DEL", "type": "SHIP_TO",   "city": "Lyon" }
+  ]
+}

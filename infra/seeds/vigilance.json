@@ -1,0 +1,5 @@
+[
+  { "carrierId": "A", "status": "BLOCKED" },
+  { "carrierId": "B", "status": "OK" },
+  { "carrierId": "C", "status": "OK" }
+]

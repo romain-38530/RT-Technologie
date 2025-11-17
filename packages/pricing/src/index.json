@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "currency": "EUR",
+  "plans": {
+    "INDUSTRY_BASE": { "monthly": 499, "label": "Industrie - Base" },
+    "TRANSPORTER_BASE": { "monthly": 499, "label": "Transporteur - Base" }
+  },
+  "addons": {
+    "AFFRET_IA": { "monthly": 200, "label": "Affret.IA" },
+    "PREMIUM_MARKETPLACE": { "monthly": 200, "label": "Premium Marketplace" }
+  },
+  "notes": "Tarifs indicatifs de base pour avancer; sujets à ajustements ultérieurs."
+}

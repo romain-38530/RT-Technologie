@@ -1,0 +1,3 @@
+openapi: 3.0.3
+info: { title: RT Technologie - TMS Sync API, version: "1.0" }
+paths: {}

@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info: { title: RT Technologie - Vigilance API, version: "1.0" }
+paths:
+  /vigilance/status/{carrierId}:
+    get:
+      parameters: [{ name: carrierId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: "Statut vigilance (inclut TVA)" }
+  /vigilance/docs/upload:
+    post:
+      responses:
+        "200": { description: "Documents reçus" }
+  /vigilance/vat/check:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vat: { type: string }
+                country: { type: string }
+                number: { type: string }
+      responses:
+        "200": { description: "Résultat TVA" }
+  /vigilance/revalidate/{carrierId}:
+    post:
+      parameters: [{ name: carrierId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: "Rafraîchit TVA et retourne le statut" }

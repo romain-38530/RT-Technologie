@@ -1,0 +1,7 @@
+openapi: 3.0.3
+info: { title: RT Technologie - WMS Sync API, version: "1.0" }
+paths:
+  /logi/wms/webhook:
+    post:
+      responses:
+        "200": { description: "Webhook reçu" }

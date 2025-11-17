@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info: { title: RT Technologie - Core Orders API, version: "1.0" }
+paths:
+  /industry/orders/import:
+    post:
+      responses:
+        "202": { description: "Import accepté" }
+  /industry/orders/{id}:
+    get:
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: "Détail commande" }
+  /industry/orders/{id}/dispatch:
+    post:
+      responses:
+        "202": { description: "Dispatch lancé" }
