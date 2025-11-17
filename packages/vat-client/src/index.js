@@ -1,4 +1,4 @@
-const https = require('https');
+const https = global.http || require('https');
 
 function env(name, def) {
   const v = process.env[name];

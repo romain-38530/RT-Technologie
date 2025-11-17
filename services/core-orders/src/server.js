@@ -1,5 +1,5 @@
-const http = require('http');
-const https = require('https');
+const http = global.http || require('http');
+const https = global.http || require('https');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
@@ -291,7 +291,6 @@ const server = http.createServer(async (req, res) => {
   if (method === 'POST' && pathname === '/industry/orders/import') {
     try {
       const __tid_hdr = req.headers['x-trace-id'];
-      const __tid = Array.isArray(__tid_hdr) ? __tid_hdr[0] : __tid_hdr;
       const body = (await parseBody(req)) || {};
       const list = Array.isArray(body) ? body : [body];
       const imported = [];

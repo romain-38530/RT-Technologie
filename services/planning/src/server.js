@@ -1,5 +1,4 @@
-const http = require('http');
-const http = require('http');
+const http = global.http || require('http');
 const fs = require('fs');
 const path = require('path');
 const { sendEmail } = require('../../../packages/notify-client/src/index.js');

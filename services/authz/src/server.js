@@ -1,4 +1,4 @@
-const http = require('http');
+const http = global.http || require('http');
 const crypto = require('crypto');
 const { sendEmail } = require('../../../packages/notify-client/src/index.js');
 const { addSecurityHeaders, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');

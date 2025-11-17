@@ -1,4 +1,4 @@
-const http = require('http');
+const http = global.http || require('http');
 const fs = require('fs');
 const path = require('path');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');

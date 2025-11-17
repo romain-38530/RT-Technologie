@@ -1,4 +1,4 @@
-const http = require('http');
+const http = global.http || require('http');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');
 const aws = require('../../../packages/cloud-aws/src/index.js');
 

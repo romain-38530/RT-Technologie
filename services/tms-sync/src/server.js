@@ -1,6 +1,5 @@
-const http = require('http');
-const http = require('http');
-const https = require('https');
+const http = global.http || require('http');
+const https = global.http || require('https');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');
 
 function env(name, def) {

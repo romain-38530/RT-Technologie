@@ -1,5 +1,4 @@
-const http = require('http');
-const http = require('http');
+const http = global.http || require('http');
 const fs = require('fs');
 const path = require('path');
 const { complete } = require('../../../packages/ai-client/src/index.js');

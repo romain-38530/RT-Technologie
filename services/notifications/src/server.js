@@ -1,6 +1,5 @@
-const http = require('http');
-const http = require('http');
-const https = require('https');
+const http = global.http || require('http');
+const https = global.http || require('https');
 const querystring = require('querystring');
 const { compose } = require('../../../packages/comm-templates/src/index.js');
 const { complete } = require('../../../packages/ai-client/src/index.js');
@@ -76,7 +75,7 @@ function sendMailgun({ to, subject, text, html }) {
   });
 }
 
-const parseBody = limitBodySize(256 * 1024);
+let parseBody = limitBodySize(256 * 1024);
 const limiter = rateLimiter({ windowMs: 60000, max: 600 });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);

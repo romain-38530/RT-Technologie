@@ -1,5 +1,5 @@
-const http = require('http');
-const https = require('https');
+const http = global.http || require('http');
+const https = global.http || require('https');
 
 function getBaseUrl() {
   return process.env.NOTIFICATIONS_URL || 'http://localhost:3002';
