@@ -1,0 +1,25 @@
+[
+  {
+    "id": "ORD-Paris-Munich",
+    "ref": "PO-1001",
+    "ownerOrgId": "IND-1",
+    "ship_from": "Paris",
+    "ship_to": "Munich",
+    "windows": { "start": "2025-01-10T08:00:00Z", "end": "2025-01-10T16:00:00Z" },
+    "pallets": 12,
+    "weight": 7800,
+    "status": "NEW"
+  },
+  {
+    "id": "ORD-Lyon-Milan",
+    "ref": "PO-1002",
+    "ownerOrgId": "IND-1",
+    "ship_from": "Lyon",
+    "ship_to": "Milan",
+    "windows": { "start": "2025-01-11T08:00:00Z", "end": "2025-01-11T16:00:00Z" },
+    "pallets": 10,
+    "weight": 6500,
+    "status": "NEW",
+    "forceEscalation": true
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_PLANNING_API": "https://api.rt-technologie.com/planning",
+    "NEXT_PUBLIC_ECMR_API": "https://api.rt-technologie.com/ecmr",
+    "NEXT_PUBLIC_ORDERS_API": "https://api.rt-technologie.com/orders"
+  }
+}
