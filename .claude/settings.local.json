@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(if [ -d \"services/services\" ])",
+      "Bash(then rm -rf \"services/services\")",
+      "Bash(else echo \"Dossier n''existe pas\")",
+      "Bash(fi)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(pnpm install)",
+      "Bash(npm --version:*)",
+      "Bash(npm install:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
