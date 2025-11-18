@@ -1,0 +1,105 @@
+{
+  "version": 2,
+  "name": "rt-technologie",
+  "description": "RT-Technologie - Plateforme logistique intégrée",
+  "builds": [
+    {
+      "src": "apps/web-industry/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/web-transporter/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/web-forwarder/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/web-recipient/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/web-supplier/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/web-logistician/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/backoffice-admin/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "apps/mobile-driver/pwa/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://api.rt-technologie.com",
+    "NEXT_PUBLIC_WS_URL": "wss://ws.rt-technologie.com",
+    "NEXT_PUBLIC_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "NODE_ENV": "production"
+    }
+  },
+  "functions": {
+    "apps/*/api/**/*.js": {
+      "memory": 3008,
+      "maxDuration": 10
+    }
+  },
+  "regions": [
+    "cdg1"
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.rt-technologie.com/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/login",
+      "permanent": false
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/sync",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

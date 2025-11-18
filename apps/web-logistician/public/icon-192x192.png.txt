@@ -1,0 +1,18 @@
+NOTE: Placeholder file for PWA icon
+
+To complete PWA setup, replace this file with actual PNG icons:
+
+1. icon-192x192.png - 192x192 pixels
+2. icon-512x512.png - 512x512 pixels
+
+Icons should represent RT Technologie branding and the logistician app (warehouse/dock theme).
+
+Recommended tools:
+- Figma/Sketch for design
+- https://realfavicongenerator.net/ for generation
+- https://www.pwabuilder.com/ for validation
+
+Color scheme:
+- Primary: #2563eb (blue)
+- Background: #ffffff (white)
+- Accent: #10b981 (green)

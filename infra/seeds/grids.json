@@ -1,0 +1,21 @@
+[
+  {
+    "ownerOrgId": "IND-1",
+    "grids": [
+      {
+        "origin": "PARIS",
+        "mode": "FTL",
+        "lines": [
+          { "to": "Munich", "price": 950, "currency": "EUR" }
+        ]
+      },
+      {
+        "origin": "LYON",
+        "mode": "FTL",
+        "lines": [
+          { "to": "Milan", "price": 820, "currency": "EUR" }
+        ]
+      }
+    ]
+  }
+]

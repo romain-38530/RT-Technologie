@@ -1,27 +1,72 @@
-version: "3.9"
+version: '3.8'
+
+# ============================================================================
+# RT-Technologie - Docker Compose Development Environment
+# ============================================================================
+# Description: Configuration Docker Compose pour l'environnement de développement
+# Author: RT-Technologie DevOps Team
+# Version: 1.0.0
+# Date: 2025-11-18
+# ============================================================================
+
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: rt
-      POSTGRES_PASSWORD: rt
-      POSTGRES_DB: rt
+  # ============================================================================
+  # Infrastructure Services
+  # ============================================================================
+
+  mongodb:
+    image: mongo:7
+    container_name: rt-mongodb
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: rt-technologie
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mongo-data:/data/db
+    networks:
+      - rt-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
+    container_name: rt-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
-  nats:
-    image: nats:2
-    command: -js -sd /data -m 8222
-    ports:
-      - "4222:4222"
-      - "8222:8222"
     volumes:
-      - natsdata:/data
+      - redis-data:/data
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Note: Les services backend sont démarrés via 'pnpm run dev' localement
+  # Pour un environnement full Docker, décommenter les services ci-dessous
+
+# ============================================================================
+# Networks
+# ============================================================================
+
+networks:
+  rt-network:
+    driver: bridge
+
+# ============================================================================
+# Volumes
+# ============================================================================
+
 volumes:
-  pgdata: {}
-  natsdata: {}
+  mongo-data:
+    driver: local
+  redis-data:
+    driver: local

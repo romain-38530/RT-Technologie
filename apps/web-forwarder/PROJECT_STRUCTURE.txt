@@ -1,0 +1,290 @@
+RT FORWARDER - STRUCTURE DU PROJET
+===================================
+
+apps/web-forwarder/
+│
+├── 📄 Configuration
+│   ├── package.json              (426 bytes)   - Dependencies et scripts
+│   ├── next.config.js            (218 bytes)   - Configuration Next.js
+│   ├── tsconfig.json             (530 bytes)   - Configuration TypeScript
+│   ├── vercel.json               (220 bytes)   - Configuration deploiement
+│   └── .gitignore                (326 bytes)   - Fichiers ignores Git
+│
+├── 📁 pages/ (Routes Next.js - 8 fichiers)
+│   ├── _app.tsx                  (74 lignes)   - Layout principal + navigation
+│   ├── index.tsx                 (66 lignes)   - Page d'accueil
+│   ├── login.tsx                 (133 lignes)  - Authentification (demo)
+│   ├── dashboard.tsx             (268 lignes)  - Dashboard Affret.IA
+│   ├── quotes.tsx                (297 lignes)  - Cotations AI
+│   ├── tenders.tsx               (358 lignes)  - Appels d'offres
+│   ├── marketplace.tsx           (308 lignes)  - Marketplace Premium
+│   └── analytics.tsx             (376 lignes)  - Analytics + Charts
+│
+├── 📁 components/ (Composants reutilisables - 4 fichiers)
+│   ├── AIBadge.tsx               (20 lignes)   - Badge visuel AI
+│   ├── Card.tsx                  (34 lignes)   - Conteneur carte
+│   ├── CarrierCard.tsx           (69 lignes)   - Carte transporteur
+│   └── PriceComparator.tsx       (88 lignes)   - Comparateur prix
+│
+├── 📁 lib/ (Utilitaires - 1 fichier)
+│   └── api.ts                    (130 lignes)  - Client API + Types TS
+│
+├── 📁 styles/ (Styles - 1 fichier)
+│   └── globals.css               (26 lignes)   - Styles CSS globaux
+│
+├── 📁 public/ (Assets statiques)
+│   └── seeds/                    - Donnees demo
+│       ├── orders.json           (590 bytes)   - 2 commandes
+│       └── carriers.json         (505 bytes)   - 3 transporteurs
+│
+└── 📁 Documentation (4 fichiers)
+    ├── README.md                 (3.7 KB)     - Vue d'ensemble
+    ├── QUICKSTART.md             (4.2 KB)     - Guide demarrage
+    ├── TECHNICAL.md              (8.7 KB)     - Documentation technique
+    └── SUMMARY.md                (8.9 KB)     - Synthese projet
+
+
+STATISTIQUES
+============
+
+Code TypeScript/TSX :
+  - Pages         : 1,980 lignes (8 fichiers)
+  - Composants    :   211 lignes (4 fichiers)
+  - Utilitaires   :   130 lignes (1 fichier)
+  - TOTAL CODE    : 2,221 lignes
+
+Documentation :
+  - Markdown      : ~25.5 KB (4 fichiers)
+  - Configuration : ~1.7 KB (5 fichiers)
+
+Fichiers totaux  : 28 fichiers
+
+
+FONCTIONNALITES PAR PAGE
+========================
+
+/ (index)
+  ✓ Page d'accueil attractive
+  ✓ 4 cards features
+  ✓ Liens vers Dashboard + Quotes
+
+/login
+  ✓ Formulaire authentification
+  ✓ Mode demo (fake JWT)
+  ✓ Stockage localStorage
+
+/dashboard
+  ✓ 4 KPIs (commandes, economies, taux, total)
+  ✓ Liste commandes escaladees
+  ✓ Affretements recents
+  ✓ Badge AI + indicateurs economies
+
+/quotes
+  ✓ Selection commande
+  ✓ Demande cotation AI
+  ✓ Comparateur prix (AI vs Grid)
+  ✓ Transporteurs suggeres
+  ✓ Dispatch automatique
+  ✓ Lien vers tenders
+
+/tenders
+  ✓ Selection commande
+  ✓ Soumission offres (bid)
+  ✓ Table comparative avec ranking
+  ✓ Meilleure offre highlight
+  ✓ Analyse comparative (avg, min, max, ecart)
+
+/marketplace
+  ✓ 4 statistiques transporteurs
+  ✓ Filtres (search, scoring, blocked)
+  ✓ Grille transporteurs cards
+  ✓ Details transporteur selectionne
+  ✓ Score performance + criteres
+
+/analytics
+  ✓ 4 KPIs principaux
+  ✓ Pie Chart sources affretement
+  ✓ Bar Chart AI vs Manuel
+  ✓ Top 5 economies par route
+  ✓ Top 5 performance transporteurs
+  ✓ 3 insights intelligents
+
+
+COMPOSANTS REUTILISABLES
+=========================
+
+AIBadge
+  Props  : size (sm|md|lg)
+  Usage  : 5 pages
+  Style  : Gradient purple
+
+Card
+  Props  : title, action, children
+  Usage  : Toutes les pages
+  Style  : White bg + shadow
+
+CarrierCard
+  Props  : carrier, onClick, selected
+  Usage  : marketplace, quotes
+  Style  : Scoring color-coded
+
+PriceComparator
+  Props  : prices[], onSelect, selectedIndex
+  Usage  : quotes
+  Style  : Highlight best price
+
+
+API CLIENT (lib/api.ts)
+=======================
+
+Fonctions :
+  ✓ getQuote(orderId)            → Quote
+  ✓ getBids(orderId)             → { bids: Bid[] }
+  ✓ getAssignment(orderId)       → { assignment: Assignment }
+  ✓ submitBid(...)               → { ok, bid, assigned }
+  ✓ dispatchOrder(orderId)       → { assignedCarrierId, quote }
+  ✓ loadOrders()                 → Order[]
+  ✓ loadCarriers()               → Carrier[]
+
+Types TypeScript :
+  ✓ Quote, Bid, Assignment
+  ✓ Carrier, Order
+  ✓ Interfaces API completes
+
+
+INTEGRATION BACKEND
+===================
+
+Service Affret.IA (port 3005) :
+
+Endpoints utilises :
+  GET  /affret-ia/quote/:orderId
+  GET  /affret-ia/bids/:orderId
+  GET  /affret-ia/assignment/:orderId
+  POST /affret-ia/bid
+  POST /affret-ia/dispatch
+
+Features IA :
+  ✓ Generation prix via OpenRouter
+  ✓ Suggestion transporteurs premium
+  ✓ Comparaison grilles tarifaires
+  ✓ Auto-affectation intelligente
+  ✓ Calcul economies temps-reel
+
+
+DESIGN SYSTEM
+=============
+
+Couleurs :
+  Primary   : #667eea → #764ba2 (gradient)
+  Success   : #10b981
+  Warning   : #f59e0b
+  Error     : #ef4444
+  Gray      : #9ca3af
+  Background: #f5f7fa
+
+Typography :
+  Font      : system-ui, sans-serif
+  Sizes     : 10px → 56px
+  Weights   : 400, 600, 700
+
+Spacing :
+  Unit      : 4px
+  Card pad  : 24px
+  Gaps      : 16-32px
+
+Components :
+  Radius    : 6-12px
+  Shadows   : 0 2px 8px rgba(0,0,0,0.08)
+  Transitions: 0.2s
+
+
+WORKFLOWS UTILISATEUR
+=====================
+
+1. Cotation rapide (< 30s)
+   Dashboard → Clic "Coter"
+   → Quotes page → "Obtenir cotation AI"
+   → Comparaison → "Dispatcher"
+
+2. Appel d'offres (2-3min)
+   Tenders → Selection commande
+   → Soumission offres multiples
+   → Comparaison → Selection → Accept
+
+3. Recherche transporteur (< 1min)
+   Marketplace → Filtres
+   → Selection → Details
+   → "Inviter a soumissionner"
+
+
+DEPLOIEMENT
+===========
+
+Local :
+  $ pnpm install
+  $ pnpm dev
+  → http://localhost:4002
+
+Production :
+  $ pnpm build
+  $ pnpm start
+
+Vercel :
+  - Push to Git
+  - Auto-deploy via vercel.json
+
+
+ROADMAP
+=======
+
+Phase 1 (✅ Complete)
+  ✅ Structure Next.js 14
+  ✅ 8 pages fonctionnelles
+  ✅ 4 composants reutilisables
+  ✅ Integration API complete
+  ✅ Documentation complete
+
+Phase 2 (⏳ A venir)
+  ⏳ Auth reelle (RT Auth)
+  ⏳ Tests (Jest + Playwright)
+  ⏳ MongoDB persistence
+  ⏳ Webhooks notifications
+  ⏳ Export PDF/Excel
+
+Phase 3 (🔮 Future)
+  🔮 Mobile responsive
+  🔮 PWA + offline
+  🔮 i18n (FR/EN)
+  🔮 Dark theme
+  🔮 Accessibilite WCAG
+
+
+COMMANDES UTILES
+================
+
+# Developpement
+pnpm dev              # Demarrer dev server
+pnpm build            # Builder production
+pnpm start            # Lancer production
+pnpm lint             # Linter code
+
+# Depuis la racine monorepo
+pnpm --filter @rt/web-forwarder dev
+pnpm --filter @rt/web-forwarder build
+
+
+CONTACTS
+========
+
+Support   : support@rt-technologie.com
+Slack     : #rt-forwarder
+GitHub    : RT-Technologie/rt-technologie
+Wiki      : Documentation interne
+
+
+---
+Date      : Novembre 2024
+Version   : 1.0.0
+Status    : ✅ Production Ready (demo mode)
+License   : Propriete RT-Technologie

@@ -140,4 +140,4 @@ const server = http.createServer(async (req, res) => {
 });
 
 loadSeeds();
-server.listen(Number(process.env.VIGILANCE_PORT || '3006'), () => console.log('[vigilance] HTTP prêt'));
+server.listen(Number(process.env.VIGILANCE_PORT || '3008'), () => console.log('[vigilance] HTTP prêt'));

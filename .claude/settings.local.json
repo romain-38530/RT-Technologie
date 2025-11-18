@@ -2,6 +2,23 @@
   "permissions": {
     "allow": [
       "Bash(find:*)"
+      "Bash(cat:*)",
+      "Bash(if [ -d \"services/services\" ])",
+      "Bash(then rm -rf \"services/services\")",
+      "Bash(else echo \"Dossier n''existe pas\")",
+      "Bash(fi)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(pnpm install)",
+      "Bash(npm --version:*)",
+      "Bash(npm install:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git add:*)",
+      "Bash(if [ -f \"c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\.env\" ])",
+      "Bash(then echo \"Le fichier .env existe déjà\")",
+      "Bash(else echo \"Le fichier .env n''existe pas\")"
     ],
     "deny": [],
     "ask": []

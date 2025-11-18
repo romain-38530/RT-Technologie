@@ -1,0 +1,328 @@
+openapi: 3.0.3
+info:
+  title: RT Technologie - Geo-Tracking API
+  version: "1.0"
+  description: API de géolocalisation temps réel avec géofencing automatique et calcul d'ETA
+
+servers:
+  - url: http://localhost:3016
+    description: Development
+  - url: https://geo-tracking.rt-technologie.com
+    description: Production
+
+paths:
+  /geo-tracking/positions:
+    post:
+      summary: Enregistrer une position GPS
+      description: Enregistre la position GPS du conducteur et détecte automatiquement les événements de géofencing
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderId
+                - latitude
+                - longitude
+                - timestamp
+              properties:
+                orderId:
+                  type: string
+                  description: ID de la mission
+                  example: "ORD-2024-001"
+                latitude:
+                  type: number
+                  format: float
+                  description: Latitude (WGS84)
+                  example: 48.8566
+                longitude:
+                  type: number
+                  format: float
+                  description: Longitude (WGS84)
+                  example: 2.3522
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Horodatage de la position
+                accuracy:
+                  type: number
+                  description: Précision GPS en mètres
+                  example: 10
+                speed:
+                  type: number
+                  description: Vitesse en km/h
+                  example: 60
+                heading:
+                  type: number
+                  description: Direction en degrés (0-360)
+                  example: 180
+      responses:
+        "200":
+          description: Position enregistrée avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  positionId:
+                    type: string
+                  geofenceEvent:
+                    type: object
+                    description: Événement de géofencing détecté
+                    properties:
+                      type:
+                        type: string
+                        enum: [ARRIVAL_PICKUP, DEPARTURE_PICKUP, ARRIVAL_DELIVERY, DEPARTURE_DELIVERY]
+                      detectedAt:
+                        type: string
+                        format: date-time
+                      location:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          address:
+                            type: string
+                  eta:
+                    type: object
+                    description: ETA calculé pour la prochaine destination
+                    properties:
+                      arrivalTime:
+                        type: string
+                        format: date-time
+                      durationMinutes:
+                        type: integer
+                      distanceKm:
+                        type: number
+                      trafficDelay:
+                        type: integer
+                        description: Retard dû au trafic en minutes
+        "400":
+          description: Données invalides
+        "401":
+          description: Non authentifié
+        "500":
+          description: Erreur serveur
+
+  /geo-tracking/positions/{orderId}:
+    get:
+      summary: Récupérer l'historique des positions
+      description: Récupère toutes les positions GPS d'une mission
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la mission
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Date de début
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Date de fin
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Nombre maximum de positions à retourner
+      responses:
+        "200":
+          description: Historique des positions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                        timestamp:
+                          type: string
+                          format: date-time
+                        accuracy:
+                          type: number
+                        speed:
+                          type: number
+                        heading:
+                          type: number
+                  totalCount:
+                    type: integer
+        "404":
+          description: Mission non trouvée
+        "500":
+          description: Erreur serveur
+
+  /geo-tracking/eta/{orderId}:
+    get:
+      summary: Calculer l'ETA
+      description: Calcule le temps d'arrivée estimé avec TomTom Traffic API
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la mission
+        - name: currentLat
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Latitude actuelle
+        - name: currentLon
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Longitude actuelle
+      responses:
+        "200":
+          description: ETA calculé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                  destination:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                      name:
+                        type: string
+                  eta:
+                    type: object
+                    properties:
+                      arrivalTime:
+                        type: string
+                        format: date-time
+                      durationMinutes:
+                        type: integer
+                      distanceKm:
+                        type: number
+                      trafficDelay:
+                        type: integer
+                      confidence:
+                        type: string
+                        enum: [HIGH, MEDIUM, LOW]
+        "404":
+          description: Mission non trouvée
+        "500":
+          description: Erreur serveur
+
+  /geo-tracking/geofence/events/{orderId}:
+    get:
+      summary: Récupérer les événements de géofencing
+      description: Liste tous les événements de géofencing détectés pour une mission
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Liste des événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [ARRIVAL_PICKUP, DEPARTURE_PICKUP, ARRIVAL_DELIVERY, DEPARTURE_DELIVERY]
+                        detectedAt:
+                          type: string
+                          format: date-time
+                        location:
+                          type: object
+                          properties:
+                            latitude:
+                              type: number
+                            longitude:
+                              type: number
+                            name:
+                              type: string
+                        automatic:
+                          type: boolean
+                          description: Détecté automatiquement ou déclenché manuellement
+
+  /geo-tracking/health:
+    get:
+      summary: Health check
+      description: Vérifie l'état du service
+      responses:
+        "200":
+          description: Service opérationnel
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                    description: Temps de fonctionnement en secondes
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string

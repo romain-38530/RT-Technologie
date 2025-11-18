@@ -1,0 +1,25 @@
+{
+  "name": "@rt/onboarding",
+  "version": "1.0.0",
+  "description": "Système d'onboarding et tours guidés RT-Technologie",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
+  "scripts": {
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@rt/design-system": "workspace:*",
+    "framer-motion": "^10.18.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

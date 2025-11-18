@@ -1,0 +1,208 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "name": "rt-technologie",
+  "framework": "nextjs",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": ".next",
+  "projects": [
+    {
+      "name": "web-industry",
+      "rootDirectory": "apps/web-industry",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/web-industry",
+      "devCommand": "cd ../.. && pnpm dev --filter=@rt/web-industry",
+      "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+      "outputDirectory": ".next",
+      "publicPath": "/",
+      "env": {
+        "NEXT_PUBLIC_ADMIN_GATEWAY_URL": "@admin-gateway-url-production",
+        "NEXT_PUBLIC_AUTHZ_URL": "@authz-url-production",
+        "NEXT_PUBLIC_SUPPORT_URL": "@support-url",
+        "NEXT_PUBLIC_CDN_DOCS": "@cdn-docs-url",
+        "NEXT_PUBLIC_CDN_IMAGES": "@cdn-images-url"
+      },
+      "envPreview": {
+        "NEXT_PUBLIC_ADMIN_GATEWAY_URL": "@admin-gateway-url-staging",
+        "NEXT_PUBLIC_AUTHZ_URL": "@authz-url-staging"
+      },
+      "domains": [
+        {
+          "domain": "industry.rt-technologie.com",
+          "type": "production"
+        },
+        {
+          "domain": "industry-staging.rt-technologie.com",
+          "type": "preview"
+        }
+      ]
+    },
+    {
+      "name": "web-transporter",
+      "rootDirectory": "apps/web-transporter",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/web-transporter",
+      "env": {
+        "NEXT_PUBLIC_ADMIN_GATEWAY_URL": "@admin-gateway-url-production",
+        "NEXT_PUBLIC_AUTHZ_URL": "@authz-url-production",
+        "NEXT_PUBLIC_SUPPORT_URL": "@support-url"
+      },
+      "domains": [
+        {
+          "domain": "transporter.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "web-logistician",
+      "rootDirectory": "apps/web-logistician",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/web-logistician",
+      "env": {
+        "NEXT_PUBLIC_ADMIN_GATEWAY_URL": "@admin-gateway-url-production",
+        "NEXT_PUBLIC_AUTHZ_URL": "@authz-url-production",
+        "NEXT_PUBLIC_SUPPORT_URL": "@support-url"
+      },
+      "domains": [
+        {
+          "domain": "logistician.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "web-forwarder",
+      "rootDirectory": "apps/web-forwarder",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/web-forwarder",
+      "domains": [
+        {
+          "domain": "forwarder.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "web-supplier",
+      "rootDirectory": "apps/web-supplier",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/web-supplier",
+      "domains": [
+        {
+          "domain": "supplier.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "web-recipient",
+      "rootDirectory": "apps/web-recipient",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/web-recipient",
+      "domains": [
+        {
+          "domain": "recipient.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "backoffice-admin",
+      "rootDirectory": "apps/backoffice-admin",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/backoffice-admin",
+      "domains": [
+        {
+          "domain": "admin.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "mobile-driver-pwa",
+      "rootDirectory": "apps/mobile-driver/pwa",
+      "framework": "nextjs",
+      "buildCommand": "cd ../../.. && pnpm build --filter=@rt/mobile-driver-pwa",
+      "domains": [
+        {
+          "domain": "driver.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    },
+    {
+      "name": "kiosk",
+      "rootDirectory": "apps/kiosk",
+      "framework": "nextjs",
+      "buildCommand": "cd ../.. && pnpm build --filter=@rt/kiosk",
+      "domains": [
+        {
+          "domain": "kiosk.rt-technologie.com",
+          "type": "production"
+        }
+      ]
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.rt-technologie.com/api/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://www.rt-technologie.com",
+      "permanent": false
+    }
+  ],
+  "trailingSlash": false,
+  "cleanUrls": true,
+  "github": {
+    "enabled": true,
+    "autoJobCancelation": true,
+    "autoAlias": true,
+    "silent": false
+  },
+  "regions": ["cdg1"],
+  "functions": {
+    "apps/*/api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "crons": []
+}

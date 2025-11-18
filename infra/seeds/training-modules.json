@@ -1,0 +1,688 @@
+[
+  {
+    "id": "MODULE-INDUSTRY-001",
+    "title": "Formation Industriel",
+    "description": "Maîtrisez l'espace industriel RT-Technologie et créez vos premières commandes",
+    "targetApp": "web-industry",
+    "duration": 45,
+    "level": "Débutant",
+    "icon": "🏭",
+    "color": "#3b82f6",
+    "lessons": [
+      {
+        "id": "LESSON-IND-001",
+        "title": "Créer une commande",
+        "type": "video",
+        "duration": 10,
+        "description": "Apprenez à créer votre première commande de transport en quelques clics",
+        "videoUrl": "/videos/industry/create-order.mp4",
+        "transcript": "Bienvenue dans cette leçon sur la création de commandes. Vous allez apprendre à créer une commande de A à Z...",
+        "keyPoints": [
+          "Accéder au formulaire de création",
+          "Remplir les informations obligatoires",
+          "Import CSV/Excel pour commandes multiples",
+          "Validation et soumission"
+        ],
+        "quiz": [
+          {
+            "question": "Comment importer plusieurs commandes à la fois ?",
+            "options": [
+              "Via CSV uniquement",
+              "Via Excel uniquement",
+              "CSV et Excel",
+              "Impossible"
+            ],
+            "correctAnswer": 2,
+            "explanation": "RT-Technologie supporte l'import en masse via fichiers CSV et Excel pour gagner du temps."
+          },
+          {
+            "question": "Quels champs sont obligatoires pour créer une commande ?",
+            "options": [
+              "Destinataire uniquement",
+              "Poids et volume",
+              "Adresse de livraison",
+              "Tous les précédents"
+            ],
+            "correctAnswer": 3,
+            "explanation": "Pour garantir une livraison réussie, tous ces champs sont requis."
+          }
+        ]
+      },
+      {
+        "id": "LESSON-IND-002",
+        "title": "Gérer les grilles tarifaires",
+        "type": "video",
+        "duration": 12,
+        "description": "Configurez vos grilles de tarification personnalisées par zone",
+        "videoUrl": "/videos/industry/pricing-grids.mp4",
+        "transcript": "Les grilles tarifaires vous permettent de définir vos propres tarifs selon les zones...",
+        "keyPoints": [
+          "Créer des zones tarifaires",
+          "Définir les prix par poids/volume",
+          "Tarifs spéciaux par client",
+          "Export et import de grilles"
+        ],
+        "quiz": [
+          {
+            "question": "Combien de zones tarifaires peut-on définir ?",
+            "options": [
+              "5 maximum",
+              "10 maximum",
+              "Illimité",
+              "20 maximum"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Vous pouvez créer autant de zones que nécessaire pour couvrir tous vos besoins."
+          },
+          {
+            "question": "Peut-on appliquer des tarifs spéciaux pour certains clients ?",
+            "options": [
+              "Oui, via les grilles personnalisées",
+              "Non, tarif unique",
+              "Uniquement sur demande admin",
+              "Seulement pour les gros volumes"
+            ],
+            "correctAnswer": 0,
+            "explanation": "Les grilles personnalisées permettent d'appliquer des tarifs négociés par client."
+          }
+        ]
+      },
+      {
+        "id": "LESSON-IND-003",
+        "title": "Module Palettes - Économie circulaire",
+        "type": "video",
+        "duration": 15,
+        "description": "Gérez l'économie circulaire de vos palettes avec QR codes et IA",
+        "videoUrl": "/videos/industry/palettes.mp4",
+        "transcript": "Le module Palettes révolutionne la gestion de vos palettes grâce à l'IA...",
+        "keyPoints": [
+          "Générer des chèques palettes QR",
+          "Scanner avec l'application mobile",
+          "Détection IA des palettes",
+          "Suivi du stock en temps réel",
+          "Facturation automatique"
+        ],
+        "quiz": [
+          {
+            "question": "Comment fonctionne le système de chèques palettes ?",
+            "options": [
+              "QR Code uniquement",
+              "NFC uniquement",
+              "QR Code + IA de détection",
+              "Code-barres classique"
+            ],
+            "correctAnswer": 2,
+            "explanation": "Le système combine QR codes pour la traçabilité et IA pour compter automatiquement les palettes."
+          },
+          {
+            "question": "Peut-on facturer automatiquement les palettes manquantes ?",
+            "options": [
+              "Oui, configuration automatique",
+              "Non, facturation manuelle",
+              "Uniquement avec validation",
+              "Seulement en fin de mois"
+            ],
+            "correctAnswer": 0,
+            "explanation": "Le module permet la facturation automatique des palettes non retournées selon vos règles."
+          }
+        ]
+      },
+      {
+        "id": "LESSON-IND-004",
+        "title": "Suivre les transporteurs en temps réel",
+        "type": "video",
+        "duration": 8,
+        "description": "Suivi en temps réel de vos transporteurs avec géolocalisation",
+        "videoUrl": "/videos/industry/tracking.mp4",
+        "transcript": "Le suivi en temps réel vous donne une visibilité totale sur vos livraisons...",
+        "keyPoints": [
+          "Carte de suivi en direct",
+          "Notifications d'étapes",
+          "Estimation d'arrivée",
+          "Historique des positions"
+        ],
+        "quiz": [
+          {
+            "question": "À quelle fréquence la géolocalisation est-elle mise à jour ?",
+            "options": [
+              "Toutes les 5 minutes",
+              "En temps réel",
+              "Toutes les heures",
+              "Une fois par jour"
+            ],
+            "correctAnswer": 1,
+            "explanation": "Le tracking IA met à jour la position en temps réel pour une précision maximale."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "MODULE-TRANSPORTER-001",
+    "title": "Formation Transporteur",
+    "description": "Devenez expert de l'application transporteur RT-Technologie",
+    "targetApp": "web-transporter",
+    "duration": 40,
+    "level": "Débutant",
+    "icon": "🚚",
+    "color": "#10b981",
+    "lessons": [
+      {
+        "id": "LESSON-TRA-001",
+        "title": "Accepter et gérer une mission",
+        "type": "video",
+        "duration": 8,
+        "description": "Apprenez à accepter des missions et gérer votre planning",
+        "videoUrl": "/videos/transporter/accept-mission.mp4",
+        "keyPoints": [
+          "Consulter les missions disponibles",
+          "Évaluer la rentabilité",
+          "Accepter ou refuser",
+          "Planifier dans le calendrier"
+        ],
+        "quiz": [
+          {
+            "question": "Où trouver les missions disponibles ?",
+            "options": [
+              "Onglet Missions uniquement",
+              "Onglet Marketplace uniquement",
+              "Dashboard uniquement",
+              "Toutes ces réponses"
+            ],
+            "correctAnswer": 3
+          }
+        ]
+      },
+      {
+        "id": "LESSON-TRA-002",
+        "title": "Scanner et déposer des palettes",
+        "type": "video",
+        "duration": 10,
+        "description": "Utilisez le scanner QR pour gérer les palettes",
+        "videoUrl": "/videos/transporter/scan-palettes.mp4",
+        "keyPoints": [
+          "Scanner le QR code du chèque",
+          "Valider le dépôt",
+          "Gérer les anomalies",
+          "Saisie manuelle si nécessaire"
+        ],
+        "quiz": [
+          {
+            "question": "Que faire si le QR code est illisible ?",
+            "options": [
+              "Abandonner la mission",
+              "Utiliser la saisie manuelle",
+              "Prendre une photo du chèque palette",
+              "Réponses B et C"
+            ],
+            "correctAnswer": 3
+          }
+        ]
+      },
+      {
+        "id": "LESSON-TRA-003",
+        "title": "Upload de documents (CMR, POD)",
+        "type": "video",
+        "duration": 12,
+        "description": "Gérez vos documents de transport électroniques",
+        "videoUrl": "/videos/transporter/upload-docs.mp4",
+        "keyPoints": [
+          "Prendre une photo du CMR signé",
+          "Upload du POD",
+          "Documents complémentaires",
+          "Validation automatique"
+        ],
+        "quiz": [
+          {
+            "question": "Quels formats de documents sont acceptés ?",
+            "options": [
+              "PDF uniquement",
+              "Images uniquement",
+              "PDF et images (JPG, PNG)",
+              "Tous formats"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      },
+      {
+        "id": "LESSON-TRA-004",
+        "title": "Gérer son planning",
+        "type": "video",
+        "duration": 10,
+        "description": "Optimisez votre planning de livraisons",
+        "videoUrl": "/videos/transporter/planning.mp4",
+        "keyPoints": [
+          "Vue calendrier",
+          "Glisser-déposer les missions",
+          "Optimisation d'itinéraire",
+          "Alertes de conflits"
+        ],
+        "quiz": [
+          {
+            "question": "Peut-on réorganiser les missions dans le planning ?",
+            "options": [
+              "Oui, par glisser-déposer",
+              "Non, ordre fixe",
+              "Uniquement via admin",
+              "Sur demande du client"
+            ],
+            "correctAnswer": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "MODULE-LOGISTICIAN-001",
+    "title": "Formation Logisticien",
+    "description": "Maîtrisez la gestion d'entrepôt et des quais",
+    "targetApp": "web-logistician",
+    "duration": 38,
+    "level": "Intermédiaire",
+    "icon": "📦",
+    "color": "#f59e0b",
+    "lessons": [
+      {
+        "id": "LESSON-LOG-001",
+        "title": "Gérer les quais de chargement",
+        "type": "video",
+        "duration": 10,
+        "description": "Optimisez vos quais de chargement/déchargement",
+        "videoUrl": "/videos/logistician/docks.mp4",
+        "keyPoints": [
+          "Créer et configurer les quais",
+          "Affecter des créneaux",
+          "Gérer les priorités",
+          "Alertes de saturation"
+        ],
+        "quiz": [
+          {
+            "question": "Combien de quais peut-on configurer ?",
+            "options": [
+              "5 maximum",
+              "10 maximum",
+              "Illimité",
+              "20 maximum"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      },
+      {
+        "id": "LESSON-LOG-002",
+        "title": "Réceptionner des palettes",
+        "type": "video",
+        "duration": 12,
+        "description": "Processus de réception et contrôle qualité",
+        "videoUrl": "/videos/logistician/receive-palettes.mp4",
+        "keyPoints": [
+          "Scanner les palettes entrantes",
+          "Contrôle visuel et quantitatif",
+          "Déclaration d'anomalies",
+          "Validation de la réception"
+        ],
+        "quiz": [
+          {
+            "question": "Que faire en cas d'anomalie à la réception ?",
+            "options": [
+              "Accepter quand même",
+              "Refuser la livraison complète",
+              "Créer un rapport d'anomalie",
+              "Contacter le client par téléphone"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      },
+      {
+        "id": "LESSON-LOG-003",
+        "title": "Créer un E-CMR",
+        "type": "video",
+        "duration": 8,
+        "description": "CMR électronique simplifié et sécurisé",
+        "videoUrl": "/videos/logistician/ecmr.mp4",
+        "keyPoints": [
+          "Remplir le E-CMR",
+          "Signature électronique",
+          "Envoi automatique",
+          "Archivage sécurisé"
+        ],
+        "quiz": [
+          {
+            "question": "Le E-CMR a-t-il la même valeur légale qu'un CMR papier ?",
+            "options": [
+              "Oui, totalement équivalent",
+              "Non, valeur moindre",
+              "Selon les pays",
+              "Uniquement en UE"
+            ],
+            "correctAnswer": 0
+          }
+        ]
+      },
+      {
+        "id": "LESSON-LOG-004",
+        "title": "Déclarer et suivre une anomalie",
+        "type": "video",
+        "duration": 8,
+        "description": "Gestion complète des incidents et anomalies",
+        "videoUrl": "/videos/logistician/anomaly.mp4",
+        "keyPoints": [
+          "Types d'anomalies",
+          "Créer un rapport avec photos",
+          "Workflow de résolution",
+          "Notifications automatiques"
+        ],
+        "quiz": [
+          {
+            "question": "Qui est notifié automatiquement lors d'une déclaration d'anomalie ?",
+            "options": [
+              "L'industriel uniquement",
+              "Le transporteur uniquement",
+              "L'industriel et le transporteur",
+              "Seulement l'administrateur"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "MODULE-FORWARDER-001",
+    "title": "Formation Affréteur",
+    "description": "Optimisez vos affrètements avec l'intelligence artificielle",
+    "targetApp": "web-forwarder",
+    "duration": 30,
+    "level": "Débutant",
+    "icon": "🤖",
+    "color": "#8b5cf6",
+    "lessons": [
+      {
+        "id": "LESSON-FOR-001",
+        "title": "Demander une cotation IA",
+        "type": "video",
+        "duration": 10,
+        "description": "Obtenez des devis intelligents en moins de 30 secondes",
+        "videoUrl": "/videos/forwarder/ai-quote.mp4",
+        "keyPoints": [
+          "Renseigner les détails du transport",
+          "IA analyse et calcule",
+          "Multiples offres instantanées",
+          "Comparaison automatique"
+        ],
+        "quiz": [
+          {
+            "question": "Combien de temps pour obtenir une cotation IA ?",
+            "options": [
+              "1 minute",
+              "5 minutes",
+              "Moins de 30 secondes",
+              "1 heure"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      },
+      {
+        "id": "LESSON-FOR-002",
+        "title": "Comparer les offres",
+        "type": "video",
+        "duration": 10,
+        "description": "Analysez et comparez les offres de transporteurs",
+        "videoUrl": "/videos/forwarder/compare.mp4",
+        "keyPoints": [
+          "Tableau comparatif",
+          "Tri par prix, délai, note",
+          "Historique des prestations",
+          "Sélection rapide"
+        ],
+        "quiz": [
+          {
+            "question": "Sur quels critères peut-on trier les offres ?",
+            "options": [
+              "Prix uniquement",
+              "Délai uniquement",
+              "Prix, délai et note transporteur",
+              "Prix et délai seulement"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      },
+      {
+        "id": "LESSON-FOR-003",
+        "title": "Utiliser la marketplace",
+        "type": "video",
+        "duration": 10,
+        "description": "Accédez à un réseau de transporteurs qualifiés",
+        "videoUrl": "/videos/forwarder/marketplace.mp4",
+        "keyPoints": [
+          "Explorer les transporteurs",
+          "Filtres avancés",
+          "Négociation directe",
+          "Avis et notations"
+        ],
+        "quiz": [
+          {
+            "question": "Peut-on négocier les tarifs sur la marketplace ?",
+            "options": [
+              "Oui, négociation directe",
+              "Non, prix fixes",
+              "Via chat uniquement",
+              "Sur demande admin"
+            ],
+            "correctAnswer": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "MODULE-SUPPLIER-001",
+    "title": "Formation Fournisseur",
+    "description": "Gérez vos enlèvements et préparations efficacement",
+    "targetApp": "web-supplier",
+    "duration": 25,
+    "level": "Débutant",
+    "icon": "🏢",
+    "color": "#ec4899",
+    "lessons": [
+      {
+        "id": "LESSON-SUP-001",
+        "title": "Préparer un enlèvement",
+        "type": "video",
+        "duration": 8,
+        "description": "Préparation et déclaration d'enlèvement",
+        "videoUrl": "/videos/supplier/prepare-pickup.mp4",
+        "keyPoints": [
+          "Déclarer les marchandises",
+          "Détails de la préparation",
+          "Documents nécessaires",
+          "Confirmation d'enlèvement"
+        ],
+        "quiz": [
+          {
+            "question": "Quel délai pour déclarer un enlèvement ?",
+            "options": [
+              "24 heures avant",
+              "48 heures avant",
+              "En temps réel",
+              "Aucun délai spécifique"
+            ],
+            "correctAnswer": 0
+          }
+        ]
+      },
+      {
+        "id": "LESSON-SUP-002",
+        "title": "Proposer un créneau",
+        "type": "video",
+        "duration": 10,
+        "description": "Gestion des créneaux de chargement",
+        "videoUrl": "/videos/supplier/time-slot.mp4",
+        "keyPoints": [
+          "Créer des créneaux disponibles",
+          "Synchronisation avec le planning",
+          "Validation des réservations",
+          "Modification si nécessaire"
+        ],
+        "quiz": [
+          {
+            "question": "Peut-on modifier un créneau déjà validé ?",
+            "options": [
+              "Oui, librement",
+              "Non, impossible",
+              "Avec accord du transporteur",
+              "Uniquement par admin"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      },
+      {
+        "id": "LESSON-SUP-003",
+        "title": "Upload des documents",
+        "type": "video",
+        "duration": 7,
+        "description": "Joindre les documents de transport",
+        "videoUrl": "/videos/supplier/upload.mp4",
+        "keyPoints": [
+          "Types de documents acceptés",
+          "Bon de livraison",
+          "Facture et autres",
+          "Validation automatique"
+        ],
+        "quiz": [
+          {
+            "question": "Quels documents sont obligatoires ?",
+            "options": [
+              "BL uniquement",
+              "BL et Facture",
+              "Selon les exigences du client",
+              "Aucun document obligatoire"
+            ],
+            "correctAnswer": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "MODULE-RECIPIENT-001",
+    "title": "Formation Destinataire",
+    "description": "Réceptionnez vos livraisons en toute sérénité",
+    "targetApp": "web-recipient",
+    "duration": 32,
+    "level": "Débutant",
+    "icon": "🎯",
+    "color": "#06b6d4",
+    "lessons": [
+      {
+        "id": "LESSON-REC-001",
+        "title": "Gérer les créneaux de réception",
+        "type": "video",
+        "duration": 10,
+        "description": "Planifiez vos réceptions de marchandises",
+        "videoUrl": "/videos/recipient/time-slots.mp4",
+        "keyPoints": [
+          "Créer des plages horaires",
+          "Capacité par créneau",
+          "Réservations automatiques",
+          "Modifications et annulations"
+        ],
+        "quiz": [
+          {
+            "question": "Combien de créneaux peut-on ouvrir par jour ?",
+            "options": [
+              "5 maximum",
+              "10 maximum",
+              "Illimité",
+              "Selon l'abonnement"
+            ],
+            "correctAnswer": 3
+          }
+        ]
+      },
+      {
+        "id": "LESSON-REC-002",
+        "title": "Contrôler une livraison",
+        "type": "video",
+        "duration": 10,
+        "description": "Vérification et validation des livraisons",
+        "videoUrl": "/videos/recipient/control.mp4",
+        "keyPoints": [
+          "Contrôle visuel",
+          "Vérification des quantités",
+          "Acceptation partielle",
+          "Déclaration d'anomalies"
+        ],
+        "quiz": [
+          {
+            "question": "Que faire si la livraison est incomplète ?",
+            "options": [
+              "Refuser totalement",
+              "Accepter partiellement",
+              "Créer une anomalie",
+              "Réponses B et C"
+            ],
+            "correctAnswer": 3
+          }
+        ]
+      },
+      {
+        "id": "LESSON-REC-003",
+        "title": "Signer un CMR électronique",
+        "type": "video",
+        "duration": 7,
+        "description": "Signature numérique sécurisée et juridiquement valable",
+        "videoUrl": "/videos/recipient/sign-ecmr.mp4",
+        "keyPoints": [
+          "Processus de signature",
+          "Sécurité et traçabilité",
+          "Valeur juridique",
+          "Archivage automatique"
+        ],
+        "quiz": [
+          {
+            "question": "La signature électronique est-elle juridiquement valable ?",
+            "options": [
+              "Oui, équivalent à une signature manuscrite",
+              "Non, aucune valeur",
+              "Selon les pays",
+              "Uniquement avec certificat spécial"
+            ],
+            "correctAnswer": 0
+          }
+        ]
+      },
+      {
+        "id": "LESSON-REC-004",
+        "title": "Déclarer une anomalie",
+        "type": "video",
+        "duration": 5,
+        "description": "Gérer les incidents et réclamations",
+        "videoUrl": "/videos/recipient/anomaly.mp4",
+        "keyPoints": [
+          "Types d'anomalies",
+          "Ajout de photos",
+          "Workflow de traitement",
+          "Suivi de résolution"
+        ],
+        "quiz": [
+          {
+            "question": "Dans quel délai doit-on déclarer une anomalie ?",
+            "options": [
+              "Immédiatement à la réception",
+              "Dans les 24 heures",
+              "Dans les 48 heures",
+              "Dans les 7 jours"
+            ],
+            "correctAnswer": 0
+          }
+        ]
+      }
+    ]
+  }
+]

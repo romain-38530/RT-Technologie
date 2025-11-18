@@ -1,0 +1,219 @@
+[
+  {
+    "id": "CONTRACT-1732100001-xyz123",
+    "needId": "NEED-1732000004-jkl012",
+    "offerId": "OFFER-1732000005-xxx555",
+    "industrialId": "IND-3",
+    "logisticianId": "LOG-1",
+    "siteId": "SITE-1732000004-ddd444",
+    "createdAt": "2025-01-18T16:00:00Z",
+    "status": "ACTIVE",
+    "startDate": "2025-01-22",
+    "endDate": "2025-07-22",
+    "storageType": "picking",
+    "volume": {
+      "type": "m3",
+      "quantity": 1000
+    },
+    "pricing": {
+      "monthlyPerM3": 12,
+      "estimatedMonthlyTotal": 12000,
+      "inboundMovement": 4,
+      "outboundMovement": 4,
+      "pickingPerLine": 1.5,
+      "setupFee": 600,
+      "currency": "EUR"
+    },
+    "totalContractValue": 72600,
+    "services": {
+      "included": ["Stockage sécurisé haute sécurité", "Picking", "Inventaire quotidien", "Rapports en temps réel", "API WMS"],
+      "optional": []
+    },
+    "wmsConnected": true,
+    "wmsConnectionId": "WMS-1732200001-wms123",
+    "performance": {
+      "currentOccupancy": 850,
+      "currentOccupancyPercent": 85,
+      "totalInboundMovements": 156,
+      "totalOutboundMovements": 142,
+      "totalPickingLines": 1243,
+      "incidentsCount": 0,
+      "lastInventoryDate": "2025-01-18T08:00:00Z"
+    },
+    "billing": {
+      "frequency": "monthly",
+      "paymentTerms": "30 days",
+      "lastInvoiceDate": "2025-01-18T00:00:00Z",
+      "lastInvoiceAmount": 12600,
+      "nextInvoiceDate": "2025-02-18T00:00:00Z"
+    },
+    "contacts": {
+      "industrial": {
+        "name": "Claire Lefevre",
+        "email": "c.lefevre@ind3.fr",
+        "phone": "+33 1 98 76 54 32"
+      },
+      "logistician": {
+        "name": "Jean Dupont",
+        "email": "jean.dupont@log1.fr",
+        "phone": "+33 1 23 45 67 89"
+      }
+    },
+    "documents": [
+      {
+        "type": "contract",
+        "url": "https://storage.rt-tech.com/contracts/CONTRACT-1732100001-xyz123.pdf",
+        "name": "Contrat de stockage",
+        "uploadedAt": "2025-01-18T16:00:00Z"
+      },
+      {
+        "type": "insurance",
+        "url": "https://storage.rt-tech.com/contracts/CONTRACT-1732100001-xyz123-insurance.pdf",
+        "name": "Attestation d'assurance",
+        "uploadedAt": "2025-01-18T16:05:00Z"
+      }
+    ]
+  },
+  {
+    "id": "CONTRACT-1732100002-xyz456",
+    "needId": "NEED-1732000003-ghi789",
+    "offerId": "OFFER-1732000007-xxx777",
+    "industrialId": "IND-1",
+    "logisticianId": "LOG-3",
+    "siteId": "SITE-1732000003-ccc333",
+    "createdAt": "2025-01-17T18:30:00Z",
+    "status": "PENDING_START",
+    "startDate": "2025-02-05",
+    "endDate": "2025-12-31",
+    "storageType": "cross_dock",
+    "volume": {
+      "type": "palettes",
+      "quantity": 100
+    },
+    "pricing": {
+      "monthlyPerPallet": 10,
+      "estimatedMonthlyTotal": 1000,
+      "inboundMovement": 2.8,
+      "outboundMovement": 2.8,
+      "setupFee": 350,
+      "currency": "EUR"
+    },
+    "totalContractValue": 11350,
+    "services": {
+      "included": ["Cross-dock rapide", "Stockage temporaire", "Rapports hebdomadaires"],
+      "optional": []
+    },
+    "wmsConnected": false,
+    "wmsConnectionId": null,
+    "performance": {
+      "currentOccupancy": 0,
+      "currentOccupancyPercent": 0,
+      "totalInboundMovements": 0,
+      "totalOutboundMovements": 0,
+      "totalPickingLines": 0,
+      "incidentsCount": 0,
+      "lastInventoryDate": null
+    },
+    "billing": {
+      "frequency": "monthly",
+      "paymentTerms": "30 days",
+      "lastInvoiceDate": null,
+      "lastInvoiceAmount": null,
+      "nextInvoiceDate": "2025-03-05T00:00:00Z"
+    },
+    "contacts": {
+      "industrial": {
+        "name": "Marc Petit",
+        "email": "m.petit@ind1.fr",
+        "phone": "+33 1 11 22 33 44"
+      },
+      "logistician": {
+        "name": "Sophie Bernard",
+        "email": "s.bernard@log3.fr",
+        "phone": "+33 3 20 12 34 56"
+      }
+    },
+    "documents": [
+      {
+        "type": "contract",
+        "url": "https://storage.rt-tech.com/contracts/CONTRACT-1732100002-xyz456.pdf",
+        "name": "Contrat de cross-dock",
+        "uploadedAt": "2025-01-17T18:30:00Z"
+      }
+    ]
+  },
+  {
+    "id": "CONTRACT-1732100003-xyz789",
+    "needId": "NEED-1732000005-mno345",
+    "offerId": "OFFER-1732000008-xxx888",
+    "industrialId": "IND-2",
+    "logisticianId": "LOG-2",
+    "siteId": "SITE-1732000002-bbb222",
+    "createdAt": "2024-12-15T10:00:00Z",
+    "status": "COMPLETED",
+    "startDate": "2024-12-20",
+    "endDate": "2025-01-15",
+    "storageType": "temporary",
+    "volume": {
+      "type": "m2",
+      "quantity": 300
+    },
+    "pricing": {
+      "monthlyPerM2": 7.8,
+      "estimatedMonthlyTotal": 2340,
+      "inboundMovement": 3,
+      "outboundMovement": 3,
+      "setupFee": 400,
+      "currency": "EUR"
+    },
+    "totalContractValue": 5080,
+    "services": {
+      "included": ["Stockage sécurisé", "Inventaire mensuel"],
+      "optional": []
+    },
+    "wmsConnected": true,
+    "wmsConnectionId": "WMS-1732200002-wms456",
+    "performance": {
+      "currentOccupancy": 0,
+      "currentOccupancyPercent": 0,
+      "totalInboundMovements": 45,
+      "totalOutboundMovements": 45,
+      "totalPickingLines": 0,
+      "incidentsCount": 1,
+      "lastInventoryDate": "2025-01-15T08:00:00Z"
+    },
+    "billing": {
+      "frequency": "monthly",
+      "paymentTerms": "30 days",
+      "lastInvoiceDate": "2025-01-15T00:00:00Z",
+      "lastInvoiceAmount": 2340,
+      "nextInvoiceDate": null
+    },
+    "contacts": {
+      "industrial": {
+        "name": "Anne Dubois",
+        "email": "a.dubois@ind2.fr",
+        "phone": "+33 4 56 78 90 12"
+      },
+      "logistician": {
+        "name": "Pierre Durand",
+        "email": "p.durand@log2.fr",
+        "phone": "+33 4 78 90 12 34"
+      }
+    },
+    "documents": [
+      {
+        "type": "contract",
+        "url": "https://storage.rt-tech.com/contracts/CONTRACT-1732100003-xyz789.pdf",
+        "name": "Contrat de stockage temporaire",
+        "uploadedAt": "2024-12-15T10:00:00Z"
+      },
+      {
+        "type": "final_report",
+        "url": "https://storage.rt-tech.com/contracts/CONTRACT-1732100003-xyz789-report.pdf",
+        "name": "Rapport final de mission",
+        "uploadedAt": "2025-01-15T10:00:00Z"
+      }
+    ]
+  }
+]

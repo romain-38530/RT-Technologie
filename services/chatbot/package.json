@@ -1,0 +1,21 @@
+{
+  "name": "@rt/service-chatbot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RT Technologie Chatbot Service - Suite de 8 chatbots intelligents + support technique 24/7",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "build": "echo build chatbot",
+    "test": "node --test src/**/*.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "uuid": "^9.0.1",
+    "openai": "^4.28.0",
+    "@anthropic-ai/sdk": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0"
+  }
+}

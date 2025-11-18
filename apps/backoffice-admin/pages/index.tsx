@@ -131,6 +131,33 @@ export default function Home() {
               </Button>
             </Link>
           </div>
+import { TrainingButton } from '@rt/design-system';
+
+export default function Home() {
+  return (
+    <main style={{ maxWidth: 960, margin: '0 auto' }}>
+      <TrainingButton toolName="Backoffice Admin" />
+      <section style={{ padding: '32px 0' }}>
+        <h2 style={{ fontSize: 28, marginBottom: 8 }}>RT Technologie</h2>
+        <p style={{ fontSize: 18, opacity: 0.9 }}>
+          Plateforme unifiée Transport • Logistique • Industrie — vigilance, planification, suivi, e‑CMR et Affret.IA.
+          Testez notre démonstration en ligne et découvrez comment accélérer vos flux.
+        </p>
+        <div style={{ marginTop: 16, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <a href="/login" style={{ background: '#0a66ff', color: '#fff', padding: '10px 14px', borderRadius: 8, textDecoration: 'none' }}>
+            Se connecter à la démo
+          </a>
+          <a href="/health" style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #ddd', textDecoration: 'none' }}>
+            État des services
+          </a>
+          <a
+            href={process.env.NEXT_PUBLIC_SUPPORT_URL || 'https://www.rt-technologie.com'}
+            target="_blank"
+            rel="noreferrer"
+            style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid #0a66ff', color: '#0a66ff', textDecoration: 'none' }}
+          >
+            Contacter le support
+          </a>
         </div>
       </section>
 
