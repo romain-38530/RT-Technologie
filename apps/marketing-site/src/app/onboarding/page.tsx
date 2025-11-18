@@ -45,7 +45,8 @@ export default function OnboardingPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3020/api/onboarding/verify-vat', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3020';
+      const response = await fetch(`${apiUrl}/api/onboarding/verify-vat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vatNumber: formData.vatNumber })
@@ -83,7 +84,8 @@ export default function OnboardingPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3020/api/onboarding/submit', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3020';
+      const response = await fetch(`${apiUrl}/api/onboarding/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

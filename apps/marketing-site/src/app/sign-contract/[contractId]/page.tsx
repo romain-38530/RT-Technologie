@@ -21,8 +21,9 @@ export default function SignContractPage() {
 
   const loadContract = async () => {
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3020';
       const response = await fetch(
-        `http://localhost:3020/api/onboarding/contract/${params.contractId}`
+        `${apiUrl}/api/onboarding/contract/${params.contractId}`
       );
 
       if (response.ok) {
@@ -97,8 +98,9 @@ export default function SignContractPage() {
     setSigning(true);
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3020';
       const response = await fetch(
-        `http://localhost:3020/api/onboarding/sign/${params.contractId}`,
+        `${apiUrl}/api/onboarding/sign/${params.contractId}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

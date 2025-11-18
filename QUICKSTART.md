@@ -322,8 +322,9 @@ cat .gitignore | grep .env
 | Guide | Usage |
 |-------|-------|
 | [README_ONBOARDING.md](README_ONBOARDING.md) | Accès rapide |
-| [README_PRODUCTION.md](services/client-onboarding/README_PRODUCTION.md) | Guide production |
+| [README_PRODUCTION.md](services/client-onboarding/README_PRODUCTION.md) | Guide production backend |
 | [AWS_INSTALLATION_WINDOWS.md](docs/AWS_INSTALLATION_WINDOWS.md) | Installation AWS |
+| [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) | Déploiement frontend |
 | [CLIENT_ONBOARDING_SYSTEM.md](docs/CLIENT_ONBOARDING_SYSTEM.md) | Documentation technique complète |
 
 ### Liens Externes
@@ -395,14 +396,17 @@ curl $RT_HEALTH_URL
 - [x] Service déployé localement
 - [x] Tests validés
 - [x] Documentation complète
+- [x] Frontend marketing-site créé
 - [ ] Push vers GitHub : `git push origin dockerfile`
+- [ ] Déployer frontend sur Vercel
 
 ### Court Terme (Cette Semaine)
 
 - [ ] Installer AWS CLI
 - [ ] Configurer AWS credentials
-- [ ] Déployer sur AWS ECS
-- [ ] Tester le service AWS
+- [ ] Déployer backend sur AWS ECS
+- [ ] Déployer frontend sur Vercel
+- [ ] Configurer CORS backend pour Vercel
 
 ### Moyen Terme (Ce Mois)
 
