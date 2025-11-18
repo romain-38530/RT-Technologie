@@ -10,11 +10,22 @@
 
 | 📄 Guide | ⏱️ Temps | 🎯 Objectif | 🔗 Lien |
 |---------|---------|------------|--------|
-| **🟢 RESUME_DEPLOIEMENT_COMPLET** | 10 min | Vue d'ensemble complète | [Lire](RESUME_DEPLOIEMENT_COMPLET.md) |
-| **🔵 DEPLOIEMENT_VERCEL_3_MINUTES** | 3 min | Déployer frontend rapidement | [Lire](DEPLOIEMENT_VERCEL_3_MINUTES.md) |
-| **🟣 README_VERCEL** | 15 min | Configuration Vercel détaillée | [Lire](README_VERCEL.md) |
-| **🟠 README_AWS_DEPLOY** | 20 min | Déployer backend sur AWS | [Lire](README_AWS_DEPLOY.md) |
-| **🟡 QUICKSTART** | 5 min | Commandes quotidiennes | [Lire](QUICKSTART.md) |
+| **🔴 COMMENCER_ICI** | 2 min | Point de départ - 3 actions | [Lire](COMMENCER_ICI.md) |
+| **🟢 DEMARRAGE_RAPIDE** | 15 min | Mise en ligne complète | [Lire](DEMARRAGE_RAPIDE.md) |
+| **🔵 PRET_A_DEPLOYER** | 5 min | Statut système et checklist | [Lire](PRET_A_DEPLOYER.md) |
+| **🟣 INSTALLATION_NGROK_MANUELLE** | 3 min | Installation Ngrok détaillée | [Lire](INSTALLATION_NGROK_MANUELLE.md) |
+| **🟠 ETAPES_FINALES** | 10 min | Déploiement en 3 commandes | [Lire](ETAPES_FINALES.md) |
+| **🟡 INSTRUCTIONS_IMMEDIATES** | 15 min | Instructions détaillées | [Lire](INSTRUCTIONS_IMMEDIATES.md) |
+
+## 📚 Documentation Complète
+
+| 📄 Guide | ⏱️ Temps | 🎯 Objectif | 🔗 Lien |
+|---------|---------|------------|--------|
+| **RESUME_DEPLOIEMENT_COMPLET** | 10 min | Vue d'ensemble complète | [Lire](RESUME_DEPLOIEMENT_COMPLET.md) |
+| **DEPLOIEMENT_VERCEL_3_MINUTES** | 3 min | Déployer frontend rapidement | [Lire](DEPLOIEMENT_VERCEL_3_MINUTES.md) |
+| **README_VERCEL** | 15 min | Configuration Vercel détaillée | [Lire](README_VERCEL.md) |
+| **README_AWS_DEPLOY** | 20 min | Déployer backend sur AWS | [Lire](README_AWS_DEPLOY.md) |
+| **QUICKSTART** | 5 min | Commandes quotidiennes | [Lire](QUICKSTART.md) |
 
 ---
 
