@@ -4,3 +4,31 @@ dist
 .DS_Store
 *.log
 coverage
+
+# Environment variables (IMPORTANT - Ne jamais committer)
+.env
+.env.*
+!.env.example
+
+# PM2
+.pm2
+logs/
+*.pid
+
+# Tests output
+tests/output/
+
+# Backups
+backup*/
+*.backup
+
+# Client Onboarding - Fichiers sensibles
+services/client-onboarding/.env
+services/client-onboarding/.env.production
+services/client-onboarding/logs/
+services/client-onboarding/tests/output/
+services/client-onboarding/*.pdf
+
+# OS
+Thumbs.db
+nul
