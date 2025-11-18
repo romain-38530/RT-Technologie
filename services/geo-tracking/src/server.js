@@ -10,25 +10,40 @@
  * Port: 3016
  */
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const { MongoClient } = require('mongodb');
-const winston = require('winston');
-const Joi = require('joi');
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
+// Protection contre les redéclarations lors du hot reload
+if (!global.__geo_tracking_modules) {
+  global.__geo_tracking_modules = {};
+  require('dotenv').config();
+}
+
+// Helper pour require avec cache
+function requireOnce(name, path) {
+  if (!global.__geo_tracking_modules[name]) {
+    global.__geo_tracking_modules[name] = require(path);
+  }
+  return global.__geo_tracking_modules[name];
+}
+
+var express = requireOnce('express', 'express');
+var cors = requireOnce('cors', 'cors');
+var helmet = requireOnce('helmet', 'helmet');
+var mongodb = requireOnce('mongodb', 'mongodb');
+var MongoClient = mongodb.MongoClient;
+var winston = requireOnce('winston', 'winston');
+var Joi = requireOnce('joi', 'joi');
+var jwt = requireOnce('jsonwebtoken', 'jsonwebtoken');
+var axios = requireOnce('axios', 'axios');
 
 // Configuration
-const PORT = process.env.PORT || 3016;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/rt-technologie';
-const TOMTOM_API_KEY = process.env.TOMTOM_API_KEY || '';
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
-const GEOFENCE_RADIUS_METERS = 200; // Rayon de détection en mètres
+var PORT = process.env.GEO_TRACKING_PORT || 3020;
+var MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/rt-technologie';
+var TOMTOM_API_KEY = process.env.TOMTOM_API_KEY || '';
+var JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+var GEOFENCE_RADIUS_METERS = 200; // Rayon de détection en mètres
 
 // Logger
-const logger = winston.createLogger({
+if (!global.__geo_tracking_logger) {
+  global.__geo_tracking_logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -42,26 +57,40 @@ const logger = winston.createLogger({
       )
     }),
     new winston.transports.File({ filename: 'logs/geo-tracking.log' })
-  ]
-});
+  ]);
+}
+var logger = global.__geo_tracking_logger;
 
-// Express app
-const app = express();
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+// Express app - Fermer l'ancien serveur si nécessaire
+if (global.__geo_tracking_server) {
+  try {
+    global.__geo_tracking_server.close();
+  } catch (e) {
+    // Ignore
+  }
+}
 
+if (!global.__geo_tracking_app) {
+  global.__geo_tracking_app = express();
+  global.__geo_tracking_app.use(helmet());
+  global.__geo_tracking_app.use(cors());
+  global.__geo_tracking_app.use(express.json());
+}
+var app = global.__geo_tracking_app;
 // MongoDB connection
-let db;
-MongoClient.connect(MONGODB_URI, { useUnifiedTopology: true })
-  .then(client => {
-    db = client.db();
-    logger.info('✅ Connected to MongoDB');
-  })
-  .catch(err => {
-    logger.error('❌ MongoDB connection failed:', err);
-    process.exit(1);
-  });
+if (!global.__geo_tracking_db) {
+  MongoClient.connect(MONGODB_URI, { useUnifiedTopology: true })
+    .then(client => {
+      global.__geo_tracking_db = client.db();
+      logger.info('✅ Connected to MongoDB');
+    })
+    .catch(err => {
+      logger.error('❌ MongoDB connection failed:', err);
+      logger.warn('⚠️  Running without MongoDB - some features may be limited');
+      global.__geo_tracking_db = null;
+    });
+}
+var db = global.__geo_tracking_db;
 
 // ============================================================================
 // MIDDLEWARES
@@ -70,17 +99,17 @@ MongoClient.connect(MONGODB_URI, { useUnifiedTopology: true })
 /**
  * Middleware d'authentification JWT
  */
-const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+var authMiddleware = function(req, res, next) {
+  var authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No token provided' });
   }
 
-  const token = authHeader.substring(7);
+  var token = authHeader.substring(7);
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    var decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
@@ -101,20 +130,20 @@ const authMiddleware = (req, res, next) => {
  * @param {number} lon2 - Longitude point 2
  * @returns {number} Distance en mètres
  */
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // Rayon de la Terre en mètres
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
+var calculateDistance = function(lat1, lon1, lat2, lon2) {
+  var R = 6371000; // Rayon de la Terre en mètres
+  var φ1 = lat1 * Math.PI / 180;
+  var φ2 = lat2 * Math.PI / 180;
+  var Δφ = (lat2 - lat1) * Math.PI / 180;
+  var Δλ = (lon2 - lon1) * Math.PI / 180;
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+  var a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
             Math.cos(φ1) * Math.cos(φ2) *
             Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
-}
+};
 
 /**
  * Vérifie si un point est dans un géofence
@@ -124,10 +153,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
  * @param {number} radiusMeters - Rayon du géofence en mètres
  * @returns {boolean}
  */
-function isInGeofence(lat, lon, center, radiusMeters = GEOFENCE_RADIUS_METERS) {
-  const distance = calculateDistance(lat, lon, center.latitude, center.longitude);
+var isInGeofence = function(lat, lon, center, radiusMeters) {
+  if (radiusMeters === undefined) radiusMeters = GEOFENCE_RADIUS_METERS;
+  var distance = calculateDistance(lat, lon, center.latitude, center.longitude);
   return distance <= radiusMeters;
-}
+};
 
 /**
  * Détecte les événements de géofencing
@@ -136,15 +166,17 @@ function isInGeofence(lat, lon, center, radiusMeters = GEOFENCE_RADIUS_METERS) {
  * @param {object} lastPosition - Dernière position connue
  * @returns {object|null} Événement détecté ou null
  */
-async function detectGeofenceEvent(position, order, lastPosition) {
-  const { latitude, longitude, timestamp } = position;
+var detectGeofenceEvent = async function(position, order, lastPosition) {
+  var latitude = position.latitude;
+  var longitude = position.longitude;
+  var timestamp = position.timestamp;
 
   // Vérifier entrée dans zone de chargement
   if (order.pickup && order.pickup.location) {
-    const inPickupZone = isInGeofence(latitude, longitude, order.pickup.location);
+    var inPickupZone = isInGeofence(latitude, longitude, order.pickup.location);
 
     if (inPickupZone && lastPosition) {
-      const wasInPickupZone = isInGeofence(
+      var wasInPickupZone = isInGeofence(
         lastPosition.latitude,
         lastPosition.longitude,
         order.pickup.location
@@ -168,7 +200,7 @@ async function detectGeofenceEvent(position, order, lastPosition) {
 
     // Transition : dans zone → hors zone (départ après chargement)
     if (!inPickupZone && lastPosition) {
-      const wasInPickupZone = isInGeofence(
+      var wasInPickupZone = isInGeofence(
         lastPosition.latitude,
         lastPosition.longitude,
         order.pickup.location
@@ -192,10 +224,10 @@ async function detectGeofenceEvent(position, order, lastPosition) {
 
   // Vérifier entrée dans zone de livraison
   if (order.delivery && order.delivery.location) {
-    const inDeliveryZone = isInGeofence(latitude, longitude, order.delivery.location);
+    var inDeliveryZone = isInGeofence(latitude, longitude, order.delivery.location);
 
     if (inDeliveryZone && lastPosition) {
-      const wasInDeliveryZone = isInGeofence(
+      var wasInDeliveryZone = isInGeofence(
         lastPosition.latitude,
         lastPosition.longitude,
         order.delivery.location
@@ -219,7 +251,7 @@ async function detectGeofenceEvent(position, order, lastPosition) {
   }
 
   return null;
-}
+};
 
 /**
  * Calcule l'ETA avec TomTom Traffic API
@@ -229,15 +261,15 @@ async function detectGeofenceEvent(position, order, lastPosition) {
  * @param {number} toLon - Longitude arrivée
  * @returns {object} ETA avec durée, distance, retard trafic
  */
-async function calculateETA(fromLat, fromLon, toLat, toLon) {
+var calculateETA = async function(fromLat, fromLon, toLat, toLon) {
   if (!TOMTOM_API_KEY) {
     logger.warn('⚠️  TomTom API key not configured, using simple calculation');
 
     // Calcul simple sans trafic (vitesse moyenne 60 km/h)
-    const distanceMeters = calculateDistance(fromLat, fromLon, toLat, toLon);
-    const distanceKm = distanceMeters / 1000;
-    const durationMinutes = Math.round((distanceKm / 60) * 60);
-    const arrivalTime = new Date(Date.now() + durationMinutes * 60 * 1000);
+    var distanceMeters = calculateDistance(fromLat, fromLon, toLat, toLon);
+    var distanceKm = distanceMeters / 1000;
+    var durationMinutes = Math.round((distanceKm / 60) * 60);
+    var arrivalTime = new Date(Date.now() + durationMinutes * 60 * 1000);
 
     return {
       arrivalTime: arrivalTime.toISOString(),
@@ -250,8 +282,8 @@ async function calculateETA(fromLat, fromLon, toLat, toLon) {
 
   try {
     // Appel API TomTom Routing
-    const url = `https://api.tomtom.com/routing/1/calculateRoute/${fromLat},${fromLon}:${toLat},${toLon}/json`;
-    const response = await axios.get(url, {
+    var url = `https://api.tomtom.com/routing/1/calculateRoute/${fromLat},${fromLon}:${toLat},${toLon}/json`;
+    var response = await axios.get(url, {
       params: {
         key: TOMTOM_API_KEY,
         traffic: true,
@@ -262,13 +294,13 @@ async function calculateETA(fromLat, fromLon, toLat, toLon) {
       timeout: 5000
     });
 
-    const route = response.data.routes[0];
-    const summary = route.summary;
+    var route = response.data.routes[0];
+    var summary = route.summary;
 
-    const durationMinutes = Math.round(summary.travelTimeInSeconds / 60);
-    const distanceKm = Math.round(summary.lengthInMeters / 100) / 10;
-    const trafficDelay = Math.round((summary.trafficDelayInSeconds || 0) / 60);
-    const arrivalTime = new Date(Date.now() + summary.travelTimeInSeconds * 1000);
+    var durationMinutes = Math.round(summary.travelTimeInSeconds / 60);
+    var distanceKm = Math.round(summary.lengthInMeters / 100) / 10;
+    var trafficDelay = Math.round((summary.trafficDelayInSeconds || 0) / 60);
+    var arrivalTime = new Date(Date.now() + summary.travelTimeInSeconds * 1000);
 
     return {
       arrivalTime: arrivalTime.toISOString(),
@@ -281,10 +313,10 @@ async function calculateETA(fromLat, fromLon, toLat, toLon) {
     logger.error('TomTom API error:', error.message);
 
     // Fallback sur calcul simple
-    const distanceMeters = calculateDistance(fromLat, fromLon, toLat, toLon);
-    const distanceKm = distanceMeters / 1000;
-    const durationMinutes = Math.round((distanceKm / 60) * 60);
-    const arrivalTime = new Date(Date.now() + durationMinutes * 60 * 1000);
+    var distanceMeters = calculateDistance(fromLat, fromLon, toLat, toLon);
+    var distanceKm = distanceMeters / 1000;
+    var durationMinutes = Math.round((distanceKm / 60) * 60);
+    var arrivalTime = new Date(Date.now() + durationMinutes * 60 * 1000);
 
     return {
       arrivalTime: arrivalTime.toISOString(),
@@ -294,7 +326,7 @@ async function calculateETA(fromLat, fromLon, toLat, toLon) {
       confidence: 'LOW'
     };
   }
-}
+};
 
 // ============================================================================
 // ROUTES
@@ -316,7 +348,7 @@ app.get('/geo-tracking/health', (req, res) => {
  */
 app.post('/geo-tracking/positions', authMiddleware, async (req, res) => {
   // Validation
-  const schema = Joi.object({
+  var schema = Joi.object({
     orderId: Joi.string().required(),
     latitude: Joi.number().min(-90).max(90).required(),
     longitude: Joi.number().min(-180).max(180).required(),
@@ -326,26 +358,34 @@ app.post('/geo-tracking/positions', authMiddleware, async (req, res) => {
     heading: Joi.number().min(0).max(360).optional()
   });
 
-  const { error, value } = schema.validate(req.body);
+  var validation = schema.validate(req.body);
+  var error = validation.error;
+  var value = validation.value;
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
 
   try {
-    const { orderId, latitude, longitude, timestamp, accuracy, speed, heading } = value;
+    var orderId = value.orderId;
+    var latitude = value.latitude;
+    var longitude = value.longitude;
+    var timestamp = value.timestamp;
+    var accuracy = value.accuracy;
+    var speed = value.speed;
+    var heading = value.heading;
 
     // Récupérer la commande
-    const order = await db.collection('orders').findOne({ orderId });
+    var order = await db.collection('orders').findOne({ orderId });
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
     // Récupérer la dernière position
-    const lastPosition = await db.collection('positions')
+    var lastPosition = await db.collection('positions')
       .findOne({ orderId }, { sort: { timestamp: -1 } });
 
     // Enregistrer la nouvelle position
-    const positionDoc = {
+    var positionDoc = {
       orderId,
       latitude,
       longitude,
@@ -356,13 +396,13 @@ app.post('/geo-tracking/positions', authMiddleware, async (req, res) => {
       createdAt: new Date()
     };
 
-    const result = await db.collection('positions').insertOne(positionDoc);
-    const positionId = result.insertedId.toString();
+    var result = await db.collection('positions').insertOne(positionDoc);
+    var positionId = result.insertedId.toString();
 
     logger.info(`📍 Position saved for order ${orderId}: ${latitude}, ${longitude}`);
 
     // Détecter événements de géofencing
-    let geofenceEvent = null;
+    var geofenceEvent = null;
     if (order.pickup || order.delivery) {
       geofenceEvent = await detectGeofenceEvent(
         { latitude, longitude, timestamp: new Date(timestamp) },
@@ -381,7 +421,7 @@ app.post('/geo-tracking/positions', authMiddleware, async (req, res) => {
         logger.info(`🎯 Geofence event detected: ${geofenceEvent.type} for order ${orderId}`);
 
         // Mettre à jour le statut de la commande
-        const statusMap = {
+        var statusMap = {
           'ARRIVAL_PICKUP': 'ARRIVED_PICKUP',
           'DEPARTURE_PICKUP': 'IN_TRANSIT',
           'ARRIVAL_DELIVERY': 'ARRIVED_DELIVERY'
@@ -402,8 +442,8 @@ app.post('/geo-tracking/positions', authMiddleware, async (req, res) => {
     }
 
     // Calculer l'ETA pour la prochaine destination
-    let eta = null;
-    let destination = null;
+    var eta = null;
+    var destination = null;
 
     if (order.status === 'EN_ROUTE_PICKUP' && order.pickup) {
       destination = order.pickup.location;
@@ -443,10 +483,12 @@ app.post('/geo-tracking/positions', authMiddleware, async (req, res) => {
  */
 app.get('/geo-tracking/positions/:orderId', authMiddleware, async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const { from, to, limit = 100 } = req.query;
+    var orderId = req.params.orderId;
+    var from = req.query.from;
+    var to = req.query.to;
+    var limit = req.query.limit || 100;
 
-    const query = { orderId };
+    var query = { orderId };
 
     if (from || to) {
       query.timestamp = {};
@@ -454,13 +496,13 @@ app.get('/geo-tracking/positions/:orderId', authMiddleware, async (req, res) => 
       if (to) query.timestamp.$lte = new Date(to);
     }
 
-    const positions = await db.collection('positions')
+    var positions = await db.collection('positions')
       .find(query)
       .sort({ timestamp: -1 })
       .limit(parseInt(limit))
       .toArray();
 
-    const totalCount = await db.collection('positions').countDocuments({ orderId });
+    var totalCount = await db.collection('positions').countDocuments({ orderId });
 
     res.json({
       orderId,
@@ -486,19 +528,20 @@ app.get('/geo-tracking/positions/:orderId', authMiddleware, async (req, res) => 
  */
 app.get('/geo-tracking/eta/:orderId', authMiddleware, async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const { currentLat, currentLon } = req.query;
+    var orderId = req.params.orderId;
+    var currentLat = req.query.currentLat;
+    var currentLon = req.query.currentLon;
 
     if (!currentLat || !currentLon) {
       return res.status(400).json({ error: 'currentLat and currentLon are required' });
     }
 
-    const order = await db.collection('orders').findOne({ orderId });
+    var order = await db.collection('orders').findOne({ orderId });
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    let destination = null;
+    var destination = null;
     if (order.status === 'EN_ROUTE_PICKUP' && order.pickup) {
       destination = {
         ...order.pickup.location,
@@ -517,7 +560,7 @@ app.get('/geo-tracking/eta/:orderId', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'No active destination for this order' });
     }
 
-    const eta = await calculateETA(
+    var eta = await calculateETA(
       parseFloat(currentLat),
       parseFloat(currentLon),
       destination.latitude,
@@ -544,9 +587,9 @@ app.get('/geo-tracking/eta/:orderId', authMiddleware, async (req, res) => {
  */
 app.get('/geo-tracking/geofence/events/:orderId', authMiddleware, async (req, res) => {
   try {
-    const { orderId } = req.params;
+    var orderId = req.params.orderId;
 
-    const events = await db.collection('geofence_events')
+    var events = await db.collection('geofence_events')
       .find({ orderId })
       .sort({ detectedAt: 1 })
       .toArray();
@@ -570,11 +613,17 @@ app.get('/geo-tracking/geofence/events/:orderId', authMiddleware, async (req, re
 // DÉMARRAGE DU SERVEUR
 // ============================================================================
 
-app.listen(PORT, () => {
-  logger.info(`🚀 Geo-Tracking Service running on http://localhost:${PORT}`);
-  logger.info(`📡 Ready to track positions with ${TOMTOM_API_KEY ? 'TomTom API' : 'basic calculation'}`);
-  logger.info(`🎯 Geofencing radius: ${GEOFENCE_RADIUS_METERS}m`);
-});
+if (!global.__geo_tracking_initialized) {
+  global.__geo_tracking_initialized = true;
+
+  global.__geo_tracking_server = app.listen(PORT, () => {
+    logger.info(`🚀 Geo-Tracking Service running on http://localhost:${PORT}`);
+    logger.info(`📡 Ready to track positions with ${TOMTOM_API_KEY ? 'TomTom API' : 'basic calculation'}`);
+    logger.info(`🎯 Geofencing radius: ${GEOFENCE_RADIUS_METERS}m`);
+  });
+} else {
+  logger.info('[geo-tracking] Server already initialized, skipping restart');
+}
 
 // Gestion gracieuse de l'arrêt
 process.on('SIGTERM', () => {

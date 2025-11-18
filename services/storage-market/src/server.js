@@ -742,7 +742,7 @@ const server = http.createServer(async (req, res) => {
   return notFound(res);
 });
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3015;
+const PORT = process.env.STORAGE_MARKET_PORT ? Number(process.env.STORAGE_MARKET_PORT) : 3013;
 
 loadSeeds().then(() => {
   server.listen(PORT, () => {

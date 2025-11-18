@@ -792,7 +792,7 @@ const server = http.createServer(async (req, res) => {
   return notFound(res);
 });
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
+const PORT = process.env.CORE_ORDERS_PORT ? Number(process.env.CORE_ORDERS_PORT) : 3001;
 loadSeeds();
 server.listen(PORT, () => {
   console.log(`[core-orders] HTTP prêt sur :${PORT}`);

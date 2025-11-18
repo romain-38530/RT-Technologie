@@ -14,7 +14,10 @@
       "Bash(tree:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(if [ -f \"c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\.env\" ])",
+      "Bash(then echo \"Le fichier .env existe déjà\")",
+      "Bash(else echo \"Le fichier .env n''existe pas\")"
     ],
     "deny": [],
     "ask": []

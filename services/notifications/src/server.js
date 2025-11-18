@@ -12,7 +12,7 @@ function env(name, def) {
   return v || def;
 }
 
-const PORT = Number(env('NOTIFICATIONS_PORT', '3004'));
+const PORT = Number(env('NOTIFICATIONS_PORT', '3002'));
 const MAILGUN_DOMAIN = env('MAILGUN_DOMAIN', '');
 const MAILGUN_API_KEY = env('MAILGUN_API_KEY', '');
 const MAIL_FROM = env('MAIL_FROM', 'no-reply@example.com');
@@ -75,7 +75,7 @@ function sendMailgun({ to, subject, text, html }) {
   });
 }
 
-let parseBody = limitBodySize(256 * 1024);
+var parseBody = limitBodySize(256 * 1024);
 const limiter = rateLimiter({ windowMs: 60000, max: 600 });
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);

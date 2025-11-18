@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { sendEmail } = require('../../../packages/notify-client/src/index.js');
 const { addSecurityHeaders, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');
 
-const PORT = Number(process.env.AUTHZ_PORT || '3002');
+const PORT = Number(process.env.AUTHZ_PORT || '3007');
 const JWT_SECRET = process.env.AUTHZ_JWT_SECRET || 'dev-secret';
 const VERIFY_BASE = (process.env.AUTHZ_VERIFY_BASE_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
 

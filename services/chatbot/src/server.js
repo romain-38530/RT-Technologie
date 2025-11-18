@@ -1,79 +1,118 @@
-const http = require('http');
-const https = require('https');
-const url = require('url');
-const fs = require('fs');
-const path = require('path');
-const { WebSocketServer } = require('ws');
-const { v4: uuidv4 } = require('uuid');
+// Utiliser des variables globales pour éviter les erreurs de redéclaration
+if (!global.__chatbot_http) global.__chatbot_http = require('http');
+if (!global.__chatbot_https) global.__chatbot_https = require('https');
+if (!global.__chatbot_url) global.__chatbot_url = require('url');
+if (!global.__chatbot_fs) global.__chatbot_fs = require('fs');
+if (!global.__chatbot_path) global.__chatbot_path = require('path');
+if (!global.__chatbot_ws) global.__chatbot_ws = require('ws');
+if (!global.__chatbot_uuid) global.__chatbot_uuid = require('uuid');
 
-const { addSecurityHeaders, handleCorsPreflight, requireAuth, limitBodySize, rateLimiter } = require('../../../packages/security/src/index.js');
-const { AIEngine } = require('./ai-engine/index.js');
-const { PrioritizationEngine } = require('./prioritization/index.js');
-const { DiagnosticsEngine } = require('./diagnostics/index.js');
-const { TeamsIntegration } = require('./teams-integration/index.js');
-const { KnowledgeBase } = require('./knowledge-base/index.js');
+var http = global.__chatbot_http;
+var https = global.__chatbot_https;
+var url = global.__chatbot_url;
+var fs = global.__chatbot_fs;
+var path = global.__chatbot_path;
+var WebSocketServer = global.__chatbot_ws.WebSocketServer;
+var uuidv4 = global.__chatbot_uuid.v4;
+
+if (!global.__chatbot_security) {
+  global.__chatbot_security = require('../../../packages/security/src/index.js');
+}
+if (!global.__chatbot_AIEngine) {
+  global.__chatbot_AIEngine = require('./ai-engine/index.js').AIEngine;
+}
+if (!global.__chatbot_PrioritizationEngine) {
+  global.__chatbot_PrioritizationEngine = require('./prioritization/index.js').PrioritizationEngine;
+}
+if (!global.__chatbot_DiagnosticsEngine) {
+  global.__chatbot_DiagnosticsEngine = require('./diagnostics/index.js').DiagnosticsEngine;
+}
+if (!global.__chatbot_TeamsIntegration) {
+  global.__chatbot_TeamsIntegration = require('./teams-integration/index.js').TeamsIntegration;
+}
+if (!global.__chatbot_KnowledgeBase) {
+  global.__chatbot_KnowledgeBase = require('./knowledge-base/index.js').KnowledgeBase;
+}
+
+var addSecurityHeaders = global.__chatbot_security.addSecurityHeaders;
+var handleCorsPreflight = global.__chatbot_security.handleCorsPreflight;
+var requireAuth = global.__chatbot_security.requireAuth;
+var limitBodySize = global.__chatbot_security.limitBodySize;
+var rateLimiter = global.__chatbot_security.rateLimiter;
+var AIEngine = global.__chatbot_AIEngine;
+var PrioritizationEngine = global.__chatbot_PrioritizationEngine;
+var DiagnosticsEngine = global.__chatbot_DiagnosticsEngine;
+var TeamsIntegration = global.__chatbot_TeamsIntegration;
+var KnowledgeBase = global.__chatbot_KnowledgeBase;
 
 // In-memory stores (Redis en production)
-const store = {
-  sessions: new Map(), // sessionId -> { userId, userName, role, botType, messages: [], createdAt, lastActivity }
-  tickets: new Map(), // ticketId -> { sessionId, priority, status, createdAt, assignedTo, resolvedAt }
-  diagnostics: new Map(), // sessionId -> { results: [], timestamp }
-  analytics: {
-    totalMessages: 0,
-    totalSessions: 0,
-    totalTickets: 0,
-    resolutionRate: 0,
-    averageResponseTime: 0,
-    satisfactionScore: 0
-  }
-};
+if (!global.__chatbot_store) {
+  global.__chatbot_store = {
+    sessions: new Map(), // sessionId -> { userId, userName, role, botType, messages: [], createdAt, lastActivity }
+    tickets: new Map(), // ticketId -> { sessionId, priority, status, createdAt, assignedTo, resolvedAt }
+    diagnostics: new Map(), // sessionId -> { results: [], timestamp }
+    analytics: {
+      totalMessages: 0,
+      totalSessions: 0,
+      totalTickets: 0,
+      resolutionRate: 0,
+      averageResponseTime: 0,
+      satisfactionScore: 0
+    }
+  };
+}
+var store = global.__chatbot_store;
 
 // Initialize engines
-let aiEngine;
-let prioritizationEngine;
-let diagnosticsEngine;
-let teamsIntegration;
-let knowledgeBase;
+if (!global.__chatbot_engines) {
+  global.__chatbot_engines = {
+    aiEngine: null,
+    prioritizationEngine: null,
+    diagnosticsEngine: null,
+    teamsIntegration: null,
+    knowledgeBase: null
+  };
+}
 
-async function initializeEngines() {
+var initializeEngines = async function() {
   console.log('[chatbot] Initializing AI engines...');
-  aiEngine = new AIEngine({
+  global.__chatbot_engines.aiEngine = new AIEngine({
     openaiApiKey: process.env.OPENAI_API_KEY,
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     internalModelUrl: process.env.INTERNAL_AI_MODEL_URL
   });
 
-  prioritizationEngine = new PrioritizationEngine();
-  diagnosticsEngine = new DiagnosticsEngine();
-  teamsIntegration = new TeamsIntegration({
+  global.__chatbot_engines.prioritizationEngine = new PrioritizationEngine();
+  global.__chatbot_engines.diagnosticsEngine = new DiagnosticsEngine();
+  global.__chatbot_engines.teamsIntegration = new TeamsIntegration({
     webhookUrl: process.env.TEAMS_WEBHOOK_URL,
     botToken: process.env.TEAMS_BOT_TOKEN
   });
 
-  knowledgeBase = new KnowledgeBase();
-  await knowledgeBase.initialize();
+  global.__chatbot_engines.knowledgeBase = new KnowledgeBase();
+  await global.__chatbot_engines.knowledgeBase.initialize();
 
   console.log('[chatbot] Engines initialized successfully');
-}
+};
 
-function json(res, status, body) {
-  const data = JSON.stringify(body);
+var json = function(res, status, body) {
+  var data = JSON.stringify(body);
   addSecurityHeaders(res);
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Content-Length': Buffer.byteLength(data)
   });
   res.end(data);
-}
+};
 
-function notFound(res) {
+var notFound = function(res) {
   json(res, 404, { error: 'Not Found' });
-}
+};
 
-const parseBody = limitBodySize(10 * 1024 * 1024); // 10MB for file uploads
+var parseBody = limitBodySize(10 * 1024 * 1024); // 10MB for file uploads
 
 // Create or get session
-function getOrCreateSession(userId, userName, role, botType) {
+var getOrCreateSession = function(userId, userName, role, botType) {
   // Check for existing session
   for (const [sessionId, session] of store.sessions.entries()) {
     if (session.userId === userId && session.botType === botType) {
@@ -97,10 +136,10 @@ function getOrCreateSession(userId, userName, role, botType) {
   store.sessions.set(sessionId, session);
   store.analytics.totalSessions++;
   return { sessionId, session };
-}
+};
 
 // Process message with AI
-async function processMessage(session, message, attachments = []) {
+var processMessage = async function(session, message, attachments = []) {
   const startTime = Date.now();
 
   // Add user message to history
@@ -113,15 +152,15 @@ async function processMessage(session, message, attachments = []) {
   });
 
   // Get bot configuration
-  const botConfig = require(`./bots/${session.botType}.config.js`);
+  var botConfig = require(`./bots/${session.botType}.config.js`);
 
   // Search knowledge base
-  const kbResults = await knowledgeBase.search(message, session.botType);
+  var kbResults = await global.__chatbot_engines.knowledgeBase.search(message, session.botType);
 
   // Check if diagnostics needed
-  let diagnosticsResults = null;
-  if (session.botType === 'helpbot' && prioritizationEngine.needsDiagnostics(message)) {
-    diagnosticsResults = await diagnosticsEngine.runDiagnostics(session.context, message);
+  var diagnosticsResults = null;
+  if (session.botType === 'helpbot' && global.__chatbot_engines.prioritizationEngine.needsDiagnostics(message)) {
+    diagnosticsResults = await global.__chatbot_engines.diagnosticsEngine.runDiagnostics(session.context, message);
     store.diagnostics.set(session.sessionId, {
       results: diagnosticsResults,
       timestamp: Date.now()
@@ -129,7 +168,7 @@ async function processMessage(session, message, attachments = []) {
   }
 
   // Build context for AI
-  const context = {
+  var context = {
     botType: session.botType,
     userName: session.userName,
     role: session.role,
@@ -140,14 +179,14 @@ async function processMessage(session, message, attachments = []) {
   };
 
   // Get AI response
-  const aiResponse = await aiEngine.generateResponse(
+  var aiResponse = await global.__chatbot_engines.aiEngine.generateResponse(
     message,
     context,
     botConfig
   );
 
   // Add AI response to history
-  const responseMessage = {
+  var responseMessage = {
     id: uuidv4(),
     role: 'assistant',
     content: aiResponse.content,
@@ -159,20 +198,20 @@ async function processMessage(session, message, attachments = []) {
 
   // Update analytics
   store.analytics.totalMessages += 2;
-  const responseTime = Date.now() - startTime;
+  var responseTime = Date.now() - startTime;
   store.analytics.averageResponseTime =
     (store.analytics.averageResponseTime * (store.analytics.totalMessages - 2) + responseTime) /
     store.analytics.totalMessages;
 
   // Check if escalation needed
-  let escalationNeeded = false;
-  let priority = null;
+  var escalationNeeded = false;
+  var priority = null;
 
   if (session.botType === 'helpbot') {
-    priority = prioritizationEngine.assessPriority(message, session.messages, diagnosticsResults);
+    priority = global.__chatbot_engines.prioritizationEngine.assessPriority(message, session.messages, diagnosticsResults);
 
     // Count unresolved interactions
-    const unresolvedCount = session.messages.filter(m =>
+    var unresolvedCount = session.messages.filter(m =>
       m.role === 'user' && m.timestamp > Date.now() - 10 * 60 * 1000
     ).length;
 
@@ -188,19 +227,19 @@ async function processMessage(session, message, attachments = []) {
     priority,
     diagnostics: diagnosticsResults
   };
-}
+};
 
 // Create support ticket and transfer to human
-async function transferToHuman(sessionId, reason, priority) {
-  const session = store.sessions.get(sessionId);
+var transferToHuman = async function(sessionId, reason, priority) {
+  var session = store.sessions.get(sessionId);
   if (!session) {
     throw new Error('Session not found');
   }
 
-  const ticketId = `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  var ticketId = `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
   // Get conversation context
-  const context = {
+  var context = {
     sessionId,
     userId: session.userId,
     userName: session.userName,
@@ -213,7 +252,7 @@ async function transferToHuman(sessionId, reason, priority) {
   };
 
   // Create ticket
-  const ticket = {
+  var ticket = {
     id: ticketId,
     sessionId,
     userId: session.userId,
@@ -231,7 +270,7 @@ async function transferToHuman(sessionId, reason, priority) {
   store.analytics.totalTickets++;
 
   // Send to Teams
-  await teamsIntegration.createTicket(ticket);
+  await global.__chatbot_engines.teamsIntegration.createTicket(ticket);
 
   // Add system message to session
   session.messages.push({
@@ -242,20 +281,23 @@ async function transferToHuman(sessionId, reason, priority) {
   });
 
   return ticket;
-}
+};
 
 // WebSocket connections
-const wsConnections = new Map(); // sessionId -> WebSocket
+if (!global.__chatbot_wsConnections) {
+  global.__chatbot_wsConnections = new Map();
+}
+var wsConnections = global.__chatbot_wsConnections;
 
-function setupWebSocket(server) {
-  const wss = new WebSocketServer({
+var setupWebSocket = function(server) {
+  var wss = new WebSocketServer({
     server,
     path: '/chatbot/ws'
   });
 
   wss.on('connection', (ws, req) => {
-    const query = url.parse(req.url, true).query;
-    const sessionId = query.sessionId;
+    var query = url.parse(req.url, true).query;
+    var sessionId = query.sessionId;
 
     if (!sessionId || !store.sessions.has(sessionId)) {
       ws.close(4000, 'Invalid session');
@@ -267,11 +309,11 @@ function setupWebSocket(server) {
 
     ws.on('message', async (data) => {
       try {
-        const payload = JSON.parse(data.toString());
+        var payload = JSON.parse(data.toString());
 
         if (payload.type === 'message') {
-          const session = store.sessions.get(sessionId);
-          const result = await processMessage(
+          var session = store.sessions.get(sessionId);
+          var result = await processMessage(
             session,
             payload.message,
             payload.attachments || []
@@ -285,7 +327,7 @@ function setupWebSocket(server) {
 
           // Auto-escalate if needed
           if (result.escalationNeeded) {
-            const ticket = await transferToHuman(
+            var ticket = await transferToHuman(
               sessionId,
               'Automatic escalation',
               result.priority
@@ -324,15 +366,23 @@ function setupWebSocket(server) {
   });
 
   console.log('[chatbot] WebSocket server initialized');
-}
+};
 
 // HTTP Server
-const limiter = rateLimiter({ windowMs: 60000, max: 300 });
+var limiter = rateLimiter({ windowMs: 60000, max: 300 });
 
-const server = http.createServer(async (req, res) => {
-  const parsed = url.parse(req.url, true);
-  const method = req.method || 'GET';
-  const pathname = parsed.pathname || '/';
+if (global.__chatbot_server) {
+  try {
+    global.__chatbot_server.close();
+  } catch (e) {
+    // Ignore errors on close
+  }
+}
+
+global.__chatbot_server = http.createServer(async (req, res) => {
+  var parsed = url.parse(req.url, true);
+  var method = req.method || 'GET';
+  var pathname = parsed.pathname || '/';
 
   addSecurityHeaders(res);
   if (handleCorsPreflight(req, res)) return;
@@ -340,7 +390,7 @@ const server = http.createServer(async (req, res) => {
 
   // Health check
   if (method === 'GET' && pathname === '/health') {
-    const mongo = !!process.env.MONGODB_URI;
+    var mongo = !!process.env.MONGODB_URI;
     return json(res, 200, {
       status: 'ok',
       service: 'chatbot',
@@ -351,20 +401,23 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Authentication (optional via SECURITY_ENFORCE)
-  const authResult = requireAuth(req, res, { optionalEnv: 'SECURITY_ENFORCE' });
+  var authResult = requireAuth(req, res, { optionalEnv: 'SECURITY_ENFORCE' });
   if (authResult === null) return;
 
   // POST /chatbot/session - Create or get session
   if (method === 'POST' && pathname === '/chatbot/session') {
     try {
-      const body = (await parseBody(req)) || {};
-      const { userId, userName, role, botType } = body;
+      var body = (await parseBody(req)) || {};
+      var userId = body.userId;
+      var userName = body.userName;
+      var role = body.role;
+      var botType = body.botType;
 
       if (!userId || !botType) {
         return json(res, 400, { error: 'userId and botType required' });
       }
 
-      const validBotTypes = [
+      var validBotTypes = [
         'planif-ia', 'routier', 'quai-wms', 'livraisons',
         'expedition', 'freight-ia', 'copilote-chauffeur', 'helpbot'
       ];
@@ -373,7 +426,9 @@ const server = http.createServer(async (req, res) => {
         return json(res, 400, { error: 'Invalid botType' });
       }
 
-      const { sessionId, session } = getOrCreateSession(userId, userName, role, botType);
+      var result = getOrCreateSession(userId, userName, role, botType);
+      var sessionId = result.sessionId;
+      var session = result.session;
 
       return json(res, 200, {
         sessionId,
@@ -389,22 +444,24 @@ const server = http.createServer(async (req, res) => {
   // POST /chatbot/message - Send message
   if (method === 'POST' && pathname === '/chatbot/message') {
     try {
-      const body = (await parseBody(req)) || {};
-      const { sessionId, message, attachments } = body;
+      var body = (await parseBody(req)) || {};
+      var sessionId = body.sessionId;
+      var message = body.message;
+      var attachments = body.attachments;
 
       if (!sessionId || !message) {
         return json(res, 400, { error: 'sessionId and message required' });
       }
 
-      const session = store.sessions.get(sessionId);
+      var session = store.sessions.get(sessionId);
       if (!session) {
         return json(res, 404, { error: 'Session not found' });
       }
 
-      const result = await processMessage(session, message, attachments || []);
+      var result = await processMessage(session, message, attachments || []);
 
       // Send to WebSocket if connected
-      const ws = wsConnections.get(sessionId);
+      var ws = wsConnections.get(sessionId);
       if (ws && ws.readyState === 1) {
         ws.send(JSON.stringify({
           type: 'response',
@@ -425,8 +482,8 @@ const server = http.createServer(async (req, res) => {
 
   // GET /chatbot/history/:sessionId - Get conversation history
   if (method === 'GET' && /^\/chatbot\/history\/.+/.test(pathname)) {
-    const sessionId = pathname.split('/').pop();
-    const session = store.sessions.get(sessionId);
+    var sessionId = pathname.split('/').pop();
+    var session = store.sessions.get(sessionId);
 
     if (!session) {
       return json(res, 404, { error: 'Session not found' });
@@ -444,27 +501,28 @@ const server = http.createServer(async (req, res) => {
   // POST /chatbot/transfer-to-human - Transfer to human support
   if (method === 'POST' && pathname === '/chatbot/transfer-to-human') {
     try {
-      const body = (await parseBody(req)) || {};
-      const { sessionId, reason } = body;
+      var body = (await parseBody(req)) || {};
+      var sessionId = body.sessionId;
+      var reason = body.reason;
 
       if (!sessionId) {
         return json(res, 400, { error: 'sessionId required' });
       }
 
-      const session = store.sessions.get(sessionId);
+      var session = store.sessions.get(sessionId);
       if (!session) {
         return json(res, 404, { error: 'Session not found' });
       }
 
       // Assess priority
-      const lastMessage = session.messages.filter(m => m.role === 'user').slice(-1)[0];
-      const priority = prioritizationEngine.assessPriority(
+      var lastMessage = session.messages.filter(m => m.role === 'user').slice(-1)[0];
+      var priority = global.__chatbot_engines.prioritizationEngine.assessPriority(
         lastMessage?.content || '',
         session.messages,
         store.diagnostics.get(sessionId)?.results
       );
 
-      const ticket = await transferToHuman(sessionId, reason || 'User requested', priority);
+      var ticket = await transferToHuman(sessionId, reason || 'User requested', priority);
 
       return json(res, 200, {
         ticket: {
@@ -482,8 +540,8 @@ const server = http.createServer(async (req, res) => {
 
   // GET /chatbot/diagnostics/:sessionId - Get diagnostics
   if (method === 'GET' && /^\/chatbot\/diagnostics\/.+/.test(pathname)) {
-    const sessionId = pathname.split('/').pop();
-    const diagnostics = store.diagnostics.get(sessionId);
+    var sessionId = pathname.split('/').pop();
+    var diagnostics = store.diagnostics.get(sessionId);
 
     if (!diagnostics) {
       return json(res, 404, { error: 'No diagnostics found for this session' });
@@ -495,14 +553,15 @@ const server = http.createServer(async (req, res) => {
   // POST /chatbot/diagnostics/run - Run diagnostics
   if (method === 'POST' && pathname === '/chatbot/diagnostics/run') {
     try {
-      const body = (await parseBody(req)) || {};
-      const { context, issue } = body;
+      var body = (await parseBody(req)) || {};
+      var context = body.context;
+      var issue = body.issue;
 
       if (!context || !issue) {
         return json(res, 400, { error: 'context and issue required' });
       }
 
-      const results = await diagnosticsEngine.runDiagnostics(context, issue);
+      var results = await global.__chatbot_engines.diagnosticsEngine.runDiagnostics(context, issue);
 
       return json(res, 200, { results });
     } catch (err) {
@@ -512,10 +571,10 @@ const server = http.createServer(async (req, res) => {
 
   // GET /chatbot/tickets - List all tickets
   if (method === 'GET' && pathname === '/chatbot/tickets') {
-    const status = parsed.query.status;
-    const priority = parsed.query.priority;
+    var status = parsed.query.status;
+    var priority = parsed.query.priority;
 
-    const tickets = Array.from(store.tickets.values()).filter(ticket => {
+    var tickets = Array.from(store.tickets.values()).filter(ticket => {
       if (status && ticket.status !== status) return false;
       if (priority && ticket.priority !== parseInt(priority)) return false;
       return true;
@@ -526,8 +585,8 @@ const server = http.createServer(async (req, res) => {
 
   // GET /chatbot/tickets/:ticketId - Get ticket details
   if (method === 'GET' && /^\/chatbot\/tickets\/.+/.test(pathname)) {
-    const ticketId = pathname.split('/').pop();
-    const ticket = store.tickets.get(ticketId);
+    var ticketId = pathname.split('/').pop();
+    var ticket = store.tickets.get(ticketId);
 
     if (!ticket) {
       return json(res, 404, { error: 'Ticket not found' });
@@ -539,14 +598,14 @@ const server = http.createServer(async (req, res) => {
   // PATCH /chatbot/tickets/:ticketId - Update ticket
   if (method === 'PATCH' && /^\/chatbot\/tickets\/.+/.test(pathname)) {
     try {
-      const ticketId = pathname.split('/').pop();
-      const ticket = store.tickets.get(ticketId);
+      var ticketId = pathname.split('/').pop();
+      var ticket = store.tickets.get(ticketId);
 
       if (!ticket) {
         return json(res, 404, { error: 'Ticket not found' });
       }
 
-      const body = (await parseBody(req)) || {};
+      var body = (await parseBody(req)) || {};
 
       if (body.status) ticket.status = body.status;
       if (body.assignedTo) ticket.assignedTo = body.assignedTo;
@@ -584,14 +643,14 @@ const server = http.createServer(async (req, res) => {
   // GET /chatbot/knowledge-base/search - Search knowledge base
   if (method === 'GET' && pathname === '/chatbot/knowledge-base/search') {
     try {
-      const query = parsed.query.q;
-      const botType = parsed.query.botType;
+      var query = parsed.query.q;
+      var botType = parsed.query.botType;
 
       if (!query) {
         return json(res, 400, { error: 'Query parameter q required' });
       }
 
-      const results = await knowledgeBase.search(query, botType);
+      var results = await global.__chatbot_engines.knowledgeBase.search(query, botType);
 
       return json(res, 200, { results });
     } catch (err) {
@@ -602,19 +661,28 @@ const server = http.createServer(async (req, res) => {
   return notFound(res);
 });
 
+var server = global.__chatbot_server;
+
 // Initialize and start server
-const PORT = process.env.PORT ? Number(process.env.PORT) : 3019;
+var PORT = process.env.CHATBOT_PORT ? Number(process.env.CHATBOT_PORT) : 3019;
 
-(async () => {
-  try {
-    await initializeEngines();
+// Éviter de redémarrer si déjà en cours d'exécution
+if (!global.__chatbot_initialized) {
+  global.__chatbot_initialized = true;
 
-    server.listen(PORT, () => {
-      console.log(`[chatbot] HTTP server ready on :${PORT}`);
-      setupWebSocket(server);
-    });
-  } catch (err) {
-    console.error('[chatbot] Failed to start:', err);
-    process.exit(1);
-  }
-})();
+  (async () => {
+    try {
+      await initializeEngines();
+
+      server.listen(PORT, () => {
+        console.log(`[chatbot] HTTP server ready on :${PORT}`);
+        setupWebSocket(server);
+      });
+    } catch (err) {
+      console.error('[chatbot] Failed to start:', err);
+      process.exit(1);
+    }
+  })();
+} else {
+  console.log('[chatbot] Server already initialized, skipping restart');
+}

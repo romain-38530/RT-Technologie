@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Connexion MongoDB
 let db;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/rt-training';
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/rt-training';
 
 MongoClient.connect(MONGO_URI, { useUnifiedTopology: true })
   .then((client) => {

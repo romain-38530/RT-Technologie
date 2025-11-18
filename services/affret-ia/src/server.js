@@ -5,7 +5,7 @@ const path = require('path');
 const { complete } = require('../../../packages/ai-client/src/index.js');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');
 
-const PORT = Number(process.env.AFFRET_IA_PORT || '3010');
+const PORT = Number(process.env.AFFRET_IA_PORT || '3005');
 const SCORING_THRESHOLD = Number(process.env.AFFRET_IA_MIN_SCORING || '80');
 const PRICE_MARGIN = Number(process.env.AFFRET_IA_PRICE_MARGIN || '0.05'); // +5%
 

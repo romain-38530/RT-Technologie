@@ -9,7 +9,7 @@ function env(name, def) {
   return v == null ? def : v;
 }
 
-const PORT = Number(env('PLANNING_PORT', '3005'));
+const PORT = Number(env('PLANNING_PORT', '3004'));
 
 const store = {
   slots: [], // { dockId, start, end }
