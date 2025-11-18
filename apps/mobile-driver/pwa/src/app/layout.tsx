@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'RT Driver - Application Conducteur',
@@ -36,9 +37,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#0066CC" />
       </head>
       <body className="bg-gray-50 antialiased">
-        <div className="min-h-screen flex flex-col">
-          {children}
-        </div>
+        <Providers>
+          <div className="min-h-screen flex flex-col">
+            {children}
+          </div>
+        </Providers>
       </body>
     </html>
   );

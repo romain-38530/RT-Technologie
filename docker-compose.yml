@@ -1,0 +1,387 @@
+version: '3.8'
+
+# RT-Technologie - Docker Compose Configuration
+# Environnement de développement local
+
+services:
+  # ===========================
+  # Infrastructure Services
+  # ===========================
+
+  mongodb:
+    image: mongo:7.0
+    container_name: rt-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: rt_admin
+      MONGO_INITDB_ROOT_PASSWORD: rt_password_dev
+      MONGO_INITDB_DATABASE: rt_technologie
+    volumes:
+      - mongodb_data:/data/db
+      - ./infra/scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - rt-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: rt-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rt-network
+
+  # ===========================
+  # Backend Services
+  # ===========================
+
+  admin-gateway:
+    build:
+      context: ./services/admin-gateway
+      dockerfile: Dockerfile
+    container_name: rt-admin-gateway
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - ADMIN_GATEWAY_PORT=3001
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - rt-network
+    volumes:
+      - ./services/admin-gateway:/app
+      - /app/node_modules
+
+  authz:
+    build:
+      context: ./services/authz
+      dockerfile: Dockerfile
+    container_name: rt-authz
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - AUTHZ_PORT=3002
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - rt-network
+    volumes:
+      - ./services/authz:/app
+      - /app/node_modules
+
+  notifications:
+    build:
+      context: ./services/notifications
+      dockerfile: Dockerfile
+    container_name: rt-notifications
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - NOTIFICATIONS_PORT=3004
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    depends_on:
+      - mongodb
+    networks:
+      - rt-network
+    volumes:
+      - ./services/notifications:/app
+      - /app/node_modules
+
+  planning:
+    build:
+      context: ./services/planning
+      dockerfile: Dockerfile
+    container_name: rt-planning
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - PLANNING_PORT=3005
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - NOTIFICATIONS_URL=http://notifications:3004
+    depends_on:
+      - mongodb
+      - notifications
+    networks:
+      - rt-network
+    volumes:
+      - ./services/planning:/app
+      - /app/node_modules
+
+  tms-sync:
+    build:
+      context: ./services/tms-sync
+      dockerfile: Dockerfile
+    container_name: rt-tms-sync
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - TMS_SYNC_PORT=3006
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - rt-network
+    volumes:
+      - ./services/tms-sync:/app
+      - /app/node_modules
+
+  core-orders:
+    build:
+      context: ./services/core-orders
+      dockerfile: Dockerfile
+    container_name: rt-core-orders
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=development
+      - PORT=3007
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - AUTHZ_URL=http://authz:3002
+      - VIGILANCE_URL=http://vigilance:3008
+      - AFFRET_IA_URL=http://affret-ia:3010
+      - PLANNING_URL=http://planning:3005
+      - GEO_TRACKING_URL=http://geo-tracking:3016
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+    depends_on:
+      - mongodb
+      - authz
+      - vigilance
+      - planning
+      - geo-tracking
+    networks:
+      - rt-network
+    volumes:
+      - ./services/core-orders:/app
+      - /app/node_modules
+
+  vigilance:
+    build:
+      context: ./services/vigilance
+      dockerfile: Dockerfile
+    container_name: rt-vigilance
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=development
+      - VIGILANCE_PORT=3008
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - rt-network
+    volumes:
+      - ./services/vigilance:/app
+      - /app/node_modules
+
+  palette:
+    build:
+      context: ./services/palette
+      dockerfile: Dockerfile
+    container_name: rt-palette
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=development
+      - PALETTE_PORT=3009
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - AUTHZ_URL=http://authz:3002
+      - NOTIFICATIONS_URL=http://notifications:3004
+    depends_on:
+      - mongodb
+      - authz
+      - notifications
+    networks:
+      - rt-network
+    volumes:
+      - ./services/palette:/app
+      - /app/node_modules
+
+  affret-ia:
+    build:
+      context: ./services/affret-ia
+      dockerfile: Dockerfile
+    container_name: rt-affret-ia
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=development
+      - AFFRET_IA_PORT=3010
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PALETTE_URL=http://palette:3009
+      - CORE_ORDERS_URL=http://core-orders:3007
+    depends_on:
+      - mongodb
+      - palette
+    networks:
+      - rt-network
+    volumes:
+      - ./services/affret-ia:/app
+      - /app/node_modules
+
+  training:
+    build:
+      context: ./services/training
+      dockerfile: Dockerfile
+    container_name: rt-training
+    ports:
+      - "3012:3012"
+    environment:
+      - NODE_ENV=development
+      - TRAINING_PORT=3012
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - rt-network
+    volumes:
+      - ./services/training:/app
+      - /app/node_modules
+
+  ecpmr:
+    build:
+      context: ./services/ecpmr
+      dockerfile: Dockerfile
+    container_name: rt-ecpmr
+    ports:
+      - "3014:3014"
+    environment:
+      - NODE_ENV=development
+      - ECPMR_PORT=3014
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      - mongodb
+    networks:
+      - rt-network
+    volumes:
+      - ./services/ecpmr:/app
+      - /app/node_modules
+
+  storage-market:
+    build:
+      context: ./services/storage-market
+      dockerfile: Dockerfile
+    container_name: rt-storage-market
+    ports:
+      - "3015:3015"
+    environment:
+      - NODE_ENV=development
+      - PORT=3015
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - AUTHZ_URL=http://authz:3002
+      - NOTIFICATIONS_URL=http://notifications:3004
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - mongodb
+      - authz
+      - notifications
+    networks:
+      - rt-network
+    volumes:
+      - ./services/storage-market:/app
+      - /app/node_modules
+
+  geo-tracking:
+    build:
+      context: ./services/geo-tracking
+      dockerfile: Dockerfile
+    container_name: rt-geo-tracking
+    ports:
+      - "3016:3016"
+    environment:
+      - NODE_ENV=development
+      - PORT=3016
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - TOMTOM_API_KEY=${TOMTOM_API_KEY}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - rt-network
+    volumes:
+      - ./services/geo-tracking:/app
+      - /app/node_modules
+
+  chatbot:
+    build:
+      context: ./services/chatbot
+      dockerfile: Dockerfile
+    container_name: rt-chatbot
+    ports:
+      - "3019:3019"
+    environment:
+      - NODE_ENV=development
+      - PORT=3019
+      - MONGODB_URI=mongodb://rt_admin:rt_password_dev@mongodb:27017/rt_technologie?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AUTHZ_URL=http://authz:3002
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+      - authz
+    networks:
+      - rt-network
+    volumes:
+      - ./services/chatbot:/app
+      - /app/node_modules
+
+  # ===========================
+  # Frontend Applications
+  # Note: En production, ces apps sont déployées sur Vercel
+  # Cette configuration est pour le développement local uniquement
+  # ===========================
+
+  web-industry:
+    build:
+      context: ./apps/web-industry
+      dockerfile: Dockerfile
+    container_name: rt-web-industry
+    ports:
+      - "3100:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_CORE_ORDERS_API=http://localhost:3007
+      - NEXT_PUBLIC_PALETTE_API_URL=http://localhost:3009
+      - NEXT_PUBLIC_STORAGE_MARKET_URL=http://localhost:3015
+      - NEXT_PUBLIC_CHATBOT_URL=http://localhost:3019
+    depends_on:
+      - core-orders
+      - palette
+      - storage-market
+      - chatbot
+    networks:
+      - rt-network
+    volumes:
+      - ./apps/web-industry:/app
+      - /app/node_modules
+      - /app/.next
+
+networks:
+  rt-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:

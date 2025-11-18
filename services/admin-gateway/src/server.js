@@ -6,13 +6,13 @@ const aws = require('../../../packages/cloud-aws/src/index.js');
 const { featuresFor } = require('../../../packages/entitlements/src/index.js');
 let mongo = null;
 
-const PORT = Number(process.env.ADMIN_GATEWAY_PORT || '3008');
-const AUTHZ_URL = (process.env.AUTHZ_URL || 'http://localhost:3007').replace(/\/$/, '');
-const CORE_ORDERS_URL = (process.env.CORE_ORDERS_URL || 'http://localhost:3001').replace(/\/$/, '');
-const PLANNING_URL = (process.env.PLANNING_URL || 'http://localhost:3004').replace(/\/$/, '');
-const VIGILANCE_URL = (process.env.VIGILANCE_URL || 'http://localhost:3006').replace(/\/$/, '');
-const NOTIFICATIONS_URL = (process.env.NOTIFICATIONS_URL || 'http://localhost:3002').replace(/\/$/, '');
-const ECPMR_URL = (process.env.ECPMR_URL || 'http://localhost:3009').replace(/\/$/, '');
+const PORT = Number(process.env.ADMIN_GATEWAY_PORT || '3001');
+const AUTHZ_URL = (process.env.AUTHZ_URL || 'http://localhost:3002').replace(/\/$/, '');
+const CORE_ORDERS_URL = (process.env.CORE_ORDERS_URL || 'http://localhost:3007').replace(/\/$/, '');
+const PLANNING_URL = (process.env.PLANNING_URL || 'http://localhost:3005').replace(/\/$/, '');
+const VIGILANCE_URL = (process.env.VIGILANCE_URL || 'http://localhost:3008').replace(/\/$/, '');
+const NOTIFICATIONS_URL = (process.env.NOTIFICATIONS_URL || 'http://localhost:3004').replace(/\/$/, '');
+const ECPMR_URL = (process.env.ECPMR_URL || 'http://localhost:3014').replace(/\/$/, '');
 
 function json(res, status, body, traceId) {
   const data = JSON.stringify(body);

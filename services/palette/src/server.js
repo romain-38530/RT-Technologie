@@ -5,7 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, limitBodySize, rateLimiter } = require('../../../packages/security/src/index.js');
 
-const PORT = Number(process.env.PALETTE_PORT || '3011');
+const PORT = Number(process.env.PALETTE_PORT || '3009');
 const parseBody = limitBodySize(2 * 1024 * 1024); // 2MB pour photos
 
 // In-memory stores

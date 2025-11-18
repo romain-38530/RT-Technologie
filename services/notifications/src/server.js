@@ -12,7 +12,7 @@ function env(name, def) {
   return v || def;
 }
 
-const PORT = Number(env('NOTIFICATIONS_PORT', '3002'));
+const PORT = Number(env('NOTIFICATIONS_PORT', '3004'));
 const MAILGUN_DOMAIN = env('MAILGUN_DOMAIN', '');
 const MAILGUN_API_KEY = env('MAILGUN_API_KEY', '');
 const MAIL_FROM = env('MAIL_FROM', 'no-reply@example.com');

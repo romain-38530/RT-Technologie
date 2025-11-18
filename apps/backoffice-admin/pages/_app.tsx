@@ -1,10 +1,20 @@
 import type { AppProps } from 'next/app';
+import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
 
 export default function App({ Component, pageProps }: AppProps) {
   const token = typeof window !== 'undefined' ? window.localStorage.getItem('admin_jwt') : null;
+  const userId = typeof window !== 'undefined' ? window.localStorage.getItem('user_id') : null;
+  const userName = typeof window !== 'undefined' ? window.localStorage.getItem('user_name') : null;
   const supportUrl = process.env.NEXT_PUBLIC_SUPPORT_URL || 'https://www.rt-technologie.com';
+
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', padding: 16 }}>
+    <ChatProvider
+      botType="helpbot"
+      userId={userId || undefined}
+      userName={userName || undefined}
+      role="admin"
+    >
+      <div style={{ fontFamily: 'system-ui, sans-serif', padding: 16 }}>
       <header style={{ marginBottom: 16 }}>
         <h1>RT Backoffice Admin</h1>
         <nav style={{ display: 'flex', gap: 12 }}>
@@ -18,5 +28,12 @@ export default function App({ Component, pageProps }: AppProps) {
       </header>
       <Component {...pageProps} />
     </div>
+    <ChatWidget
+      botType="helpbot"
+      userId={userId || undefined}
+      userName={userName || undefined}
+      role="admin"
+    />
+    </ChatProvider>
   );
 }

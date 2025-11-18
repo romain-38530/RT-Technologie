@@ -5,7 +5,7 @@ const path = require('path');
 const { complete } = require('../../../packages/ai-client/src/index.js');
 const { addSecurityHeaders, handleCorsPreflight, requireAuth, rateLimiter, limitBodySize } = require('../../../packages/security/src/index.js');
 
-const PORT = Number(process.env.AFFRET_IA_PORT || '3005');
+const PORT = Number(process.env.AFFRET_IA_PORT || '3010');
 const SCORING_THRESHOLD = Number(process.env.AFFRET_IA_MIN_SCORING || '80');
 const PRICE_MARGIN = Number(process.env.AFFRET_IA_PRICE_MARGIN || '0.05'); // +5%
 
@@ -168,7 +168,7 @@ const server = http.createServer(async (req, res) => {
       let palletInfo = null;
       if (order.pallets && order.pallets > 0 && order.ship_to) {
         try {
-          const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3011';
+          const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3009';
 
           // Extraire les coordonnées GPS de la destination (simulé pour l'exemple)
           // En production, il faudrait géocoder order.ship_to
@@ -329,7 +329,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // 1. Pour chaque livraison, récupérer le meilleur site de retour via le service palette
-      const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3011';
+      const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3009';
       const deliveriesWithSites = await Promise.all(
         deliveries.map(async (delivery) => {
           try {
@@ -461,7 +461,7 @@ const server = http.createServer(async (req, res) => {
     const authResult = requireAuth(req, res, { optionalEnv: 'SECURITY_ENFORCE' });
     if (authResult === null) return;
     try {
-      const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3011';
+      const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3009';
 
       // 1. Récupérer tous les sites
       const sitesResponse = await fetch(`${PALETTE_API_URL}/palette/sites`);

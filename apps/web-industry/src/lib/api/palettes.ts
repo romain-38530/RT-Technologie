@@ -1,23 +1,33 @@
 import { apiFetch, getAuthToken } from './client'
 
-// Types for Palette module
+// Base URL for palette service
+const PALETTE_API_URL = process.env.NEXT_PUBLIC_PALETTE_API_URL || 'http://localhost:3011'
+
+// Types for Palette module (matching server.js structure)
 export interface PalletCheque {
-  chequeId: string
+  id: string
+  orderId: string
   fromCompanyId: string
   toSiteId: string
-  orderId: string
   quantity: number
+  palletType: string
   transporterPlate: string
   qrCode: string
-  signature: string
+  status: 'EMIS' | 'DEPOSE' | 'RECU' | 'LITIGE'
   createdAt: string
-  status: 'GENERATED' | 'DEPOSITED' | 'RECEIVED' | 'DISPUTED'
-  depositedAt?: string
-  receivedAt?: string
-  depositGps?: { lat: number; lng: number }
-  receiveGps?: { lat: number; lng: number }
-  depositPhoto?: string
-  receivePhoto?: string
+  depositedAt: string | null
+  receivedAt: string | null
+  signatures: {
+    transporter: string | null
+    receiver: string | null
+  }
+  photos: Array<{ type: string; url: string; at: string }>
+  geolocations: {
+    deposit: { lat: number; lng: number } | null
+    receipt: { lat: number; lng: number } | null
+  }
+  cryptoSignature: string
+  quantityReceived?: number
 }
 
 export interface PalletSite {
@@ -48,89 +58,133 @@ export interface PalletLedger {
 export interface SiteMatchRequest {
   deliveryLocation: { lat: number; lng: number }
   companyId: string
-  quantity: number
-  deliveryDate?: string
 }
 
 export interface SiteMatchResponse {
-  bestSite: PalletSite & { distance: number; quotaAvailable: number }
-  alternatives: Array<PalletSite & { distance: number; quotaAvailable: number }>
-  aiRecommendation: string
+  bestSite: {
+    siteId: string
+    site: PalletSite
+    distance: number
+    quotaRemaining: number
+    priorityScore: number
+    score: number
+  }
+  alternatives: Array<{
+    siteId: string
+    site: PalletSite
+    distance: number
+    quotaRemaining: number
+    priorityScore: number
+    score: number
+  }>
 }
 
 export interface GenerateChequeRequest {
   fromCompanyId: string
   orderId: string
   quantity: number
-  transporterPlate: string
+  transporterPlate?: string
   deliveryLocation: { lat: number; lng: number }
 }
 
 export interface GenerateChequeResponse {
   cheque: PalletCheque
-  matchedSite: PalletSite & { distance: number }
-  aiRecommendation: string
+  matchedSite: {
+    siteId: string
+    site: PalletSite
+    distance: number
+    quotaRemaining: number
+    priorityScore: number
+    score: number
+  }
+  alternatives: Array<{
+    siteId: string
+    site: PalletSite
+    distance: number
+    quotaRemaining: number
+    priorityScore: number
+    score: number
+  }>
+  traceId: string | null
+}
+
+// Helper function to call palette API
+async function paletteFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const token = getAuthToken()
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options?.headers,
+  }
+
+  const url = `${PALETTE_API_URL}${endpoint}`
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(error.error || error.message || `HTTP ${response.status}`)
+  }
+
+  return response.json()
 }
 
 export const palettesApi = {
   // Generate pallet cheque with AI site matching
   generateCheque: async (data: GenerateChequeRequest): Promise<GenerateChequeResponse> => {
-    return apiFetch<GenerateChequeResponse>('/palette/cheques/generate', {
+    return paletteFetch<GenerateChequeResponse>('/palette/cheques/generate', {
       method: 'POST',
       body: JSON.stringify(data),
-      token: getAuthToken() || undefined,
     })
   },
 
   // Get cheque details
   getCheque: async (chequeId: string): Promise<PalletCheque> => {
-    return apiFetch<PalletCheque>(`/palette/cheques/${chequeId}`, {
-      token: getAuthToken() || undefined,
-    })
+    const response = await paletteFetch<{ cheque: PalletCheque }>(`/palette/cheques/${chequeId}`)
+    return response.cheque
   },
 
   // Get company pallet balance
   getLedger: async (companyId: string): Promise<PalletLedger> => {
-    return apiFetch<PalletLedger>(`/palette/ledger/${companyId}`, {
-      token: getAuthToken() || undefined,
-    })
+    const response = await paletteFetch<{ ledger: PalletLedger }>(`/palette/ledger/${companyId}`)
+    return response.ledger
   },
 
   // Get all return sites
   getSites: async (): Promise<PalletSite[]> => {
-    return apiFetch<PalletSite[]>('/palette/sites', {
-      token: getAuthToken() || undefined,
-    })
+    const response = await paletteFetch<{ sites: PalletSite[] }>('/palette/sites')
+    return response.sites
   },
 
   // AI-powered site matching
   matchSite: async (data: SiteMatchRequest): Promise<SiteMatchResponse> => {
-    return apiFetch<SiteMatchResponse>('/palette/match/site', {
+    return paletteFetch<SiteMatchResponse>('/palette/match/site', {
       method: 'POST',
       body: JSON.stringify(data),
-      token: getAuthToken() || undefined,
     })
   },
 
   // Update site quota
-  updateSiteQuota: async (siteId: string, quotaDailyMax: number): Promise<{ success: boolean }> => {
-    return apiFetch<{ success: boolean }>(`/palette/sites/${siteId}/quota`, {
+  updateSiteQuota: async (siteId: string, quotaDailyMax: number): Promise<{ quota: any }> => {
+    return paletteFetch<{ quota: any }>(`/palette/sites/${siteId}/quota`, {
       method: 'POST',
-      body: JSON.stringify({ quotaDailyMax }),
-      token: getAuthToken() || undefined,
+      body: JSON.stringify({ dailyMax: quotaDailyMax }),
     })
   },
 
   // Create dispute
   createDispute: async (data: {
     chequeId: string
+    claimantId: string
     reason: string
     photos?: string[]
-  }): Promise<{ disputeId: string }> => {
-    return apiFetch<{ disputeId: string }>('/palette/disputes', {
+    comments?: string
+  }): Promise<{ dispute: any }> => {
+    return paletteFetch<{ dispute: any }>('/palette/disputes', {
       method: 'POST',
       body: JSON.stringify(data),
-      token: getAuthToken() || undefined,
     })
   },
 }

@@ -2,11 +2,14 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const [isOnline, setIsOnline] = useState(true);
   const token = typeof window !== 'undefined' ? window.localStorage.getItem('logistician_jwt') : null;
+  const userId = typeof window !== 'undefined' ? window.localStorage.getItem('user_id') : null;
+  const userName = typeof window !== 'undefined' ? window.localStorage.getItem('user_name') : null;
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -29,7 +32,12 @@ export default function App({ Component, pageProps }: AppProps) {
   };
 
   return (
-    <>
+    <ChatProvider
+      botType="quai-wms"
+      userId={userId || undefined}
+      userName={userName || undefined}
+      role="logisticien"
+    >
       <Head>
         <title>RT Logistician</title>
         <meta name="description" content="Gestion d'entrepôt RT Technologie" />
@@ -113,7 +121,13 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </main>
       </div>
-    </>
+      <ChatWidget
+        botType="quai-wms"
+        userId={userId || undefined}
+        userName={userName || undefined}
+        role="logisticien"
+      />
+    </ChatProvider>
   );
 }
 

@@ -93,6 +93,7 @@ const AFFRET_IA_URL = (process.env.AFFRET_IA_URL || '').replace(/\/$/, '');
 const AFFRET_ALLOWED = (process.env.AFFRET_IA_ALLOWED_ORGS || '').split(',').map((s) => s.trim()).filter(Boolean);
 const AFFRET_REQUIRE_ADDON = String(process.env.AFFRET_IA_REQUIRE_ADDON || 'true').toLowerCase() !== 'false';
 const AUTHZ_URL = (process.env.AUTHZ_URL || '').replace(/\/$/, '');
+const GEO_TRACKING_URL = (process.env.GEO_TRACKING_URL || 'http://localhost:3016').replace(/\/$/, '');
 
 function vigilanceStatus(carrierId) {
   return store.vigilance.get(carrierId) || 'UNKNOWN';
@@ -318,6 +319,118 @@ async function affretDispatch(order, traceId) {
     });
   } catch (e) {
     return { escalated: false, error: String(e.message || e) };
+  }
+}
+
+// ============================================================================
+// GEO-TRACKING INTEGRATION
+// ============================================================================
+
+/**
+ * Notifier le service geo-tracking d'une nouvelle position GPS
+ * @param {string} orderId - ID de la commande
+ * @param {number} lat - Latitude
+ * @param {number} lng - Longitude
+ * @param {string} timestamp - Timestamp ISO 8601
+ * @returns {Promise<object>} Réponse du service geo-tracking
+ */
+async function notifyGPSPosition(orderId, lat, lng, timestamp) {
+  if (!GEO_TRACKING_URL) {
+    console.warn('[geo-tracking] URL non configurée, skip notification GPS');
+    return { success: false, reason: 'geo_tracking_disabled' };
+  }
+  try {
+    const body = JSON.stringify({
+      orderId,
+      latitude: lat,
+      longitude: lng,
+      timestamp: timestamp || new Date().toISOString(),
+      accuracy: 10
+    });
+    const u = new URL(`${GEO_TRACKING_URL}/geo-tracking/positions`);
+    const isHttps = u.protocol === 'https:';
+    const svcTok = process.env.INTERNAL_SERVICE_TOKEN;
+    const opts = {
+      hostname: u.hostname,
+      port: u.port || (isHttps ? 443 : 80),
+      path: u.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        ...(svcTok ? { 'Authorization': `Bearer ${svcTok}` } : {})
+      }
+    };
+    const client = isHttps ? https : http;
+    return await new Promise((resolve, reject) => {
+      const req = client.request(opts, (res) => {
+        let buf = '';
+        res.on('data', (c) => (buf += c));
+        res.on('end', () => {
+          try {
+            const json = buf ? JSON.parse(buf) : {};
+            resolve({ success: res.statusCode >= 200 && res.statusCode < 300, statusCode: res.statusCode, data: json });
+          } catch (e) { resolve({ success: false, error: e.message }); }
+        });
+      });
+      req.on('error', (e) => resolve({ success: false, error: e.message }));
+      req.write(body);
+      req.end();
+    });
+  } catch (e) {
+    console.warn('[geo-tracking] erreur notification GPS:', e.message);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Récupérer l'ETA depuis le service geo-tracking
+ * @param {string} orderId - ID de la commande
+ * @param {number} currentLat - Latitude actuelle
+ * @param {number} currentLng - Longitude actuelle
+ * @param {number} destinationLat - Latitude destination
+ * @param {number} destinationLng - Longitude destination
+ * @returns {Promise<object>} ETA calculé avec TomTom Traffic API
+ */
+async function getETA(orderId, currentLat, currentLng, destinationLat, destinationLng) {
+  if (!GEO_TRACKING_URL) {
+    console.warn('[geo-tracking] URL non configurée, skip calcul ETA');
+    return null;
+  }
+  try {
+    const params = new URLSearchParams({
+      currentLat: String(currentLat),
+      currentLon: String(currentLng)
+    });
+    const svcTok = process.env.INTERNAL_SERVICE_TOKEN;
+    const response = await httpGetJson(
+      `${GEO_TRACKING_URL}/geo-tracking/eta/${encodeURIComponent(orderId)}?${params.toString()}`,
+      svcTok ? { Authorization: `Bearer ${svcTok}` } : {}
+    );
+    return response;
+  } catch (e) {
+    console.warn('[geo-tracking] erreur récupération ETA:', e.message);
+    return null;
+  }
+}
+
+/**
+ * Récupérer les événements de géofencing pour une commande
+ * @param {string} orderId - ID de la commande
+ * @returns {Promise<Array>} Liste des événements de géofencing
+ */
+async function getGeofenceEvents(orderId) {
+  if (!GEO_TRACKING_URL) return [];
+  try {
+    const svcTok = process.env.INTERNAL_SERVICE_TOKEN;
+    const response = await httpGetJson(
+      `${GEO_TRACKING_URL}/geo-tracking/geofence/events/${encodeURIComponent(orderId)}`,
+      svcTok ? { Authorization: `Bearer ${svcTok}` } : {}
+    );
+    return response?.events || [];
+  } catch (e) {
+    console.warn('[geo-tracking] erreur récupération événements géofencing:', e.message);
+    return [];
   }
 }
 
@@ -602,6 +715,75 @@ const server = http.createServer(async (req, res) => {
       notify(process.env.INDUSTRY_NOTIFY_TO || process.env.DISPATCH_NOTIFY_TO, `Commande acceptée ${order.id}`, `Le transporteur ${carrier?.name || carrierId} a accepté la commande ${order.id}.`);
       notify(carrierEmail, `Confirmation d'acceptation ${order.id}`, `Merci, vous avez accepté la commande ${order.id}.`);
       return json(res, 200, { acceptedBy: carrierId, status: order.status, traceId: (state && state.tid) || null });
+    } catch (e) {
+      return json(res, 400, { error: 'Invalid JSON' });
+    }
+  }
+
+  // GET /industry/orders/:id/geofence-events
+  if (method === 'GET' && /^\/industry\/orders\/.+\/geofence-events$/.test(pathname)) {
+    const id = pathname.split('/')[3];
+    const order = id ? store.orders.get(id) : null;
+    if (!order) return notFound(res);
+    try {
+      const events = await getGeofenceEvents(order.id);
+      return json(res, 200, { orderId: order.id, events });
+    } catch (e) {
+      return json(res, 500, { error: 'Failed to fetch geofence events', detail: e.message });
+    }
+  }
+
+  // GET /industry/orders/:id/eta?currentLat=X&currentLng=Y
+  if (method === 'GET' && /^\/industry\/orders\/.+\/eta$/.test(pathname)) {
+    const id = pathname.split('/')[3];
+    const order = id ? store.orders.get(id) : null;
+    if (!order) return notFound(res);
+    const currentLat = parsed.query.currentLat ? parseFloat(parsed.query.currentLat) : null;
+    const currentLng = parsed.query.currentLng ? parseFloat(parsed.query.currentLng) : null;
+    if (currentLat === null || currentLng === null) {
+      return json(res, 400, { error: 'currentLat and currentLng required' });
+    }
+    try {
+      const destinationLat = order.ship_to?.latitude || null;
+      const destinationLng = order.ship_to?.longitude || null;
+      if (!destinationLat || !destinationLng) {
+        return json(res, 400, { error: 'Order missing destination coordinates' });
+      }
+      const eta = await getETA(order.id, currentLat, currentLng, destinationLat, destinationLng);
+      return json(res, 200, { orderId: order.id, eta: eta || null });
+    } catch (e) {
+      return json(res, 500, { error: 'Failed to calculate ETA', detail: e.message });
+    }
+  }
+
+  // POST /industry/orders/:id/gps-position body: { lat, lng, timestamp }
+  if (method === 'POST' && /^\/industry\/orders\/.+\/gps-position$/.test(pathname)) {
+    const id = pathname.split('/')[3];
+    const order = id ? store.orders.get(id) : null;
+    if (!order) return notFound(res);
+    try {
+      const body = (await parseBody(req)) || {};
+      const { lat, lng, timestamp } = body;
+      if (lat === undefined || lng === undefined) {
+        return json(res, 400, { error: 'lat and lng required' });
+      }
+      const result = await notifyGPSPosition(order.id, lat, lng, timestamp);
+
+      // Si événement géofencing détecté, mettre à jour statut commande
+      if (result.success && result.data?.geofenceEvent) {
+        const event = result.data.geofenceEvent;
+        const statusMap = {
+          'ARRIVAL_PICKUP': 'ARRIVED_PICKUP',
+          'DEPARTURE_PICKUP': 'IN_TRANSIT',
+          'ARRIVAL_DELIVERY': 'ARRIVED_DELIVERY'
+        };
+        if (statusMap[event.type]) {
+          order.status = statusMap[event.type];
+          console.log('[event] order.status.updated.geofence', { orderId: order.id, newStatus: order.status, eventType: event.type });
+        }
+      }
+
+      return json(res, 200, { success: result.success, data: result.data || null });
     } catch (e) {
       return json(res, 400, { error: 'Invalid JSON' });
     }

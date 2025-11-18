@@ -1,24 +1,74 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { storageAdminApi, type LogisticianSubscription } from '@/lib/api/storage'
 
 export default function LogisticiansManagementPage() {
-  const [logisticians, setLogisticians] = useState([
-    { id: 'LOG-1', name: 'Logistique Pro', email: 'contact@logpro.fr', status: 'APPROVED', sites: 2, contracts: 3, joinedDate: '2024-10-15' },
-    { id: 'LOG-2', name: 'Hub Transport', email: 'info@hubtransport.fr', status: 'APPROVED', sites: 1, contracts: 1, joinedDate: '2024-11-20' },
-    { id: 'LOG-5', name: 'Stock & Co', email: 'contact@stockco.fr', status: 'PENDING', sites: 0, contracts: 0, joinedDate: '2025-01-18' }
-  ])
+  const [logisticians, setLogisticians] = useState<LogisticianSubscription[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleApprove = (id: string) => {
-    setLogisticians(prev => prev.map(l => l.id === id ? { ...l, status: 'APPROVED' } : l))
+  useEffect(() => {
+    const fetchLogisticians = async () => {
+      try {
+        setLoading(true)
+        const data = await storageAdminApi.getLogisticians()
+        setLogisticians(data)
+      } catch (err) {
+        console.error('Error fetching logisticians:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load logisticians')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLogisticians()
+  }, [])
+
+  const handleApprove = async (id: string) => {
+    try {
+      await storageAdminApi.approveLogistician(id)
+      setLogisticians(prev => prev.map(l => l.id === id ? { ...l, status: 'APPROVED' as const, approvedAt: new Date().toISOString() } : l))
+    } catch (err) {
+      console.error('Error approving logistician:', err)
+      alert('Erreur lors de l\'approbation')
+    }
   }
 
-  const handleReject = (id: string) => {
-    setLogisticians(prev => prev.map(l => l.id === id ? { ...l, status: 'REJECTED' } : l))
+  const handleReject = async (id: string) => {
+    const reason = prompt('Raison du rejet:')
+    if (!reason) return
+
+    try {
+      await storageAdminApi.rejectLogistician(id, reason)
+      setLogisticians(prev => prev.map(l => l.id === id ? { ...l, status: 'REJECTED' as const } : l))
+    } catch (err) {
+      console.error('Error rejecting logistician:', err)
+      alert('Erreur lors du rejet')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement des logisticiens...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-2">Gestion des Logisticiens</h1>
       <p className="text-gray-600 mb-6">Validation des abonnements et supervision</p>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-800">Erreur: {error}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
@@ -54,48 +104,59 @@ export default function LogisticiansManagementPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {logisticians.map((log) => (
-              <tr key={log.id}>
-                <td className="px-6 py-4 font-medium">{log.id}</td>
-                <td className="px-6 py-4">{log.name}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{log.email}</td>
-                <td className="px-6 py-4">{log.sites}</td>
-                <td className="px-6 py-4">{log.contracts}</td>
-                <td className="px-6 py-4 text-sm">{new Date(log.joinedDate).toLocaleDateString('fr-FR')}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded text-sm ${
-                    log.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                    log.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {log.status === 'APPROVED' ? 'Approuvé' : log.status === 'PENDING' ? 'En attente' : 'Rejeté'}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  {log.status === 'PENDING' && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleApprove(log.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-                      >
-                        Approuver
-                      </button>
-                      <button
-                        onClick={() => handleReject(log.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                      >
-                        Rejeter
-                      </button>
-                    </div>
-                  )}
-                  {log.status === 'APPROVED' && (
-                    <a href={`/storage-market/logisticians/${log.id}`} className="text-blue-600 hover:underline text-sm">
-                      Voir détails
-                    </a>
-                  )}
+            {logisticians.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                  Aucun logisticien enregistré
                 </td>
               </tr>
-            ))}
+            ) : (
+              logisticians.map((log) => (
+                <tr key={log.id}>
+                  <td className="px-6 py-4 font-medium">{log.id}</td>
+                  <td className="px-6 py-4">-</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">-</td>
+                  <td className="px-6 py-4">-</td>
+                  <td className="px-6 py-4">-</td>
+                  <td className="px-6 py-4 text-sm">{new Date(log.createdAt).toLocaleDateString('fr-FR')}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded text-sm ${
+                      log.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                      log.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
+                      log.status === 'SUSPENDED' ? 'bg-gray-100 text-gray-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {log.status === 'APPROVED' ? 'Approuvé' :
+                       log.status === 'PENDING' ? 'En attente' :
+                       log.status === 'SUSPENDED' ? 'Suspendu' : 'Rejeté'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {log.status === 'PENDING' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApprove(log.id)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+                        >
+                          Approuver
+                        </button>
+                        <button
+                          onClick={() => handleReject(log.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                        >
+                          Rejeter
+                        </button>
+                      </div>
+                    )}
+                    {log.status === 'APPROVED' && log.approvedAt && (
+                      <span className="text-sm text-gray-600">
+                        Approuvé le {new Date(log.approvedAt).toLocaleDateString('fr-FR')}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

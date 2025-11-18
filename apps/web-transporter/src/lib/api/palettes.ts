@@ -1,22 +1,29 @@
 const PALETTE_API_URL = process.env.NEXT_PUBLIC_PALETTE_API_URL || 'http://localhost:3011';
 
 export interface PalletCheque {
-  chequeId: string;
+  id: string;
+  orderId: string;
   fromCompanyId: string;
   toSiteId: string;
-  orderId: string;
   quantity: number;
+  palletType: string;
   transporterPlate: string;
   qrCode: string;
-  signature: string;
+  status: 'EMIS' | 'DEPOSE' | 'RECU' | 'LITIGE';
   createdAt: string;
-  status: 'GENERATED' | 'DEPOSITED' | 'RECEIVED' | 'DISPUTED';
-  depositedAt?: string;
-  receivedAt?: string;
-  depositGps?: { lat: number; lng: number };
-  receiveGps?: { lat: number; lng: number };
-  depositPhoto?: string;
-  receivePhoto?: string;
+  depositedAt: string | null;
+  receivedAt: string | null;
+  signatures: {
+    transporter: string | null;
+    receiver: string | null;
+  };
+  photos: Array<{ type: string; url: string; at: string }>;
+  geolocations: {
+    deposit: { lat: number; lng: number } | null;
+    receipt: { lat: number; lng: number } | null;
+  };
+  cryptoSignature: string;
+  quantityReceived?: number;
 }
 
 export interface PalletSite {
@@ -52,19 +59,22 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
 export const palettesApi = {
   // Get cheque details
   getCheque: async (chequeId: string): Promise<PalletCheque> => {
-    return apiFetch<PalletCheque>(`/palette/cheques/${chequeId}`);
+    const response = await apiFetch<{ cheque: PalletCheque }>(`/palette/cheques/${chequeId}`);
+    return response.cheque;
   },
 
   // Deposit pallets (transporter delivers to site)
   depositCheque: async (data: {
     chequeId: string;
-    gps: { lat: number; lng: number };
+    transporterSignature: string;
+    geolocation: { lat: number; lng: number };
     photo?: string;
-  }): Promise<{ success: boolean; message: string }> => {
-    return apiFetch<{ success: boolean; message: string }>(`/palette/cheques/${data.chequeId}/deposit`, {
+  }): Promise<{ cheque: PalletCheque }> => {
+    return apiFetch<{ cheque: PalletCheque }>(`/palette/cheques/${data.chequeId}/deposit`, {
       method: 'POST',
       body: JSON.stringify({
-        gps: data.gps,
+        transporterSignature: data.transporterSignature,
+        geolocation: data.geolocation,
         photo: data.photo,
       }),
     });
@@ -72,6 +82,18 @@ export const palettesApi = {
 
   // Get all return sites
   getSites: async (): Promise<PalletSite[]> => {
-    return apiFetch<PalletSite[]>('/palette/sites');
+    const response = await apiFetch<{ sites: PalletSite[] }>('/palette/sites');
+    return response.sites;
+  },
+
+  // AI-powered site matching
+  matchSite: async (data: {
+    deliveryLocation: { lat: number; lng: number };
+    companyId?: string;
+  }): Promise<any> => {
+    return apiFetch<any>('/palette/match/site', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };

@@ -1,11 +1,11 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Star, MapPin, TrendingUp, Clock, CheckCircle2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Star, MapPin, TrendingUp, Clock, CheckCircle2, Sparkles, Loader2 } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -14,113 +14,98 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { getRankedOffers, selectOffer, type StorageOffer } from '@/lib/api/storage'
+import { useToast } from '@/hooks/use-toast'
 
 export default function OffersComparisonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null)
+  const [offers, setOffers] = useState<StorageOffer[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  // Mock data with AI ranking
-  const offers = [
-    {
-      id: 'OFFER-001',
-      logisticianId: 'LOG-2',
-      logisticianName: 'Hub Lyon Est',
-      siteLocation: { city: 'Chassieu', region: 'Rhône-Alpes', distance: 12 },
-      pricing: {
-        monthlyPerPallet: 11,
-        totalPrice: 7700,
-        setupFee: 400
-      },
-      certifications: ['ISO 9001', 'ISO 14001', 'IFS'],
-      availability: { readyDate: '2025-01-19', flexibleStart: false },
-      reliabilityScore: 95,
-      responseTimeHours: 1.5,
-      aiScore: 94.5,
-      aiRank: 1,
-      aiRecommended: true,
-      aiReasons: [
-        'Prix très compétitif (-15% vs moyenne)',
-        'Très proche (12km)',
-        'Excellent historique de fiabilité',
-        'Réponse ultra-rapide'
-      ]
-    },
-    {
-      id: 'OFFER-002',
-      logisticianId: 'LOG-1',
-      logisticianName: 'Entrepôt Paris Nord',
-      siteLocation: { city: 'Gennevilliers', region: 'Île-de-France', distance: 45 },
-      pricing: {
-        monthlyPerPallet: 12,
-        totalPrice: 8400,
-        setupFee: 500
-      },
-      certifications: ['ISO 9001', 'IFS'],
-      availability: { readyDate: '2025-01-28', flexibleStart: true },
-      reliabilityScore: 92,
-      responseTimeHours: 3,
-      aiScore: 87.2,
-      aiRank: 2,
-      aiRecommended: true,
-      aiReasons: [
-        'Prix avantageux',
-        'Proximité acceptable (45km)',
-        'Bonne fiabilité',
-        'Réponse rapide'
-      ]
-    },
-    {
-      id: 'OFFER-003',
-      logisticianId: 'LOG-4',
-      logisticianName: 'Entrepôt Bordeaux Lac',
-      siteLocation: { city: 'Bordeaux', region: 'Nouvelle-Aquitaine', distance: 520 },
-      pricing: {
-        monthlyPerPallet: 11.5,
-        totalPrice: 8050,
-        setupFee: 450
-      },
-      certifications: ['ISO 9001', 'IFS'],
-      availability: { readyDate: '2025-02-01', flexibleStart: true },
-      reliabilityScore: 85,
-      responseTimeHours: 6,
-      aiScore: 62.3,
-      aiRank: 3,
-      aiRecommended: true,
-      aiReasons: [
-        'Prix dans la moyenne',
-        'Distance élevée (520km)',
-        'Bonne fiabilité'
-      ]
-    },
-    {
-      id: 'OFFER-004',
-      logisticianId: 'LOG-3',
-      logisticianName: 'Plateforme Lille Métropole',
-      siteLocation: { city: 'Lesquin', region: 'Hauts-de-France', distance: 180 },
-      pricing: {
-        monthlyPerPallet: 13.5,
-        totalPrice: 9450,
-        setupFee: 350
-      },
-      certifications: ['ISO 9001'],
-      availability: { readyDate: '2025-02-05', flexibleStart: true },
-      reliabilityScore: 78,
-      responseTimeHours: 8,
-      aiScore: 54.1,
-      aiRank: 4,
-      aiRecommended: false,
-      aiReasons: [
-        'Prix au-dessus de la moyenne',
-        'Distance modérée (180km)',
-        'Réponse dans les délais'
-      ]
+  // Fetch ranked offers from API
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        setLoading(true)
+        const response = await getRankedOffers(id)
+        setOffers(response.items)
+      } catch (err) {
+        console.error('Error fetching offers:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load offers')
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de charger les offres',
+          variant: 'destructive',
+        })
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
 
-  const handleAcceptOffer = (offerId: string) => {
-    setSelectedOffer(offerId)
-    // TODO: Call API to accept offer and create contract
-    console.log('Accepting offer:', offerId)
+    fetchOffers()
+  }, [id, toast])
+
+  const handleAcceptOffer = async (offerId: string) => {
+    try {
+      setSelectedOffer(offerId)
+      const contract = await selectOffer(id, offerId)
+
+      toast({
+        title: 'Offre acceptée',
+        description: `Contrat ${contract.id} créé avec succès`,
+      })
+
+      // Redirect to contract page after 1.5s
+      setTimeout(() => {
+        window.location.href = `/storage/contracts/${contract.id}`
+      }, 1500)
+    } catch (err) {
+      console.error('Error accepting offer:', err)
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'accepter l\'offre',
+        variant: 'destructive',
+      })
+      setSelectedOffer(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <p className="text-muted-foreground">Chargement des offres...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || offers.length === 0) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center gap-4">
+          <Link href={`/storage/needs/${id}`}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold tracking-tight">Comparaison des Offres</h2>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">
+              {error || 'Aucune offre reçue pour le moment'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -230,31 +215,28 @@ export default function OffersComparisonPage({ params }: { params: Promise<{ id:
                     <div className="flex items-center gap-1 text-sm">
                       <MapPin className="h-3 w-3 text-muted-foreground" />
                       {offer.siteLocation.city}
-                      <span className="text-xs text-muted-foreground">
-                        ({offer.siteLocation.distance}km)
-                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="font-bold">
-                    {offer.pricing.totalPrice.toLocaleString('fr-FR')} €
+                    {(offer.pricing.totalPrice || 0).toLocaleString('fr-FR')} {offer.pricing.currency}
                   </TableCell>
                   <TableCell>
-                    {offer.pricing.monthlyPerPallet} €/palette
+                    {offer.pricing.monthlyRate ? `${offer.pricing.monthlyRate} €/mois` : 'N/A'}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <TrendingUp className={`h-3 w-3 ${
-                        offer.reliabilityScore >= 90 ? 'text-green-600' :
-                        offer.reliabilityScore >= 75 ? 'text-orange-500' :
+                        (offer.reliabilityScore || 0) >= 90 ? 'text-green-600' :
+                        (offer.reliabilityScore || 0) >= 75 ? 'text-orange-500' :
                         'text-gray-500'
                       }`} />
-                      {offer.reliabilityScore}%
+                      {offer.reliabilityScore || 0}%
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
-                      {offer.responseTimeHours}h
+                      {offer.responseTimeHours || 0}h
                     </div>
                   </TableCell>
                   <TableCell>

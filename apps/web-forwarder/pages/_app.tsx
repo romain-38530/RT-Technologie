@@ -1,10 +1,13 @@
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import '../styles/globals.css';
+import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const token = typeof window !== 'undefined' ? window.localStorage.getItem('forwarder_jwt') : null;
+  const userId = typeof window !== 'undefined' ? window.localStorage.getItem('user_id') : null;
+  const userName = typeof window !== 'undefined' ? window.localStorage.getItem('user_name') : null;
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard' },
@@ -17,7 +20,13 @@ export default function App({ Component, pageProps }: AppProps) {
   const isActive = (href: string) => router.pathname === href;
 
   return (
-    <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', background: '#f5f7fa' }}>
+    <ChatProvider
+      botType="freight-ia"
+      userId={userId || undefined}
+      userName={userName || undefined}
+      role="transitaire"
+    >
+      <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', minHeight: '100vh', background: '#f5f7fa' }}>
       <header style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: '#fff',
@@ -70,5 +79,12 @@ export default function App({ Component, pageProps }: AppProps) {
         RT Technologie - Plateforme Affret.IA
       </footer>
     </div>
+    <ChatWidget
+      botType="freight-ia"
+      userId={userId || undefined}
+      userName={userName || undefined}
+      role="transitaire"
+    />
+    </ChatProvider>
   );
 }

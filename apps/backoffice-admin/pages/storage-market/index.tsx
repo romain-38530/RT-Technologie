@@ -1,13 +1,49 @@
+import { useState, useEffect } from 'react'
+import { storageAdminApi, type StorageStats } from '@/lib/api/storage'
+
 export default function StorageMarketAdminDashboard() {
-  const stats = {
-    totalNeeds: 15,
-    totalOffers: 42,
-    totalContracts: 8,
-    activeContracts: 5,
-    totalLogisticians: 12,
-    approvedLogisticians: 10,
-    pendingLogisticians: 2,
-    totalRevenue: 85000
+  const [stats, setStats] = useState<StorageStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true)
+        const data = await storageAdminApi.getStats()
+        setStats(data)
+      } catch (err) {
+        console.error('Error fetching stats:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load stats')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement des statistiques...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Erreur: {error || 'Impossible de charger les statistiques'}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -19,22 +55,30 @@ export default function StorageMarketAdminDashboard() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-1">Besoins publiés</div>
           <div className="text-3xl font-bold">{stats.totalNeeds}</div>
-          <div className="text-sm text-green-600 mt-1">+3 cette semaine</div>
+          <div className="text-sm text-gray-600 mt-1">
+            {Object.entries(stats.needsByStatus).map(([status, count]) => (
+              <span key={status} className="mr-2">{status}: {count}</span>
+            ))}
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-1">Offres soumises</div>
           <div className="text-3xl font-bold">{stats.totalOffers}</div>
-          <div className="text-sm text-gray-600 mt-1">Moyenne: 2.8/besoin</div>
+          <div className="text-sm text-gray-600 mt-1">
+            Moyenne: {stats.averageOffersPerNeed.toFixed(1)}/besoin
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-1">Contrats actifs</div>
           <div className="text-3xl font-bold">{stats.activeContracts}/{stats.totalContracts}</div>
-          <div className="text-sm text-gray-600 mt-1">Taux conversion: 53%</div>
+          <div className="text-sm text-gray-600 mt-1">
+            Taux: {stats.totalNeeds > 0 ? ((stats.totalContracts / stats.totalNeeds) * 100).toFixed(0) : 0}%
+          </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 mb-1">Logisticiens</div>
-          <div className="text-3xl font-bold">{stats.totalLogisticians}</div>
-          <div className="text-sm text-orange-600 mt-1">{stats.pendingLogisticians} en attente</div>
+          <div className="text-sm text-gray-600 mb-1">Sites logistiques</div>
+          <div className="text-3xl font-bold">{stats.totalSites}</div>
+          <div className="text-sm text-gray-600 mt-1">Capacités disponibles</div>
         </div>
       </div>
 

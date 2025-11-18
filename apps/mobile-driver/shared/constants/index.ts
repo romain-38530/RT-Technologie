@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
   PLANNING: process.env.NEXT_PUBLIC_PLANNING_API || 'http://localhost:3004',
   ECMR: process.env.NEXT_PUBLIC_ECMR_API || 'http://localhost:3009',
   NOTIFICATIONS: process.env.NEXT_PUBLIC_NOTIFICATIONS_API || 'http://localhost:3002',
+  GEO_TRACKING: process.env.NEXT_PUBLIC_GEO_TRACKING_API || 'http://localhost:3016',
 } as const;
 
 export const STORAGE_KEYS = {

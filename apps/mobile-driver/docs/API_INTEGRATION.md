@@ -9,7 +9,8 @@ L'application RT Driver communique avec plusieurs microservices backend pour gé
 | Service | Port | Description |
 |---------|------|-------------|
 | Core Orders | 3001 | Gestion des missions et commandes |
-| Planning | 3004 | Tracking GPS et calcul d'ETA |
+| Planning | 3004 | Planning et tournées |
+| Geo-Tracking | 3016 | Tracking GPS temps réel, géofencing et calcul d'ETA |
 | eCMR | 3009 | Signatures électroniques et documents |
 | Notifications | 3002 | Notifications push |
 
@@ -280,6 +281,212 @@ GET /driver/missions/history/:driverId
   "limit": 20,
   "offset": 0
 }
+```
+
+## API Geo-Tracking (Port 3016)
+
+### Envoyer une position GPS
+
+**Endpoint**
+```http
+POST /geo-tracking/positions
+```
+
+**Request Body**
+```json
+{
+  "orderId": "ORD-2024-001",
+  "latitude": 48.8566,
+  "longitude": 2.3522,
+  "timestamp": "2024-11-18T10:30:00Z",
+  "accuracy": 10,
+  "speed": 60,
+  "heading": 180
+}
+```
+
+**Response 200**
+```json
+{
+  "success": true,
+  "positionId": "673ab456...",
+  "geofenceEvent": {
+    "type": "ARRIVAL_PICKUP",
+    "detectedAt": "2024-11-18T10:30:00Z",
+    "location": {
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "name": "Entrepôt Paris Nord",
+      "address": "123 Rue de..."
+    },
+    "automatic": true
+  },
+  "eta": {
+    "arrivalTime": "2024-11-18T11:00:00Z",
+    "durationMinutes": 30,
+    "distanceKm": 25.5,
+    "trafficDelay": 5,
+    "confidence": "HIGH"
+  }
+}
+```
+
+### Récupérer l'historique des positions
+
+**Endpoint**
+```http
+GET /geo-tracking/positions/:orderId
+```
+
+**Query Parameters**
+- `from` : Date de début (ISO 8601)
+- `to` : Date de fin (ISO 8601)
+- `limit` : Nombre maximum de positions (défaut: 100)
+
+**Response 200**
+```json
+{
+  "orderId": "ORD-2024-001",
+  "positions": [
+    {
+      "id": "673ab...",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "timestamp": "2024-11-18T10:30:00Z",
+      "accuracy": 10,
+      "speed": 60,
+      "heading": 180
+    }
+  ],
+  "totalCount": 245
+}
+```
+
+### Calculer l'ETA
+
+**Endpoint**
+```http
+GET /geo-tracking/eta/:orderId
+```
+
+**Query Parameters**
+- `currentLat` : Latitude actuelle (obligatoire)
+- `currentLon` : Longitude actuelle (obligatoire)
+
+**Response 200**
+```json
+{
+  "orderId": "ORD-2024-001",
+  "destination": {
+    "latitude": 48.8738,
+    "longitude": 2.2950,
+    "name": "Client ABC"
+  },
+  "eta": {
+    "arrivalTime": "2024-11-18T11:00:00Z",
+    "durationMinutes": 30,
+    "distanceKm": 25.5,
+    "trafficDelay": 5,
+    "confidence": "HIGH"
+  }
+}
+```
+
+**Note:** Le calcul d'ETA utilise l'API TomTom Traffic pour tenir compte du trafic temps réel. Si TomTom n'est pas disponible, un calcul simple est effectué (vitesse moyenne 60 km/h).
+
+### Récupérer les événements de géofencing
+
+**Endpoint**
+```http
+GET /geo-tracking/geofence/events/:orderId
+```
+
+**Response 200**
+```json
+{
+  "orderId": "ORD-2024-001",
+  "events": [
+    {
+      "type": "ARRIVAL_PICKUP",
+      "detectedAt": "2024-11-18T10:30:00Z",
+      "location": {
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "name": "Entrepôt Paris Nord"
+      },
+      "automatic": true
+    },
+    {
+      "type": "DEPARTURE_PICKUP",
+      "detectedAt": "2024-11-18T11:00:00Z",
+      "location": {
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "name": "Entrepôt Paris Nord"
+      },
+      "automatic": true
+    }
+  ]
+}
+```
+
+**Types d'événements:**
+- `ARRIVAL_PICKUP` : Arrivée au point de chargement (rayon 200m)
+- `DEPARTURE_PICKUP` : Départ du point de chargement
+- `ARRIVAL_DELIVERY` : Arrivée au point de livraison (rayon 200m)
+- `DEPARTURE_DELIVERY` : Départ du point de livraison
+
+**Détection automatique:**
+Le service détecte automatiquement l'entrée/sortie des zones de géofencing (200m de rayon). Lorsqu'un événement est détecté, le statut de la commande est mis à jour automatiquement.
+
+### Configuration tracking GPS
+
+**Paramètres recommandés:**
+```typescript
+{
+  enableHighAccuracy: true,
+  timeout: 10000,
+  maximumAge: 5000,
+  trackingInterval: 15000  // 15 secondes
+}
+```
+
+**Utilisation avec tracking.ts:**
+```typescript
+import { trackingApi } from '@/lib/api/tracking';
+
+// Envoyer position GPS toutes les 15s
+const position = await trackingApi.sendPosition({
+  orderId: mission.id,
+  latitude: currentPosition.latitude,
+  longitude: currentPosition.longitude,
+  accuracy: currentPosition.accuracy,
+  timestamp: new Date().toISOString(),
+  speed: currentPosition.speed,
+  heading: currentPosition.heading,
+});
+
+// Vérifier si événement géofencing détecté
+if (position.geofenceEvent) {
+  console.log('Événement détecté:', position.geofenceEvent.type);
+  // Mettre à jour l'UI
+}
+
+// Afficher l'ETA
+if (position.eta) {
+  console.log(`ETA: ${position.eta.durationMinutes} minutes`);
+}
+```
+
+**Sync offline:**
+```typescript
+import { trackingApi } from '@/lib/api/tracking';
+
+// Récupérer positions en attente depuis IndexedDB
+const pendingPositions = await getOfflinePositions();
+
+// Envoyer en batch
+await trackingApi.sendGPSBatch(pendingPositions);
 ```
 
 ## API Planning (Port 3004)
@@ -713,26 +920,29 @@ L'application peut s'abonner à des webhooks pour recevoir des notifications en 
 
 ### Développement
 ```
-CORE_ORDERS=http://localhost:3001
-PLANNING=http://localhost:3004
-ECMR=http://localhost:3009
-NOTIFICATIONS=http://localhost:3002
+NEXT_PUBLIC_CORE_ORDERS_API=http://localhost:3001
+NEXT_PUBLIC_PLANNING_API=http://localhost:3004
+NEXT_PUBLIC_GEO_TRACKING_URL=http://localhost:3016
+NEXT_PUBLIC_ECMR_API=http://localhost:3009
+NEXT_PUBLIC_NOTIFICATIONS_API=http://localhost:3002
 ```
 
 ### Staging
 ```
-CORE_ORDERS=https://api-staging.rt.com/orders
-PLANNING=https://api-staging.rt.com/planning
-ECMR=https://api-staging.rt.com/ecmr
-NOTIFICATIONS=https://api-staging.rt.com/notifications
+NEXT_PUBLIC_CORE_ORDERS_API=https://api-staging.rt.com/orders
+NEXT_PUBLIC_PLANNING_API=https://api-staging.rt.com/planning
+NEXT_PUBLIC_GEO_TRACKING_URL=https://api-staging.rt.com/tracking
+NEXT_PUBLIC_ECMR_API=https://api-staging.rt.com/ecmr
+NEXT_PUBLIC_NOTIFICATIONS_API=https://api-staging.rt.com/notifications
 ```
 
 ### Production
 ```
-CORE_ORDERS=https://api.rt.com/orders
-PLANNING=https://api.rt.com/planning
-ECMR=https://api.rt.com/ecmr
-NOTIFICATIONS=https://api.rt.com/notifications
+NEXT_PUBLIC_CORE_ORDERS_API=https://api.rt.com/orders
+NEXT_PUBLIC_PLANNING_API=https://api.rt.com/planning
+NEXT_PUBLIC_GEO_TRACKING_URL=https://api.rt.com/tracking
+NEXT_PUBLIC_ECMR_API=https://api.rt.com/ecmr
+NEXT_PUBLIC_NOTIFICATIONS_API=https://api.rt.com/notifications
 ```
 
 ## Sécurité
