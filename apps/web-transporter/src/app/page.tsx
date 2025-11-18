@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { getCurrentCarrier } from '@/lib/auth';
 import { Clock, CheckCircle, Calendar, FileText, TrendingUp, AlertCircle } from 'lucide-react';
+import { TrainingButton } from '@rt/design-system';
 
 export default function HomePage() {
   const router = useRouter();
@@ -58,6 +59,7 @@ export default function HomePage() {
   return (
     <Layout>
       <div className="space-y-6">
+        <TrainingButton toolName="Transporteur" />
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg p-6 text-white">
           <h1 className="text-2xl font-bold mb-2">

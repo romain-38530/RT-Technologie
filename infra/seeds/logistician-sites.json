@@ -1,0 +1,292 @@
+[
+  {
+    "id": "SITE-1732000001-aaa111",
+    "logisticianId": "LOG-1",
+    "createdAt": "2025-01-10T08:00:00Z",
+    "name": "Entrepôt Paris Nord",
+    "address": {
+      "street": "15 Rue de la Logistique",
+      "city": "Gennevilliers",
+      "postalCode": "92230",
+      "department": "92",
+      "region": "Île-de-France",
+      "country": "France",
+      "lat": 48.9333,
+      "lon": 2.2833
+    },
+    "capacity": {
+      "totalM2": 5000,
+      "availableM2": 2000,
+      "totalPalettes": 2000,
+      "availablePalettes": 800,
+      "totalM3": 15000,
+      "availableM3": 6000
+    },
+    "storageTypes": ["long_term", "temporary", "picking"],
+    "temperatures": ["ambient", "cold_2_8"],
+    "certifications": {
+      "adr": true,
+      "customs": true,
+      "iso9001": true,
+      "iso14001": false,
+      "ifs": true
+    },
+    "infrastructure": {
+      "ceilingHeight": 10,
+      "dockCount": 8,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "reach_truck", "pallet_jack", "order_picker"],
+      "wmsAvailable": true,
+      "apiAvailable": true
+    },
+    "schedule": {
+      "monday": "6h-22h",
+      "tuesday": "6h-22h",
+      "wednesday": "6h-22h",
+      "thursday": "6h-22h",
+      "friday": "6h-22h",
+      "saturday": "8h-18h",
+      "sunday": "closed"
+    },
+    "pricing": {
+      "monthlyPerM2": 8.5,
+      "monthlyPerPallet": 12,
+      "inboundMovement": 3.5,
+      "outboundMovement": 3.5,
+      "setupFee": 500,
+      "currency": "EUR"
+    }
+  },
+  {
+    "id": "SITE-1732000002-bbb222",
+    "logisticianId": "LOG-2",
+    "createdAt": "2025-01-10T09:30:00Z",
+    "name": "Hub Lyon Est",
+    "address": {
+      "street": "42 Avenue des Entrepôts",
+      "city": "Chassieu",
+      "postalCode": "69680",
+      "department": "69",
+      "region": "Auvergne-Rhône-Alpes",
+      "country": "France",
+      "lat": 45.7356,
+      "lon": 4.9675
+    },
+    "capacity": {
+      "totalM2": 8000,
+      "availableM2": 3500,
+      "totalPalettes": 3200,
+      "availablePalettes": 1400,
+      "totalM3": 24000,
+      "availableM3": 10500
+    },
+    "storageTypes": ["long_term", "temporary", "cross_dock", "picking"],
+    "temperatures": ["ambient", "cold_2_8", "frozen_minus_18"],
+    "certifications": {
+      "adr": true,
+      "customs": true,
+      "iso9001": true,
+      "iso14001": true,
+      "ifs": true
+    },
+    "infrastructure": {
+      "ceilingHeight": 12,
+      "dockCount": 12,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "reach_truck", "pallet_jack", "order_picker", "tugger_train"],
+      "wmsAvailable": true,
+      "apiAvailable": true
+    },
+    "schedule": {
+      "monday": "24/7",
+      "tuesday": "24/7",
+      "wednesday": "24/7",
+      "thursday": "24/7",
+      "friday": "24/7",
+      "saturday": "24/7",
+      "sunday": "24/7"
+    },
+    "pricing": {
+      "monthlyPerM2": 7.8,
+      "monthlyPerPallet": 11,
+      "inboundMovement": 3,
+      "outboundMovement": 3,
+      "setupFee": 400,
+      "currency": "EUR"
+    }
+  },
+  {
+    "id": "SITE-1732000003-ccc333",
+    "logisticianId": "LOG-3",
+    "createdAt": "2025-01-11T10:15:00Z",
+    "name": "Plateforme Lille Métropole",
+    "address": {
+      "street": "88 Rue du Commerce",
+      "city": "Lesquin",
+      "postalCode": "59810",
+      "department": "59",
+      "region": "Hauts-de-France",
+      "country": "France",
+      "lat": 50.5831,
+      "lon": 3.1106
+    },
+    "capacity": {
+      "totalM2": 6000,
+      "availableM2": 1800,
+      "totalPalettes": 2400,
+      "availablePalettes": 720,
+      "totalM3": 18000,
+      "availableM3": 5400
+    },
+    "storageTypes": ["cross_dock", "temporary", "picking"],
+    "temperatures": ["ambient"],
+    "certifications": {
+      "adr": true,
+      "customs": false,
+      "iso9001": true,
+      "iso14001": false,
+      "ifs": false
+    },
+    "infrastructure": {
+      "ceilingHeight": 9,
+      "dockCount": 10,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "pallet_jack"],
+      "wmsAvailable": true,
+      "apiAvailable": false
+    },
+    "schedule": {
+      "monday": "5h-23h",
+      "tuesday": "5h-23h",
+      "wednesday": "5h-23h",
+      "thursday": "5h-23h",
+      "friday": "5h-23h",
+      "saturday": "6h-20h",
+      "sunday": "closed"
+    },
+    "pricing": {
+      "monthlyPerM2": 7.2,
+      "monthlyPerPallet": 10,
+      "inboundMovement": 2.8,
+      "outboundMovement": 2.8,
+      "setupFee": 350,
+      "currency": "EUR"
+    }
+  },
+  {
+    "id": "SITE-1732000004-ddd444",
+    "logisticianId": "LOG-1",
+    "createdAt": "2025-01-12T11:00:00Z",
+    "name": "Site Marseille Port",
+    "address": {
+      "street": "25 Boulevard Maritime",
+      "city": "Marseille",
+      "postalCode": "13016",
+      "department": "13",
+      "region": "Provence-Alpes-Côte d'Azur",
+      "country": "France",
+      "lat": 43.3601,
+      "lon": 5.3174
+    },
+    "capacity": {
+      "totalM2": 10000,
+      "availableM2": 4500,
+      "totalPalettes": 4000,
+      "availablePalettes": 1800,
+      "totalM3": 30000,
+      "availableM3": 13500
+    },
+    "storageTypes": ["long_term", "customs", "picking"],
+    "temperatures": ["ambient", "cold_2_8"],
+    "certifications": {
+      "adr": false,
+      "customs": true,
+      "iso9001": true,
+      "iso14001": true,
+      "ifs": true
+    },
+    "infrastructure": {
+      "ceilingHeight": 11,
+      "dockCount": 15,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "reach_truck", "pallet_jack", "order_picker", "crane"],
+      "wmsAvailable": true,
+      "apiAvailable": true
+    },
+    "schedule": {
+      "monday": "24/7",
+      "tuesday": "24/7",
+      "wednesday": "24/7",
+      "thursday": "24/7",
+      "friday": "24/7",
+      "saturday": "24/7",
+      "sunday": "24/7"
+    },
+    "pricing": {
+      "monthlyPerM2": 9.5,
+      "monthlyPerPallet": 13.5,
+      "inboundMovement": 4,
+      "outboundMovement": 4,
+      "setupFee": 600,
+      "currency": "EUR"
+    }
+  },
+  {
+    "id": "SITE-1732000005-eee555",
+    "logisticianId": "LOG-4",
+    "createdAt": "2025-01-13T13:45:00Z",
+    "name": "Entrepôt Bordeaux Lac",
+    "address": {
+      "street": "56 Allée des Chais",
+      "city": "Bordeaux",
+      "postalCode": "33300",
+      "department": "33",
+      "region": "Nouvelle-Aquitaine",
+      "country": "France",
+      "lat": 44.8638,
+      "lon": -0.5792
+    },
+    "capacity": {
+      "totalM2": 4500,
+      "availableM2": 2200,
+      "totalPalettes": 1800,
+      "availablePalettes": 880,
+      "totalM3": 13500,
+      "availableM3": 6600
+    },
+    "storageTypes": ["long_term", "temporary"],
+    "temperatures": ["ambient", "cold_2_8"],
+    "certifications": {
+      "adr": false,
+      "customs": false,
+      "iso9001": true,
+      "iso14001": false,
+      "ifs": true
+    },
+    "infrastructure": {
+      "ceilingHeight": 9,
+      "dockCount": 6,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "pallet_jack", "reach_truck"],
+      "wmsAvailable": true,
+      "apiAvailable": true
+    },
+    "schedule": {
+      "monday": "7h-19h",
+      "tuesday": "7h-19h",
+      "wednesday": "7h-19h",
+      "thursday": "7h-19h",
+      "friday": "7h-19h",
+      "saturday": "8h-12h",
+      "sunday": "closed"
+    },
+    "pricing": {
+      "monthlyPerM2": 8,
+      "monthlyPerPallet": 11.5,
+      "inboundMovement": 3.2,
+      "outboundMovement": 3.2,
+      "setupFee": 450,
+      "currency": "EUR"
+    }
+  }
+]

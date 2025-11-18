@@ -1,0 +1,30 @@
+[
+  {
+    "id": "IND-1",
+    "name": "Industrie Exemple",
+    "type": "INDUSTRIEL",
+    "email": "contact@industrie-exemple.fr",
+    "subscribed": true
+  },
+  {
+    "id": "CARRIER-A",
+    "name": "Transporteur A",
+    "type": "TRANSPORTEUR",
+    "email": "carrierA@example.com",
+    "subscribed": true
+  },
+  {
+    "id": "CARRIER-B",
+    "name": "Transporteur B",
+    "type": "TRANSPORTEUR",
+    "email": "carrierB@example.com",
+    "subscribed": true
+  },
+  {
+    "id": "LOGI-1",
+    "name": "Logistique Paris",
+    "type": "LOGISTICIEN",
+    "email": "contact@logi-paris.fr",
+    "subscribed": true
+  }
+]

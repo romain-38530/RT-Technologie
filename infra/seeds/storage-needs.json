@@ -1,0 +1,201 @@
+[
+  {
+    "id": "NEED-1732000001-abc123",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "status": "PUBLISHED",
+    "ownerOrgId": "IND-1",
+    "publicationType": "GLOBAL",
+    "storageType": "long_term",
+    "volume": {
+      "type": "palettes",
+      "quantity": 200
+    },
+    "duration": {
+      "startDate": "2025-02-01",
+      "endDate": "2025-08-31",
+      "flexible": true,
+      "renewable": true
+    },
+    "location": {
+      "country": "France",
+      "region": "Île-de-France",
+      "department": "77",
+      "maxRadius": 50,
+      "lat": 48.8566,
+      "lon": 2.3522
+    },
+    "constraints": {
+      "temperature": "ambient",
+      "adrAuthorized": false,
+      "securityLevel": "standard",
+      "certifications": ["ISO 9001"]
+    },
+    "infrastructure": {
+      "dockCount": 2,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "pallet_jack"]
+    },
+    "activity": {
+      "schedule": "Mon-Fri 8h-18h",
+      "dailyMovements": 10
+    },
+    "documents": [
+      {
+        "type": "technical_specs",
+        "url": "https://storage.rt-tech.com/docs/need-1-specs.pdf",
+        "name": "Cahier technique"
+      }
+    ],
+    "budget": {
+      "indicative": 5000,
+      "currency": "EUR",
+      "period": "monthly"
+    },
+    "deadline": "2025-01-25T23:59:59Z"
+  },
+  {
+    "id": "NEED-1732000002-def456",
+    "createdAt": "2025-01-16T14:20:00Z",
+    "status": "PUBLISHED",
+    "ownerOrgId": "IND-2",
+    "publicationType": "MIXED",
+    "storageType": "temporary",
+    "volume": {
+      "type": "m2",
+      "quantity": 500
+    },
+    "duration": {
+      "startDate": "2025-01-20",
+      "endDate": "2025-03-20",
+      "flexible": false,
+      "renewable": false
+    },
+    "location": {
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes",
+      "department": "69",
+      "maxRadius": 30,
+      "lat": 45.7640,
+      "lon": 4.8357
+    },
+    "constraints": {
+      "temperature": "cold_2_8",
+      "adrAuthorized": false,
+      "securityLevel": "high",
+      "certifications": ["ISO 9001", "IFS"]
+    },
+    "infrastructure": {
+      "dockCount": 4,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "reach_truck"]
+    },
+    "activity": {
+      "schedule": "24/7",
+      "dailyMovements": 30
+    },
+    "documents": [],
+    "budget": {
+      "indicative": 8000,
+      "currency": "EUR",
+      "period": "monthly"
+    },
+    "deadline": "2025-01-18T23:59:59Z"
+  },
+  {
+    "id": "NEED-1732000003-ghi789",
+    "createdAt": "2025-01-17T09:15:00Z",
+    "status": "PUBLISHED",
+    "ownerOrgId": "IND-1",
+    "publicationType": "REFERRED_ONLY",
+    "storageType": "cross_dock",
+    "volume": {
+      "type": "palettes",
+      "quantity": 100
+    },
+    "duration": {
+      "startDate": "2025-02-05",
+      "endDate": "2025-12-31",
+      "flexible": true,
+      "renewable": true
+    },
+    "location": {
+      "country": "France",
+      "region": "Hauts-de-France",
+      "department": "59",
+      "maxRadius": 20,
+      "lat": 50.6292,
+      "lon": 3.0573
+    },
+    "constraints": {
+      "temperature": "ambient",
+      "adrAuthorized": true,
+      "securityLevel": "standard",
+      "certifications": []
+    },
+    "infrastructure": {
+      "dockCount": 6,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift"]
+    },
+    "activity": {
+      "schedule": "Mon-Sat 6h-22h",
+      "dailyMovements": 50
+    },
+    "documents": [],
+    "budget": {
+      "indicative": 3500,
+      "currency": "EUR",
+      "period": "monthly"
+    },
+    "deadline": "2025-01-22T23:59:59Z"
+  },
+  {
+    "id": "NEED-1732000004-jkl012",
+    "createdAt": "2025-01-18T11:45:00Z",
+    "status": "CONTRACTED",
+    "ownerOrgId": "IND-3",
+    "publicationType": "GLOBAL",
+    "contractId": "CONTRACT-1732100001-xyz123",
+    "storageType": "picking",
+    "volume": {
+      "type": "m3",
+      "quantity": 1000
+    },
+    "duration": {
+      "startDate": "2025-01-22",
+      "endDate": "2025-07-22",
+      "flexible": false,
+      "renewable": true
+    },
+    "location": {
+      "country": "France",
+      "region": "Provence-Alpes-Côte d'Azur",
+      "department": "13",
+      "maxRadius": 40,
+      "lat": 43.2965,
+      "lon": 5.3698
+    },
+    "constraints": {
+      "temperature": "ambient",
+      "adrAuthorized": false,
+      "securityLevel": "high",
+      "certifications": ["ISO 9001", "ISO 14001"]
+    },
+    "infrastructure": {
+      "dockCount": 3,
+      "liftingEquipment": true,
+      "handlingEquipment": ["forklift", "pallet_jack", "picking_cart"]
+    },
+    "activity": {
+      "schedule": "Mon-Fri 7h-19h",
+      "dailyMovements": 25
+    },
+    "documents": [],
+    "budget": {
+      "indicative": 12000,
+      "currency": "EUR",
+      "period": "monthly"
+    },
+    "deadline": "2025-01-20T23:59:59Z"
+  }
+]

@@ -162,8 +162,65 @@ const server = http.createServer(async (req, res) => {
       } else if (gridRef) {
         q.priceRef = gridRef;
       }
+
+      // === INTÉGRATION PALETTES ===
+      // Ajouter le coût de retour des palettes et suggérer le meilleur site
+      let palletInfo = null;
+      if (order.pallets && order.pallets > 0 && order.ship_to) {
+        try {
+          const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3011';
+
+          // Extraire les coordonnées GPS de la destination (simulé pour l'exemple)
+          // En production, il faudrait géocoder order.ship_to
+          const deliveryLocation = order.deliveryLocation || { lat: 48.8566, lng: 2.3522 };
+
+          // Appeler le service palette pour trouver le meilleur site
+          const matchResponse = await fetch(`${PALETTE_API_URL}/palette/match/site`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              deliveryLocation,
+              companyId: order.ownerOrgId || 'IND-1',
+              quantity: order.pallets
+            })
+          });
+
+          if (matchResponse.ok) {
+            const matchData = await matchResponse.json();
+            const bestSite = matchData.bestSite;
+
+            // Calculer le coût de retour (0.50 EUR par km + 5 EUR par palette)
+            const returnDistance = bestSite.distance || 0;
+            const returnCost = Math.round(returnDistance * 0.5 + order.pallets * 5);
+
+            palletInfo = {
+              pallets: order.pallets,
+              returnSite: {
+                id: bestSite.siteId,
+                name: bestSite.site.name,
+                distance: returnDistance,
+                address: bestSite.site.address
+              },
+              returnCost,
+              recommendation: `Retour palettes suggéré: ${bestSite.site.name} à ${Math.round(returnDistance * 10) / 10}km. Coût estimé: ${returnCost} EUR.`
+            };
+
+            // Ajouter le coût de retour au prix total
+            q.price += returnCost;
+            q.priceBreakdown = {
+              baseTransport: q.price - returnCost,
+              palletReturn: returnCost,
+              total: q.price
+            };
+          }
+        } catch (e) {
+          // Si le service palette est indisponible, on continue sans cette info
+          console.warn('[affret-ia] Service palette indisponible:', e.message);
+        }
+      }
+
       if (traceId) res.setHeader('x-trace-id', traceId);
-      return json(res, 200, { orderId, ...q, traceId: traceId || null });
+      return json(res, 200, { orderId, ...q, palletInfo, traceId: traceId || null });
     } catch (e) {
       if (traceId) res.setHeader('x-trace-id', traceId);
       return json(res, 502, { error: e.message, traceId: traceId || null });
@@ -258,8 +315,267 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // POST /affret/optimize-pallet-routes
+  // Optimise l'ordre des livraisons pour minimiser la distance avec retours palettes
+  if (method === 'POST' && urlObj.pathname === '/affret/optimize-pallet-routes') {
+    const authResult = requireAuth(req, res, { optionalEnv: 'SECURITY_ENFORCE' });
+    if (authResult === null) return;
+    try {
+      const body = (await parseBody(req)) || {};
+      const { deliveries } = body; // [{ orderId, location: {lat, lng}, pallets, address }]
+
+      if (!deliveries || !Array.isArray(deliveries) || deliveries.length === 0) {
+        return json(res, 400, { error: 'deliveries array requis' });
+      }
+
+      // 1. Pour chaque livraison, récupérer le meilleur site de retour via le service palette
+      const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3011';
+      const deliveriesWithSites = await Promise.all(
+        deliveries.map(async (delivery) => {
+          try {
+            // Appeler le service palette pour matching de site
+            const matchResponse = await fetch(`${PALETTE_API_URL}/palette/match/site`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                deliveryLocation: delivery.location,
+                companyId: delivery.companyId || 'IND-1',
+                quantity: delivery.pallets || 0
+              })
+            });
+
+            if (!matchResponse.ok) {
+              return { ...delivery, returnSite: null, error: 'no_site_available' };
+            }
+
+            const matchData = await matchResponse.json();
+            return {
+              ...delivery,
+              returnSite: matchData.bestSite,
+              alternatives: matchData.alternatives || []
+            };
+          } catch (e) {
+            return { ...delivery, returnSite: null, error: e.message };
+          }
+        })
+      );
+
+      // 2. Optimiser l'ordre des livraisons (TSP simplifié - Greedy nearest neighbor)
+      if (deliveriesWithSites.length === 0) {
+        return json(res, 200, { optimizedRoute: [], totalDistance: 0, traceId: traceId || null });
+      }
+
+      let optimizedRoute = [];
+      let currentLocation = deliveriesWithSites[0].location; // Départ = première livraison
+      let remaining = [...deliveriesWithSites];
+      let totalDistance = 0;
+
+      while (remaining.length > 0) {
+        // Trouver la livraison la plus proche
+        let nearestIndex = 0;
+        let nearestDistance = calculateDistance(
+          currentLocation.lat,
+          currentLocation.lng,
+          remaining[0].location.lat,
+          remaining[0].location.lng
+        );
+
+        for (let i = 1; i < remaining.length; i++) {
+          const dist = calculateDistance(
+            currentLocation.lat,
+            currentLocation.lng,
+            remaining[i].location.lat,
+            remaining[i].location.lng
+          );
+          if (dist < nearestDistance) {
+            nearestDistance = dist;
+            nearestIndex = i;
+          }
+        }
+
+        const nextDelivery = remaining.splice(nearestIndex, 1)[0];
+        totalDistance += nearestDistance;
+
+        // Si un site de retour est disponible, calculer la distance vers ce site
+        let returnDistance = 0;
+        if (nextDelivery.returnSite) {
+          returnDistance = calculateDistance(
+            nextDelivery.location.lat,
+            nextDelivery.location.lng,
+            nextDelivery.returnSite.site.gps.lat,
+            nextDelivery.returnSite.site.gps.lng
+          );
+          totalDistance += returnDistance;
+        }
+
+        optimizedRoute.push({
+          step: optimizedRoute.length + 1,
+          type: 'delivery',
+          orderId: nextDelivery.orderId,
+          address: nextDelivery.address,
+          location: nextDelivery.location,
+          pallets: nextDelivery.pallets,
+          distanceFromPrevious: nearestDistance,
+          returnSite: nextDelivery.returnSite ? {
+            siteId: nextDelivery.returnSite.siteId,
+            name: nextDelivery.returnSite.site.name,
+            distance: returnDistance,
+            location: nextDelivery.returnSite.site.gps
+          } : null
+        });
+
+        // Si site de retour, ajouter une étape de retour
+        if (nextDelivery.returnSite) {
+          currentLocation = nextDelivery.returnSite.site.gps;
+          optimizedRoute.push({
+            step: optimizedRoute.length + 1,
+            type: 'pallet_return',
+            siteId: nextDelivery.returnSite.siteId,
+            siteName: nextDelivery.returnSite.site.name,
+            location: nextDelivery.returnSite.site.gps,
+            pallets: nextDelivery.pallets,
+            distanceFromPrevious: returnDistance
+          });
+        } else {
+          currentLocation = nextDelivery.location;
+        }
+      }
+
+      if (traceId) res.setHeader('x-trace-id', traceId);
+      return json(res, 200, {
+        optimizedRoute,
+        totalDistance: Math.round(totalDistance * 10) / 10,
+        totalSteps: optimizedRoute.length,
+        deliveries: deliveriesWithSites.length,
+        traceId: traceId || null
+      });
+    } catch (e) {
+      if (traceId) res.setHeader('x-trace-id', traceId);
+      return json(res, 400, { error: 'Invalid request', detail: e.message, traceId: traceId || null });
+    }
+  }
+
+  // GET /affret/pallet-alerts
+  // Analyse les quotas et détecte les problèmes potentiels
+  if (method === 'GET' && urlObj.pathname === '/affret/pallet-alerts') {
+    const authResult = requireAuth(req, res, { optionalEnv: 'SECURITY_ENFORCE' });
+    if (authResult === null) return;
+    try {
+      const PALETTE_API_URL = process.env.PALETTE_API_URL || 'http://localhost:3011';
+
+      // 1. Récupérer tous les sites
+      const sitesResponse = await fetch(`${PALETTE_API_URL}/palette/sites`);
+      if (!sitesResponse.ok) {
+        throw new Error('Impossible de récupérer les sites de palettes');
+      }
+      const { sites } = await sitesResponse.json();
+
+      // 2. Analyser chaque site pour détecter les problèmes
+      const alerts = [];
+
+      for (const site of sites) {
+        // Récupérer les détails avec quota
+        const siteDetailResponse = await fetch(`${PALETTE_API_URL}/palette/sites/${site.id}`);
+        if (!siteDetailResponse.ok) continue;
+
+        const { quota } = await siteDetailResponse.json();
+        const utilizationPercent = (quota.consumed / quota.dailyMax) * 100;
+
+        // Alerte si > 90% de saturation
+        if (utilizationPercent > 90) {
+          alerts.push({
+            type: 'SITE_NEAR_SATURATION',
+            severity: utilizationPercent > 95 ? 'CRITICAL' : 'WARNING',
+            siteId: site.id,
+            siteName: site.name,
+            message: `Site proche de saturation: ${Math.round(utilizationPercent)}% (${quota.consumed}/${quota.dailyMax})`,
+            data: { utilizationPercent, consumed: quota.consumed, max: quota.dailyMax },
+            suggestedActions: [
+              'Augmenter le quota journalier',
+              'Rediriger les nouvelles livraisons vers sites alternatifs',
+              'Planifier un ramassage urgent'
+            ]
+          });
+        }
+
+        // Alerte si quota complètement saturé
+        if (quota.consumed >= quota.dailyMax) {
+          alerts.push({
+            type: 'SITE_FULL',
+            severity: 'CRITICAL',
+            siteId: site.id,
+            siteName: site.name,
+            message: `Site COMPLET: ${quota.consumed}/${quota.dailyMax} palettes`,
+            data: { consumed: quota.consumed, max: quota.dailyMax },
+            suggestedActions: [
+              'URGENT: Augmenter le quota immédiatement',
+              'Bloquer les nouvelles affectations vers ce site',
+              'Contacter le logisticien pour ramassage'
+            ]
+          });
+        }
+      }
+
+      // 3. Analyser les ledgers des entreprises pour détecter les soldes très négatifs
+      // On suppose que les companyIds sont connus (sinon il faudrait un endpoint GET /palette/companies)
+      const companyIds = [...new Set(sites.map(s => s.companyId))];
+
+      for (const companyId of companyIds) {
+        try {
+          const ledgerResponse = await fetch(`${PALETTE_API_URL}/palette/ledger/${companyId}`);
+          if (!ledgerResponse.ok) continue;
+
+          const { ledger } = await ledgerResponse.json();
+
+          // Alerte si solde < -100 palettes
+          if (ledger.balance < -100) {
+            alerts.push({
+              type: 'COMPANY_HIGH_DEBT',
+              severity: ledger.balance < -200 ? 'CRITICAL' : 'WARNING',
+              companyId: ledger.companyId,
+              message: `Entreprise ${ledger.companyId} a un solde très négatif: ${ledger.balance} palettes`,
+              data: { balance: ledger.balance, transactions: ledger.history.length },
+              suggestedActions: [
+                'Contacter l\'entreprise pour régularisation',
+                'Bloquer l\'émission de nouveaux chèques',
+                'Planifier une restitution massive'
+              ]
+            });
+          }
+        } catch (e) {
+          // Ignorer si ledger non trouvé
+        }
+      }
+
+      if (traceId) res.setHeader('x-trace-id', traceId);
+      return json(res, 200, {
+        alerts,
+        totalAlerts: alerts.length,
+        critical: alerts.filter(a => a.severity === 'CRITICAL').length,
+        warnings: alerts.filter(a => a.severity === 'WARNING').length,
+        timestamp: new Date().toISOString(),
+        traceId: traceId || null
+      });
+    } catch (e) {
+      if (traceId) res.setHeader('x-trace-id', traceId);
+      return json(res, 500, { error: 'Internal error', detail: e.message, traceId: traceId || null });
+    }
+  }
+
   return json(res, 404, { error: 'Not Found' });
 });
+
+// Helper pour calculer la distance (Haversine)
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Rayon terre en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
 loadSeeds();
 loadMongo();

@@ -1,9 +1,14 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Package, TrendingUp, Clock, CheckCircle2 } from 'lucide-react'
+import { Package, TrendingUp, Clock, CheckCircle2, PackageOpen } from 'lucide-react'
+import { palettesApi, type PalletLedger } from '@/lib/api/palettes'
+import { TrainingButton } from '@rt/design-system'
 
 export default function DashboardPage() {
+  const [palletBalance, setPalletBalance] = useState<number | null>(null)
+
   // Mock data - in real app would come from API
   const stats = {
     totalOrders: 156,
@@ -14,12 +19,20 @@ export default function DashboardPage() {
     avgResponseTime: 1.8,
   }
 
+  useEffect(() => {
+    // Fetch pallet balance
+    palettesApi.getLedger('IND-1')
+      .then(ledger => setPalletBalance(ledger.balance))
+      .catch(err => console.error('Error fetching pallet balance:', err))
+  }, [])
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <TrainingButton toolName="Industrie" />
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -74,6 +87,28 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">
               Par transporteurs
             </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Solde palettes
+            </CardTitle>
+            <PackageOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {palletBalance !== null ? (
+              <>
+                <div className={`text-2xl font-bold ${palletBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {palletBalance >= 0 ? '+' : ''}{palletBalance}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {palletBalance >= 0 ? 'Crédit' : 'Débit'}
+                </p>
+              </>
+            ) : (
+              <div className="text-2xl font-bold text-muted-foreground">-</div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -132,6 +167,15 @@ export default function DashboardPage() {
                 <div className="font-medium">Importer des commandes</div>
                 <div className="text-sm text-muted-foreground">
                   Importer depuis CSV/Excel
+                </div>
+              </a>
+              <a
+                href="/palettes/generate"
+                className="block w-full rounded-lg border p-3 text-left transition-colors hover:bg-accent"
+              >
+                <div className="font-medium">Générer chèque palette</div>
+                <div className="text-sm text-muted-foreground">
+                  Économie circulaire des palettes
                 </div>
               </a>
               <a

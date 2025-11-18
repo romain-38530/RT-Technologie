@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { TrainingButton } from '@rt/design-system';
 
 interface Stats {
   docksOccupied: number;
@@ -54,6 +55,7 @@ export default function Dashboard() {
 
   return (
     <div>
+      <TrainingButton toolName="Logisticien" />
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px' }}>Dashboard</h2>
 
       <div style={{
@@ -97,6 +99,12 @@ export default function Dashboard() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
         gap: '16px'
       }}>
+        <ActionCard
+          title="Palettes"
+          description="Réception des chèques palettes et gestion des sites"
+          icon="📦"
+          onClick={() => router.push('/palettes')}
+        />
         <ActionCard
           title="E-CMR"
           description="Générer et signer des CMR électroniques"

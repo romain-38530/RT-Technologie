@@ -10,6 +10,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <nav style={{ display: 'flex', gap: 12 }}>
           <a href="/orgs">Organisations</a>
           <a href="/pricing">Tarifs</a>
+          <a href="/palettes">Palettes</a>
           <a href="/health">Etat</a>
           {!token ? <a href="/login">Se connecter</a> : <a href="#" onClick={(e)=>{e.preventDefault(); localStorage.removeItem('admin_jwt'); location.href='/';}}>Se déconnecter</a>}
           <a href={supportUrl} target="_blank" rel="noreferrer">Support</a>

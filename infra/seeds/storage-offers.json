@@ -1,0 +1,243 @@
+[
+  {
+    "id": "OFFER-1732000001-xxx111",
+    "needId": "NEED-1732000001-abc123",
+    "logisticianId": "LOG-1",
+    "siteId": "SITE-1732000001-aaa111",
+    "createdAt": "2025-01-15T14:30:00Z",
+    "status": "SUBMITTED",
+    "siteLocation": {
+      "lat": 48.9333,
+      "lon": 2.2833
+    },
+    "pricing": {
+      "monthlyPerPallet": 12,
+      "estimatedMonthlyTotal": 2400,
+      "inboundMovement": 3.5,
+      "outboundMovement": 3.5,
+      "setupFee": 500,
+      "currency": "EUR"
+    },
+    "totalPrice": 17300,
+    "services": {
+      "included": ["Reception marchandises", "Stockage sécurisé", "Inventaire mensuel", "Rapports hebdomadaires"],
+      "optional": [
+        { "name": "Conditionnement", "price": 2, "unit": "per_unit" },
+        { "name": "Étiquetage", "price": 0.5, "unit": "per_unit" }
+      ]
+    },
+    "certifications": ["ISO 9001", "IFS"],
+    "availability": {
+      "readyDate": "2025-01-28",
+      "flexibleStart": true
+    },
+    "validUntil": "2025-02-15T23:59:59Z",
+    "reliabilityScore": 92,
+    "responseTimeHours": 3,
+    "contact": {
+      "name": "Jean Dupont",
+      "email": "jean.dupont@log1.fr",
+      "phone": "+33 1 23 45 67 89"
+    }
+  },
+  {
+    "id": "OFFER-1732000002-xxx222",
+    "needId": "NEED-1732000001-abc123",
+    "logisticianId": "LOG-4",
+    "siteId": "SITE-1732000005-eee555",
+    "createdAt": "2025-01-15T16:45:00Z",
+    "status": "SUBMITTED",
+    "siteLocation": {
+      "lat": 44.8638,
+      "lon": -0.5792
+    },
+    "pricing": {
+      "monthlyPerPallet": 11.5,
+      "estimatedMonthlyTotal": 2300,
+      "inboundMovement": 3.2,
+      "outboundMovement": 3.2,
+      "setupFee": 450,
+      "currency": "EUR"
+    },
+    "totalPrice": 16550,
+    "services": {
+      "included": ["Reception marchandises", "Stockage sécurisé", "Inventaire mensuel"],
+      "optional": [
+        { "name": "Assurance premium", "price": 100, "unit": "monthly" }
+      ]
+    },
+    "certifications": ["ISO 9001", "IFS"],
+    "availability": {
+      "readyDate": "2025-02-01",
+      "flexibleStart": true
+    },
+    "validUntil": "2025-02-15T23:59:59Z",
+    "reliabilityScore": 85,
+    "responseTimeHours": 6,
+    "contact": {
+      "name": "Marie Martin",
+      "email": "m.martin@log4.fr",
+      "phone": "+33 5 56 78 90 12"
+    }
+  },
+  {
+    "id": "OFFER-1732000003-xxx333",
+    "needId": "NEED-1732000002-def456",
+    "logisticianId": "LOG-2",
+    "siteId": "SITE-1732000002-bbb222",
+    "createdAt": "2025-01-16T15:30:00Z",
+    "status": "SUBMITTED",
+    "siteLocation": {
+      "lat": 45.7356,
+      "lon": 4.9675
+    },
+    "pricing": {
+      "monthlyPerM2": 7.8,
+      "estimatedMonthlyTotal": 3900,
+      "inboundMovement": 3,
+      "outboundMovement": 3,
+      "setupFee": 400,
+      "currency": "EUR"
+    },
+    "totalPrice": 8200,
+    "services": {
+      "included": ["Stockage température dirigée 2-8°C", "Monitoring 24/7", "Rapports quotidiens", "Traçabilité complète"],
+      "optional": [
+        { "name": "Picking", "price": 1.5, "unit": "per_line" },
+        { "name": "Kitting", "price": 2.5, "unit": "per_kit" }
+      ]
+    },
+    "certifications": ["ISO 9001", "ISO 14001", "IFS"],
+    "availability": {
+      "readyDate": "2025-01-19",
+      "flexibleStart": false
+    },
+    "validUntil": "2025-01-20T23:59:59Z",
+    "reliabilityScore": 95,
+    "responseTimeHours": 1.5,
+    "contact": {
+      "name": "Pierre Durand",
+      "email": "p.durand@log2.fr",
+      "phone": "+33 4 78 90 12 34"
+    }
+  },
+  {
+    "id": "OFFER-1732000004-xxx444",
+    "needId": "NEED-1732000002-def456",
+    "logisticianId": "LOG-3",
+    "siteId": "SITE-1732000003-ccc333",
+    "createdAt": "2025-01-16T17:00:00Z",
+    "status": "SUBMITTED",
+    "siteLocation": {
+      "lat": 50.5831,
+      "lon": 3.1106
+    },
+    "pricing": {
+      "monthlyPerM2": 8.5,
+      "estimatedMonthlyTotal": 4250,
+      "inboundMovement": 3.5,
+      "outboundMovement": 3.5,
+      "setupFee": 500,
+      "currency": "EUR"
+    },
+    "totalPrice": 9000,
+    "services": {
+      "included": ["Stockage standard", "Inventaire mensuel"],
+      "optional": []
+    },
+    "certifications": ["ISO 9001"],
+    "availability": {
+      "readyDate": "2025-01-22",
+      "flexibleStart": true
+    },
+    "validUntil": "2025-01-20T23:59:59Z",
+    "reliabilityScore": 78,
+    "responseTimeHours": 8,
+    "contact": {
+      "name": "Sophie Bernard",
+      "email": "s.bernard@log3.fr",
+      "phone": "+33 3 20 12 34 56"
+    }
+  },
+  {
+    "id": "OFFER-1732000005-xxx555",
+    "needId": "NEED-1732000004-jkl012",
+    "logisticianId": "LOG-1",
+    "siteId": "SITE-1732000004-ddd444",
+    "createdAt": "2025-01-18T13:00:00Z",
+    "status": "ACCEPTED",
+    "siteLocation": {
+      "lat": 43.3601,
+      "lon": 5.3174
+    },
+    "pricing": {
+      "monthlyPerM3": 12,
+      "estimatedMonthlyTotal": 12000,
+      "inboundMovement": 4,
+      "outboundMovement": 4,
+      "pickingPerLine": 1.5,
+      "setupFee": 600,
+      "currency": "EUR"
+    },
+    "totalPrice": 72600,
+    "services": {
+      "included": ["Stockage sécurisé haute sécurité", "Picking", "Inventaire quotidien", "Rapports en temps réel", "API WMS"],
+      "optional": [
+        { "name": "Co-packing", "price": 3, "unit": "per_unit" },
+        { "name": "Transport local", "price": 150, "unit": "per_delivery" }
+      ]
+    },
+    "certifications": ["ISO 9001", "ISO 14001", "IFS"],
+    "availability": {
+      "readyDate": "2025-01-21",
+      "flexibleStart": false
+    },
+    "validUntil": "2025-01-30T23:59:59Z",
+    "reliabilityScore": 94,
+    "responseTimeHours": 2,
+    "contact": {
+      "name": "Jean Dupont",
+      "email": "jean.dupont@log1.fr",
+      "phone": "+33 1 23 45 67 89"
+    }
+  },
+  {
+    "id": "OFFER-1732000006-xxx666",
+    "needId": "NEED-1732000004-jkl012",
+    "logisticianId": "LOG-2",
+    "siteId": "SITE-1732000002-bbb222",
+    "createdAt": "2025-01-18T14:30:00Z",
+    "status": "REJECTED",
+    "siteLocation": {
+      "lat": 45.7356,
+      "lon": 4.9675
+    },
+    "pricing": {
+      "monthlyPerM3": 11,
+      "estimatedMonthlyTotal": 11000,
+      "inboundMovement": 3,
+      "outboundMovement": 3,
+      "pickingPerLine": 1.2,
+      "setupFee": 400,
+      "currency": "EUR"
+    },
+    "totalPrice": 66400,
+    "services": {
+      "included": ["Stockage sécurisé", "Picking", "Inventaire hebdomadaire", "API WMS"],
+      "optional": []
+    },
+    "certifications": ["ISO 9001", "ISO 14001", "IFS"],
+    "availability": {
+      "readyDate": "2025-01-23",
+      "flexibleStart": true
+    },
+    "validUntil": "2025-01-30T23:59:59Z",
+    "reliabilityScore": 95,
+    "responseTimeHours": 4,
+    "contact": {
+      "name": "Pierre Durand",
+      "email": "p.durand@log2.fr",
+      "phone": "+33 4 78 90 12 34"
+    }
+  }
+]

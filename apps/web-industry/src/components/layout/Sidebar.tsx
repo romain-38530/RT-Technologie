@@ -9,6 +9,7 @@ import {
   Grid3x3,
   Truck,
   Settings,
+  PackageOpen,
 } from 'lucide-react'
 
 const navigation = [
@@ -21,6 +22,11 @@ const navigation = [
     name: 'Commandes',
     href: '/orders',
     icon: Package,
+  },
+  {
+    name: 'Palettes',
+    href: '/palettes',
+    icon: PackageOpen,
   },
   {
     name: 'Grilles tarifaires',

@@ -1,0 +1,348 @@
+name: Deploy RT-Technologie
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.4'
+
+jobs:
+  # ============================================================================
+  # Lint & Test
+  # ============================================================================
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm tsc --noEmit
+
+      - name: Run tests
+        run: pnpm test
+        env:
+          CI: true
+
+  # ============================================================================
+  # Build Backend Services
+  # ============================================================================
+  build-backend:
+    name: Build Backend Services
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build backend services
+        run: pnpm build --filter='./services/*'
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy
+          cp -r services packages pnpm-workspace.yaml package.json pnpm-lock.yaml deploy/
+          tar -czf backend-services.tar.gz -C deploy .
+
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-services
+          path: backend-services.tar.gz
+          retention-days: 7
+
+  # ============================================================================
+  # Deploy to AWS EC2
+  # ============================================================================
+  deploy-backend:
+    name: Deploy Backend to AWS
+    runs-on: ubuntu-latest
+    needs: build-backend
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    steps:
+      - name: Download backend artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-services
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-3
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp backend-services.tar.gz s3://rt-deploy-artifacts/backend/$(date +%Y%m%d-%H%M%S)/backend-services.tar.gz
+
+      - name: Deploy to EC2 via SSM
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=tag:Environment,Values=${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}" \
+            --parameters 'commands=[
+              "cd /opt/rt-technologie",
+              "git pull origin ${{ github.ref_name }}",
+              "pnpm install --frozen-lockfile",
+              "pnpm build --filter=./services/*",
+              "pm2 restart all",
+              "pm2 save"
+            ]' \
+            --output text \
+            --query "Command.CommandId")
+
+          echo "Command ID: $COMMAND_ID"
+          aws ssm wait command-executed --command-id $COMMAND_ID --instance-id $(aws ec2 describe-instances --filters "Name=tag:Environment,Values=${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}" --query "Reservations[0].Instances[0].InstanceId" --output text)
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl --fail https://api.rt-technologie.com/health || exit 1
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "Backend deployment ${{ job.status }}: ${{ github.ref_name }}",
+              "status": "${{ job.status }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # Deploy to Vercel
+  # ============================================================================
+  deploy-frontend:
+    name: Deploy Frontend to Vercel
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        app:
+          - web-industry
+          - web-transporter
+          - web-logistician
+          - web-forwarder
+          - web-supplier
+          - web-recipient
+          - backoffice-admin
+          - mobile-driver/pwa
+          - kiosk
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel Environment
+        run: |
+          vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/${{ matrix.app }}
+
+      - name: Build Project
+        run: |
+          vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/${{ matrix.app }}
+        env:
+          NEXT_PUBLIC_ADMIN_GATEWAY_URL: ${{ secrets.ADMIN_GATEWAY_URL }}
+          NEXT_PUBLIC_AUTHZ_URL: ${{ secrets.AUTHZ_URL }}
+          NEXT_PUBLIC_SUPPORT_URL: https://support.rt-technologie.com
+
+      - name: Deploy to Vercel
+        run: |
+          vercel deploy ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/${{ matrix.app }}
+
+  # ============================================================================
+  # E2E Tests (Post-deployment)
+  # ============================================================================
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        env:
+          BASE_URL: ${{ github.ref == 'refs/heads/main' && 'https://industry.rt-technologie.com' || 'https://industry-staging.rt-technologie.com' }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # ============================================================================
+  # Rollback on Failure
+  # ============================================================================
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, e2e-tests]
+    if: failure() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-3
+
+      - name: Rollback deployment
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=tag:Environment,Values=production" \
+            --parameters 'commands=[
+              "cd /opt/rt-technologie",
+              "git checkout HEAD~1",
+              "pm2 restart all"
+            ]'
+
+      - name: Notify rollback
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "⚠️ ROLLBACK executed due to deployment failure",
+              "status": "failure"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # Notify Success
+  # ============================================================================
+  notify-success:
+    name: Notify Deployment Success
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend, e2e-tests]
+    if: success() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Notify Slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ Deployment successful to PRODUCTION",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment Successful* 🎉\n\n*Environment:* Production\n*Branch:* ${{ github.ref_name }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: |
+            Automated production deployment
+
+            **Changes:**
+            ${{ github.event.head_commit.message }}
+
+            **Deployed by:** ${{ github.actor }}
+          draft: false
+          prerelease: false

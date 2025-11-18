@@ -1,0 +1,53 @@
+[
+  {
+    "id": "SITE-PARIS-1",
+    "companyId": "IND-1",
+    "name": "Entrepôt Paris Nord",
+    "address": "Zone Industrielle Nord, 93000 Paris",
+    "gps": {
+      "lat": 48.9023,
+      "lng": 2.3789
+    },
+    "quotaDailyMax": 150,
+    "openingHours": {
+      "start": "07:00",
+      "end": "19:00"
+    },
+    "availableDays": [1, 2, 3, 4, 5],
+    "priority": "INTERNAL"
+  },
+  {
+    "id": "SITE-LYON-1",
+    "companyId": "IND-1",
+    "name": "Plateforme Lyon Sud",
+    "address": "Parc Logistique Sud, 69000 Lyon",
+    "gps": {
+      "lat": 45.7407,
+      "lng": 4.8223
+    },
+    "quotaDailyMax": 100,
+    "openingHours": {
+      "start": "08:00",
+      "end": "18:00"
+    },
+    "availableDays": [1, 2, 3, 4, 5],
+    "priority": "NETWORK"
+  },
+  {
+    "id": "SITE-LOGI-PARIS",
+    "companyId": "LOGI-1",
+    "name": "Logistique Paris - Dépôt palettes",
+    "address": "15 Rue du Commerce, 75001 Paris",
+    "gps": {
+      "lat": 48.8566,
+      "lng": 2.3522
+    },
+    "quotaDailyMax": 200,
+    "openingHours": {
+      "start": "06:00",
+      "end": "20:00"
+    },
+    "availableDays": [1, 2, 3, 4, 5, 6],
+    "priority": "NETWORK"
+  }
+]

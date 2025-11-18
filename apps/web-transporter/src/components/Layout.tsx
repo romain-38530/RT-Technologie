@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { getCurrentCarrier, removeToken } from '@/lib/auth';
-import { Home, Clock, CheckCircle, Calendar, FileText, User, LogOut } from 'lucide-react';
+import { Home, Clock, CheckCircle, Calendar, FileText, User, LogOut, PackageOpen } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,6 +22,7 @@ export function Layout({ children }: LayoutProps) {
     { href: '/', icon: Home, label: 'Accueil' },
     { href: '/missions/pending', icon: Clock, label: 'En attente' },
     { href: '/missions/accepted', icon: CheckCircle, label: 'Acceptées' },
+    { href: '/palettes', icon: PackageOpen, label: 'Palettes' },
     { href: '/planning', icon: Calendar, label: 'Planning' },
     { href: '/documents', icon: FileText, label: 'Documents' },
     { href: '/profile', icon: User, label: 'Profil' },
