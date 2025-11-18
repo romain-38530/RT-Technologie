@@ -1,0 +1,12 @@
+# Robots.txt for RT Technologie Admin Platform
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /orgs/
+Disallow: /login
+
+# Sitemap
+Sitemap: https://admin.rt-technologie.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10
