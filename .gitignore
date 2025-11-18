@@ -29,6 +29,12 @@ services/client-onboarding/logs/
 services/client-onboarding/tests/output/
 services/client-onboarding/*.pdf
 
+# AWS Credentials (IMPORTANT - Ne jamais committer)
+.aws/
+*.credentials
+docs/AWS_CREDENTIALS_SETUP.md
+README_AWS_DEPLOY.md
+
 # OS
 Thumbs.db
 nul
