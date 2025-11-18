@@ -1,0 +1,80 @@
+# =============================================================================
+# Docker Compose - Service Client Onboarding
+# RT-Technologie
+#
+# Usage:
+#   docker-compose up -d          # Démarrer en arrière-plan
+#   docker-compose logs -f        # Voir les logs
+#   docker-compose down           # Arrêter
+# =============================================================================
+
+version: '3.8'
+
+services:
+  client-onboarding:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: rt-client-onboarding
+
+    ports:
+      - "3020:3020"
+
+    environment:
+      - NODE_ENV=production
+      - PORT=3020
+      # Les variables sensibles doivent être définies via un fichier .env
+      # ou passées via docker-compose run
+
+    env_file:
+      - .env.production
+
+    volumes:
+      # Persister les logs
+      - ./logs:/app/logs
+      # Persister les PDFs générés
+      - ./tests/output:/app/tests/output
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3020/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - rt-network
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  rt-network:
+    driver: bridge
+
+# Pour déploiement avec MongoDB local (optionnel)
+# Décommenter si vous voulez MongoDB en local pour tests
+#
+# services:
+#   mongodb:
+#     image: mongo:7
+#     container_name: rt-mongodb
+#     ports:
+#       - "27017:27017"
+#     environment:
+#       - MONGO_INITDB_ROOT_USERNAME=admin
+#       - MONGO_INITDB_ROOT_PASSWORD=changeme
+#       - MONGO_INITDB_DATABASE=rt_technologie
+#     volumes:
+#       - mongodb-data:/data/db
+#     networks:
+#       - rt-network
+#
+# volumes:
+#   mongodb-data:

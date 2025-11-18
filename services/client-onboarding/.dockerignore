@@ -1,0 +1,41 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Tests
+tests/output
+coverage
+
+# Logs
+logs
+*.log
+
+# PM2
+.pm2
+*.pid
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# IDE
+.vscode
+.idea
+
+# Backups
+*.backup
+backup*
