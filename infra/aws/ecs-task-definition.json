@@ -4,12 +4,12 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/ecsTaskRole",
+  "executionRoleArn": "arn:aws:iam::004843574253:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::004843574253:role/ecsTaskRole",
   "containerDefinitions": [
     {
       "name": "client-onboarding",
-      "image": "YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/rt-client-onboarding:latest",
+      "image": "004843574253.dkr.ecr.eu-west-1.amazonaws.com/rt-client-onboarding:latest",
       "essential": true,
       "portMappings": [
         {
@@ -30,35 +30,35 @@
       "secrets": [
         {
           "name": "MONGODB_URI",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/mongodb-uri"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/mongodb-uri"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/jwt-secret"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/jwt-secret"
         },
         {
           "name": "INTERNAL_SERVICE_TOKEN",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/internal-token"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/internal-token"
         },
         {
           "name": "SESSION_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/session-secret"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/session-secret"
         },
         {
           "name": "SMTP_HOST",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/smtp-host"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/smtp-host"
         },
         {
           "name": "SMTP_PORT",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/smtp-port"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/smtp-port"
         },
         {
           "name": "SMTP_USER",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/smtp-user"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/smtp-user"
         },
         {
           "name": "SMTP_PASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:eu-west-1:YOUR_ACCOUNT_ID:secret:rt/client-onboarding/smtp-password"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:004843574253:secret:rt/client-onboarding/smtp-password"
         }
       ],
       "logConfiguration": {

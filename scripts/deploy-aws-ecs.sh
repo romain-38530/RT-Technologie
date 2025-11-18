@@ -9,7 +9,7 @@ set -e
 
 # Configuration
 AWS_REGION="eu-west-1"
-AWS_ACCOUNT_ID="YOUR_ACCOUNT_ID"  # À remplacer
+AWS_ACCOUNT_ID="004843574253"
 ECR_REPOSITORY="rt-client-onboarding"
 ECS_CLUSTER="rt-production"
 ECS_SERVICE="client-onboarding"
