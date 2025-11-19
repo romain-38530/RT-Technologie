@@ -1,0 +1,530 @@
+# RT-Technologie - Docker Compose Configuration PRODUCTION
+# Optimisé pour AWS EC2
+
+version: '3.8'
+
+services:
+  # ===========================
+  # Infrastructure Services
+  # ===========================
+
+  mongodb:
+    image: mongo:7.0
+    container_name: rt-mongodb-prod
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME:-rt_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: rt_technologie
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./infra/scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: rt-redis-prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rt-network
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===========================
+  # Backend Services
+  # ===========================
+
+  admin-gateway:
+    build:
+      context: ./services/admin-gateway
+      dockerfile: Dockerfile
+    container_name: rt-admin-gateway-prod
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - ADMIN_GATEWAY_PORT=3001
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  authz:
+    build:
+      context: .
+      dockerfile: services/authz/Dockerfile
+    container_name: rt-authz-prod
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - AUTHZ_PORT=3002
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  notifications:
+    build:
+      context: ./services/notifications
+      dockerfile: Dockerfile
+    container_name: rt-notifications-prod
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - NOTIFICATIONS_PORT=3004
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY}
+      - MAILGUN_DOMAIN=${MAILGUN_DOMAIN}
+      - MAIL_FROM=${MAIL_FROM}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  planning:
+    build:
+      context: ./services/planning
+      dockerfile: Dockerfile
+    container_name: rt-planning-prod
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+      - PLANNING_PORT=3005
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - NOTIFICATIONS_URL=http://notifications:3004
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      notifications:
+        condition: service_started
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  tms-sync:
+    build:
+      context: ./services/tms-sync
+      dockerfile: Dockerfile
+    container_name: rt-tms-sync-prod
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=production
+      - TMS_SYNC_PORT=3006
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  core-orders:
+    build:
+      context: ./services/core-orders
+      dockerfile: Dockerfile
+    container_name: rt-core-orders-prod
+    restart: unless-stopped
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - AUTHZ_URL=http://authz:3002
+      - VIGILANCE_URL=http://vigilance:3008
+      - AFFRET_IA_URL=http://affret-ia:3010
+      - PLANNING_URL=http://planning:3005
+      - GEO_TRACKING_URL=http://geo-tracking:3016
+      - INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      authz:
+        condition: service_started
+      vigilance:
+        condition: service_started
+      planning:
+        condition: service_started
+      geo-tracking:
+        condition: service_started
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  vigilance:
+    build:
+      context: ./services/vigilance
+      dockerfile: Dockerfile
+    container_name: rt-vigilance-prod
+    restart: unless-stopped
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=production
+      - VIGILANCE_PORT=3008
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  palette:
+    build:
+      context: ./services/palette
+      dockerfile: Dockerfile
+    container_name: rt-palette-prod
+    restart: unless-stopped
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=production
+      - PALETTE_PORT=3009
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - AUTHZ_URL=http://authz:3002
+      - NOTIFICATIONS_URL=http://notifications:3004
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      authz:
+        condition: service_started
+      notifications:
+        condition: service_started
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  affret-ia:
+    build:
+      context: ./services/affret-ia
+      dockerfile: Dockerfile
+    container_name: rt-affret-ia-prod
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - AFFRET_IA_PORT=3010
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - PALETTE_URL=http://palette:3009
+      - CORE_ORDERS_URL=http://core-orders:3007
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      palette:
+        condition: service_started
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  training:
+    build:
+      context: ./services/training
+      dockerfile: Dockerfile
+    container_name: rt-training-prod
+    restart: unless-stopped
+    ports:
+      - "3012:3012"
+    environment:
+      - NODE_ENV=production
+      - TRAINING_PORT=3012
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ecpmr:
+    build:
+      context: ./services/ecpmr
+      dockerfile: Dockerfile
+    container_name: rt-ecpmr-prod
+    restart: unless-stopped
+    ports:
+      - "3014:3014"
+    environment:
+      - NODE_ENV=production
+      - ECPMR_PORT=3014
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3014/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  storage-market:
+    build:
+      context: ./services/storage-market
+      dockerfile: Dockerfile
+    container_name: rt-storage-market-prod
+    restart: unless-stopped
+    ports:
+      - "3015:3015"
+    environment:
+      - NODE_ENV=production
+      - PORT=3015
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - AUTHZ_URL=http://authz:3002
+      - NOTIFICATIONS_URL=http://notifications:3004
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      authz:
+        condition: service_started
+      notifications:
+        condition: service_started
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3015/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  geo-tracking:
+    build:
+      context: ./services/geo-tracking
+      dockerfile: Dockerfile
+    container_name: rt-geo-tracking-prod
+    restart: unless-stopped
+    ports:
+      - "3016:3016"
+    environment:
+      - NODE_ENV=production
+      - PORT=3016
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - TOMTOM_API_KEY=${TOMTOM_API_KEY}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3016/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  chatbot:
+    build:
+      context: ./services/chatbot
+      dockerfile: Dockerfile
+    container_name: rt-chatbot-prod
+    restart: unless-stopped
+    ports:
+      - "3019:3019"
+    environment:
+      - NODE_ENV=production
+      - PORT=3019
+      - MONGODB_URI=mongodb://${MONGODB_ROOT_USERNAME:-rt_admin}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/rt_technologie?authSource=admin
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - AUTHZ_URL=http://authz:3002
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      authz:
+        condition: service_started
+    networks:
+      - rt-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3019/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  rt-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  redis_data:
+    driver: local

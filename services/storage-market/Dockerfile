@@ -2,13 +2,28 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copier package.json et installer les dépendances
-COPY package*.json ./
-RUN npm install --production
+# Installer nodemon globalement pour le hot-reload
+RUN npm install -g nodemon
 
-# Copier le code source
-COPY src ./src
+# Créer la structure de dossiers
+RUN mkdir -p packages/notify-client packages/security packages/entitlements packages/data-mongo services/storage-market
 
-EXPOSE 3013
+# Copier les packages workspace nécessaires
+COPY packages/notify-client ./packages/notify-client
+COPY packages/security ./packages/security
+COPY packages/entitlements ./packages/entitlements
+COPY packages/data-mongo ./packages/data-mongo
 
-CMD ["npm", "start"]
+# Copier le service storage-market
+COPY services/storage-market/package*.json ./services/storage-market/
+WORKDIR /app/services/storage-market
+RUN npm install
+
+# Copier le code source du service
+COPY services/storage-market/src ./src
+
+# Exposer le port
+EXPOSE 3015
+
+# Démarrer avec nodemon pour le hot-reload
+CMD ["nodemon", "--watch", "src", "src/server.js"]

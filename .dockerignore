@@ -1,0 +1,28 @@
+# Ignorer tous les node_modules
+**/node_modules
+
+# Ignorer les fichiers de build
+**/.next
+**/dist
+**/build
+
+# Ignorer les fichiers de configuration locaux
+**/.env.local
+**/.env.*.local
+
+# Ignorer les logs
+**/logs
+**/*.log
+
+# Ignorer les fichiers temporaires
+**/.DS_Store
+**/Thumbs.db
+
+# Ignorer git
+.git
+.gitignore
+
+# Ignorer la documentation
+docs/
+*.md
+!README.md

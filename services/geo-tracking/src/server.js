@@ -57,7 +57,7 @@ if (!global.__geo_tracking_logger) {
       )
     }),
     new winston.transports.File({ filename: 'logs/geo-tracking.log' })
-  ]);
+  ]});
 }
 var logger = global.__geo_tracking_logger;
 

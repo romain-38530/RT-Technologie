@@ -2,13 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copier package.json et installer les dépendances
+# Installer nodemon globalement pour le hot-reload
+RUN npm install -g nodemon
+
+# Copier package.json et installer TOUTES les dépendances (dev incluses)
 COPY package*.json ./
-RUN npm install --production
+RUN npm install
 
 # Copier le code source
-COPY src ./src
+COPY . .
 
+# Exposer le port
 EXPOSE 3012
 
-CMD ["npm", "start"]
+# Démarrer avec nodemon pour le hot-reload
+CMD ["nodemon", "--watch", "src", "src/server.js"]

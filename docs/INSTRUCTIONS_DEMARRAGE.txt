@@ -1,0 +1,123 @@
+═══════════════════════════════════════════════════════════════════
+    RT-TECHNOLOGIE - INSTRUCTIONS DE DÉMARRAGE
+    Mode Développement Local (sans Docker)
+═══════════════════════════════════════════════════════════════════
+
+📋 ÉTAPES À SUIVRE :
+
+1️⃣  VÉRIFIER NODE.JS
+   ────────────────
+   Ouvrir PowerShell ou CMD et taper :
+
+   node --version
+
+   ✅ Si vous voyez "v18.x.x" ou supérieur → OK
+   ❌ Sinon → Installer Node.js : https://nodejs.org/
+
+2️⃣  INSTALLER PNPM
+   ─────────────
+   Dans le terminal :
+
+   npm install -g pnpm
+
+   Puis vérifier :
+
+   pnpm --version
+
+3️⃣  INSTALLER LES DÉPENDANCES
+   ───────────────────────
+   Se placer à la RACINE du projet :
+
+   cd "c:\Users\jspitaleri\OneDrive - Cesi\Bureau\RT-Technologie"
+
+   Puis :
+
+   pnpm install
+
+   ⏱️ Patientez 2-3 minutes...
+
+4️⃣  DÉMARRER L'APPLICATION
+   ──────────────────────
+
+   OPTION A - Script automatique (recommandé) :
+   ───────────────────────────────────────────
+   Double-cliquer sur : start-dev.bat
+
+   OPTION B - Ligne de commande :
+   ──────────────────────────────
+   cd apps\backoffice-admin
+   pnpm dev
+
+5️⃣  OUVRIR DANS LE NAVIGATEUR
+   ──────────────────────────
+   Aller sur : http://localhost:3000
+
+   ✅ Vous devriez voir l'interface du backoffice !
+
+═══════════════════════════════════════════════════════════════════
+
+📁 FICHIERS CRÉÉS POUR VOUS :
+
+✓ .env.local                      → Variables d'environnement
+✓ apps/backoffice-admin/.env.local → Config spécifique backoffice
+✓ start-dev.bat                   → Script de démarrage rapide
+✓ DEMARRAGE_RAPIDE.md            → Guide détaillé en français
+✓ SETUP_DEV_LOCAL.md             → Documentation complète
+✓ apps/backoffice-admin/README.md → Documentation de l'app
+
+═══════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANT :
+
+• Les services BACKEND ne seront PAS démarrés
+• Les appels API échoueront (c'est normal !)
+• Vous verrez quand même toute l'interface
+• Parfait pour développer le frontend
+
+═══════════════════════════════════════════════════════════════════
+
+🎯 APPLICATIONS DISPONIBLES :
+
+Port    Application
+────    ─────────────────────
+3000    Backoffice Admin
+3001    Web Industry
+3010    Web Transporter
+3020    Web Logistician
+3030    Web Forwarder
+3040    Web Recipient
+3050    Web Supplier
+
+Pour démarrer une autre app :
+cd apps\[nom-de-l-app]
+pnpm dev
+
+═══════════════════════════════════════════════════════════════════
+
+🔧 EN CAS DE PROBLÈME :
+
+Erreur "Port déjà utilisé" :
+───────────────────────────
+PowerShell (Administrateur) :
+  netstat -ano | findstr :3000
+  taskkill /PID <PID> /F
+
+Erreur "Module not found" :
+───────────────────────────
+  rm -rf node_modules
+  pnpm install
+
+Erreur de compilation :
+──────────────────────
+  cd apps\backoffice-admin
+  pnpm tsc --noEmit
+
+═══════════════════════════════════════════════════════════════════
+
+📞 BESOIN D'AIDE ?
+
+Consultez les fichiers de documentation créés pour vous !
+
+═══════════════════════════════════════════════════════════════════
+
+Bon développement ! 🚀
