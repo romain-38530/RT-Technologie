@@ -1,0 +1,298 @@
+name: 🤖 Auto-Diagnostic - Push vers Gist Public
+
+on:
+  workflow_run:
+    workflows: ["🚀 Déploiement Automatique AWS", "🎨 Déploiement Automatique Vercel"]
+    types:
+      - completed
+
+jobs:
+  publish-diagnostic:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 Générer le Diagnostic Complet
+        id: diagnostic
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            // Récupérer les détails du workflow
+            const run = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+
+            // Récupérer tous les jobs
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+
+            const status = context.payload.workflow_run.conclusion || 'in_progress';
+            const isFailure = status === 'failure';
+
+            // Créer un rapport JSON structuré
+            const diagnostic = {
+              timestamp: new Date().toISOString(),
+              workflow: {
+                name: context.payload.workflow_run.name,
+                status: status,
+                branch: context.payload.workflow_run.head_branch,
+                commit: context.payload.workflow_run.head_sha,
+                commit_short: context.payload.workflow_run.head_sha.substring(0, 7),
+                author: context.payload.workflow_run.head_commit.author.name,
+                message: context.payload.workflow_run.head_commit.message,
+                url: context.payload.workflow_run.html_url,
+                started_at: context.payload.workflow_run.created_at,
+                completed_at: context.payload.workflow_run.updated_at,
+                duration_minutes: Math.round((new Date(context.payload.workflow_run.updated_at) - new Date(context.payload.workflow_run.created_at)) / 1000 / 60)
+              },
+              jobs: [],
+              errors: [],
+              recommendations: []
+            };
+
+            // Analyser chaque job
+            for (const job of jobs.data.jobs) {
+              const jobData = {
+                name: job.name,
+                status: job.conclusion || 'in_progress',
+                url: job.html_url,
+                started_at: job.started_at,
+                completed_at: job.completed_at,
+                duration_seconds: job.completed_at ? Math.round((new Date(job.completed_at) - new Date(job.started_at)) / 1000) : null,
+                steps: []
+              };
+
+              // Analyser les étapes
+              if (job.steps) {
+                for (const step of job.steps) {
+                  jobData.steps.push({
+                    name: step.name,
+                    status: step.conclusion,
+                    number: step.number,
+                    duration_seconds: step.completed_at ? Math.round((new Date(step.completed_at) - new Date(step.started_at)) / 1000) : null
+                  });
+
+                  // Capturer les erreurs
+                  if (step.conclusion === 'failure') {
+                    diagnostic.errors.push({
+                      job: job.name,
+                      step: step.name,
+                      step_number: step.number
+                    });
+                  }
+                }
+              }
+
+              // Récupérer les logs pour les jobs échoués
+              if (job.conclusion === 'failure') {
+                try {
+                  const logsResponse = await github.rest.actions.downloadJobLogsForWorkflowRun({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    job_id: job.id
+                  });
+
+                  const logs = logsResponse.data.toString();
+                  const logLines = logs.split('\n');
+
+                  // Extraire les lignes d'erreur
+                  const errorLines = logLines.filter(line =>
+                    line.toLowerCase().includes('error') ||
+                    line.toLowerCase().includes('failed') ||
+                    line.toLowerCase().includes('❌')
+                  ).slice(-50); // Les 50 dernières erreurs
+
+                  jobData.error_logs = errorLines;
+                } catch (error) {
+                  jobData.error_logs = ['Logs non disponibles'];
+                }
+              }
+
+              diagnostic.jobs.push(jobData);
+            }
+
+            // Générer des recommandations automatiques
+            if (isFailure) {
+              if (context.payload.workflow_run.name.includes('AWS')) {
+                diagnostic.recommendations.push({
+                  type: 'aws_check_ecr',
+                  command: 'aws ecr describe-images --repository-name rt-* --region eu-central-1',
+                  description: 'Vérifier les images Docker dans ECR'
+                });
+                diagnostic.recommendations.push({
+                  type: 'aws_check_ecs',
+                  command: 'aws ecs list-services --cluster rt-production --region eu-central-1',
+                  description: 'Vérifier les services ECS en cours'
+                });
+                diagnostic.recommendations.push({
+                  type: 'aws_check_ec2_logs',
+                  command: 'aws ssm send-command --instance-ids i-0ece63fb077366323 --document-name "AWS-RunShellScript" --parameters \'commands=["tail -100 /home/ec2-user/deploy.log"]\' --region eu-central-1',
+                  description: 'Consulter les logs de build sur EC2'
+                });
+              }
+
+              if (context.payload.workflow_run.name.includes('Vercel')) {
+                diagnostic.recommendations.push({
+                  type: 'vercel_check_deployments',
+                  url: 'https://vercel.com/dashboard',
+                  description: 'Vérifier les déploiements Vercel'
+                });
+                diagnostic.recommendations.push({
+                  type: 'check_pnpm',
+                  command: 'pnpm install && pnpm build',
+                  description: 'Tester le build localement'
+                });
+              }
+            }
+
+            // Sauvegarder en JSON
+            const jsonReport = JSON.stringify(diagnostic, null, 2);
+            fs.writeFileSync('diagnostic.json', jsonReport);
+
+            // Créer aussi un rapport Markdown lisible
+            let mdReport = `# 🤖 Diagnostic Automatique\n\n`;
+            mdReport += `**Généré le:** ${diagnostic.timestamp}\n\n`;
+            mdReport += `## 📊 Workflow\n\n`;
+            mdReport += `- **Nom:** ${diagnostic.workflow.name}\n`;
+            mdReport += `- **Statut:** ${diagnostic.workflow.status.toUpperCase()}\n`;
+            mdReport += `- **Branche:** ${diagnostic.workflow.branch}\n`;
+            mdReport += `- **Commit:** \`${diagnostic.workflow.commit_short}\` - ${diagnostic.workflow.message}\n`;
+            mdReport += `- **Auteur:** ${diagnostic.workflow.author}\n`;
+            mdReport += `- **Durée:** ${diagnostic.workflow.duration_minutes} minutes\n`;
+            mdReport += `- **URL:** ${diagnostic.workflow.url}\n\n`;
+
+            if (diagnostic.errors.length > 0) {
+              mdReport += `## ❌ Erreurs Détectées (${diagnostic.errors.length})\n\n`;
+              for (const error of diagnostic.errors) {
+                mdReport += `- **${error.job}** → Étape "${error.step}" (n°${error.step_number})\n`;
+              }
+              mdReport += `\n`;
+            }
+
+            if (diagnostic.recommendations.length > 0) {
+              mdReport += `## 🔧 Recommandations\n\n`;
+              for (const rec of diagnostic.recommendations) {
+                mdReport += `### ${rec.description}\n\n`;
+                if (rec.command) {
+                  mdReport += `\`\`\`bash\n${rec.command}\n\`\`\`\n\n`;
+                }
+                if (rec.url) {
+                  mdReport += `URL: ${rec.url}\n\n`;
+                }
+              }
+            }
+
+            mdReport += `## 📋 Jobs Détaillés\n\n`;
+            for (const job of diagnostic.jobs) {
+              const emoji = job.status === 'success' ? '✅' : job.status === 'failure' ? '❌' : '⏳';
+              mdReport += `### ${emoji} ${job.name}\n\n`;
+              mdReport += `- **Statut:** ${job.status}\n`;
+              mdReport += `- **Durée:** ${job.duration_seconds}s\n`;
+              mdReport += `- **URL:** ${job.url}\n\n`;
+
+              if (job.error_logs && job.error_logs.length > 0) {
+                mdReport += `#### Logs d'erreur:\n\n\`\`\`\n${job.error_logs.join('\n')}\n\`\`\`\n\n`;
+              }
+            }
+
+            mdReport += `---\n\n`;
+            mdReport += `**🔗 URL du diagnostic JSON:** Ce fichier sera publié sur un Gist public\n`;
+            mdReport += `**📅 Mise à jour:** ${diagnostic.timestamp}\n`;
+
+            fs.writeFileSync('diagnostic.md', mdReport);
+
+            return {
+              status: status,
+              isFailure: isFailure,
+              errorCount: diagnostic.errors.length
+            };
+
+      - name: 📤 Publier sur Gist Public
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GIST_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const diagnostic = fs.readFileSync('diagnostic.json', 'utf8');
+            const markdown = fs.readFileSync('diagnostic.md', 'utf8');
+
+            // Créer ou mettre à jour un Gist public
+            // Le Gist aura toujours le même ID, donc Claude peut le consulter directement
+            const gistId = '${{ secrets.DIAGNOSTIC_GIST_ID }}';
+
+            if (gistId && gistId !== '') {
+              // Mettre à jour le Gist existant
+              await github.rest.gists.update({
+                gist_id: gistId,
+                files: {
+                  'latest-diagnostic.json': {
+                    content: diagnostic
+                  },
+                  'latest-diagnostic.md': {
+                    content: markdown
+                  },
+                  'timestamp.txt': {
+                    content: new Date().toISOString()
+                  }
+                }
+              });
+              console.log(`✅ Gist mis à jour: https://gist.github.com/${gistId}`);
+            } else {
+              // Créer un nouveau Gist
+              const newGist = await github.rest.gists.create({
+                description: 'RT-Technologie - Diagnostics de Déploiement Automatiques',
+                public: true,
+                files: {
+                  'latest-diagnostic.json': {
+                    content: diagnostic
+                  },
+                  'latest-diagnostic.md': {
+                    content: markdown
+                  },
+                  'timestamp.txt': {
+                    content: new Date().toISOString()
+                  },
+                  'README.md': {
+                    content: `# 🤖 Diagnostics Automatiques RT-Technologie\n\nCe Gist contient les diagnostics automatiques des déploiements.\n\n- **latest-diagnostic.json** - Dernier diagnostic au format JSON\n- **latest-diagnostic.md** - Dernier diagnostic au format Markdown\n- **timestamp.txt** - Date de la dernière mise à jour\n\n**⚠️ IMPORTANT:** Sauvegardez l'ID de ce Gist et ajoutez-le comme secret GitHub:\n\nGist ID: ${newGist.data.id}\n\nAjoutez ce secret dans GitHub:\n- Name: DIAGNOSTIC_GIST_ID\n- Value: ${newGist.data.id}\n`
+                  }
+                }
+              });
+              console.log(`✅ Nouveau Gist créé: https://gist.github.com/${newGist.data.id}`);
+              console.log(`⚠️ Ajoutez ce Gist ID dans les secrets GitHub: ${newGist.data.id}`);
+            }
+
+      - name: 📝 Créer aussi une Issue GitHub
+        if: steps.diagnostic.outputs.isFailure == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const markdown = fs.readFileSync('diagnostic.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔴 Échec - ${context.payload.workflow_run.name}`,
+              body: markdown + `\n\n---\n\n**🤖 Pour Claude Code:**\nLe diagnostic complet est disponible sur le Gist public.\nPas besoin de partager le lien, Claude peut le consulter automatiquement !`,
+              labels: ['deployment-failure', 'auto-diagnostic', 'needs-fix']
+            });
+
+      - name: 📊 Upload des Rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-${{ github.run_id }}
+          path: |
+            diagnostic.json
+            diagnostic.md
+          retention-days: 30
