@@ -1,0 +1,225 @@
+name: 🤖 Manager AI - Monitoring Complet
+
+on:
+  workflow_run:
+    workflows: ["🚀 Déploiement Automatique AWS", "🎨 Déploiement Automatique Vercel"]
+    types:
+      - completed
+      - in_progress
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔍 Analyse Complète du Workflow
+        id: analyze
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Récupérer les détails du workflow
+            const run = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+
+            // Récupérer tous les jobs
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id
+            });
+
+            const status = context.payload.workflow_run.conclusion || 'in_progress';
+            const isFailure = status === 'failure';
+            const isSuccess = status === 'success';
+
+            let report = `# ${isFailure ? '🔴' : isSuccess ? '✅' : '⏳'} Rapport de Déploiement\n\n`;
+            report += `## 📊 Informations Générales\n\n`;
+            report += `- **Workflow:** ${context.payload.workflow_run.name}\n`;
+            report += `- **Statut:** ${status.toUpperCase()}\n`;
+            report += `- **Branche:** ${context.payload.workflow_run.head_branch}\n`;
+            report += `- **Commit:** \`${context.payload.workflow_run.head_sha.substring(0, 7)}\`\n`;
+            report += `- **Auteur:** ${context.payload.workflow_run.head_commit.author.name}\n`;
+            report += `- **Message:** ${context.payload.workflow_run.head_commit.message}\n`;
+            report += `- **Durée:** ${Math.round((new Date(context.payload.workflow_run.updated_at) - new Date(context.payload.workflow_run.created_at)) / 1000 / 60)} minutes\n`;
+            report += `- **URL:** ${context.payload.workflow_run.html_url}\n\n`;
+
+            report += `## 📋 Détails des Jobs\n\n`;
+
+            for (const job of jobs.data.jobs) {
+              const jobStatus = job.conclusion || 'in_progress';
+              const emoji = jobStatus === 'success' ? '✅' : jobStatus === 'failure' ? '❌' : '⏳';
+
+              report += `### ${emoji} ${job.name}\n\n`;
+              report += `- **Statut:** ${jobStatus}\n`;
+              report += `- **Durée:** ${job.completed_at ? Math.round((new Date(job.completed_at) - new Date(job.started_at)) / 1000) : 'En cours'}s\n`;
+              report += `- **URL:** ${job.html_url}\n\n`;
+
+              // Détails des étapes
+              if (job.steps && job.steps.length > 0) {
+                report += `#### Étapes:\n\n`;
+                for (const step of job.steps) {
+                  const stepEmoji = step.conclusion === 'success' ? '✅' : step.conclusion === 'failure' ? '❌' : '⏳';
+                  const duration = step.completed_at ? Math.round((new Date(step.completed_at) - new Date(step.started_at)) / 1000) : 'En cours';
+                  report += `${stepEmoji} **${step.name}** - ${duration}s\n`;
+                }
+                report += `\n`;
+              }
+
+              // Récupérer les logs pour les jobs échoués
+              if (jobStatus === 'failure') {
+                report += `#### 📜 Logs Complets:\n\n`;
+                try {
+                  const logsResponse = await github.rest.actions.downloadJobLogsForWorkflowRun({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    job_id: job.id
+                  });
+
+                  // Les logs sont retournés comme du texte
+                  const logs = logsResponse.data;
+
+                  // Extraire les 200 dernières lignes (les plus pertinentes)
+                  const logLines = logs.toString().split('\n');
+                  const relevantLogs = logLines.slice(-200).join('\n');
+
+                  report += `\`\`\`\n${relevantLogs}\n\`\`\`\n\n`;
+                } catch (error) {
+                  report += `_Impossible de récupérer les logs: ${error.message}_\n\n`;
+                }
+              }
+            }
+
+            // Diagnostic AWS si échec
+            if (isFailure && context.payload.workflow_run.name.includes('AWS')) {
+              report += `## 🔍 Diagnostic AWS Automatique\n\n`;
+              report += `### Actions Recommandées:\n\n`;
+              report += `1. Vérifier les images dans ECR:\n`;
+              report += `\`\`\`bash\n`;
+              report += `# Dans AWS CloudShell\n`;
+              report += `for SERVICE in tms-sync erp-sync palette tracking-ia planning notifications admin-gateway authz training geo-tracking storage-market; do\n`;
+              report += `  aws ecr describe-images --repository-name rt-$SERVICE --region eu-central-1 --query 'images[0].imageTags[0]' --output text\n`;
+              report += `done\n`;
+              report += `\`\`\`\n\n`;
+              report += `2. Vérifier les services ECS:\n`;
+              report += `\`\`\`bash\n`;
+              report += `aws ecs list-services --cluster rt-production --region eu-central-1\n`;
+              report += `\`\`\`\n\n`;
+              report += `3. Consulter les logs de l'instance EC2:\n`;
+              report += `\`\`\`bash\n`;
+              report += `aws ssm send-command --instance-ids i-0ece63fb077366323 --document-name "AWS-RunShellScript" --parameters 'commands=["tail -100 /home/ec2-user/deploy.log"]' --region eu-central-1\n`;
+              report += `\`\`\`\n\n`;
+            }
+
+            // Diagnostic Vercel si échec
+            if (isFailure && context.payload.workflow_run.name.includes('Vercel')) {
+              report += `## 🔍 Diagnostic Vercel Automatique\n\n`;
+              report += `### Actions Recommandées:\n\n`;
+              report += `1. Vérifier les déploiements récents:\n`;
+              report += `   - Dashboard Vercel: https://vercel.com/dashboard\n\n`;
+              report += `2. Vérifier les secrets GitHub:\n`;
+              report += `   - VERCEL_TOKEN\n`;
+              report += `   - VERCEL_ORG_ID\n\n`;
+              report += `3. Vérifier la configuration PNPM:\n`;
+              report += `   - Tester localement: \`pnpm install && pnpm build\`\n\n`;
+            }
+
+            // Ajouter une section "Prochaines Étapes"
+            if (isFailure) {
+              report += `## 🎯 Prochaines Étapes pour Claude (Manager AI)\n\n`;
+              report += `1. ✅ Analyser les logs ci-dessus\n`;
+              report += `2. ✅ Identifier la cause racine de l'échec\n`;
+              report += `3. ✅ Proposer un correctif automatique si possible\n`;
+              report += `4. ✅ Créer un commit avec le fix\n`;
+              report += `5. ✅ Relancer le déploiement\n\n`;
+              report += `**Instructions pour Romain:** Partagez-moi le lien de cette Issue et je m'occupe du reste !\n\n`;
+            } else if (isSuccess) {
+              report += `## 🎉 Déploiement Réussi !\n\n`;
+              report += `Toutes les étapes ont été complétées avec succès.\n\n`;
+            }
+
+            // Sauvegarder le rapport
+            fs.writeFileSync('deployment-report.md', report);
+
+            return {
+              status: status,
+              isFailure: isFailure,
+              isSuccess: isSuccess,
+              title: `${isFailure ? '🔴' : isSuccess ? '✅' : '⏳'} Déploiement ${context.payload.workflow_run.name} - ${status}`
+            };
+
+      - name: 📤 Créer/Mettre à jour l'Issue de Monitoring
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('deployment-report.md', 'utf8');
+            const status = '${{ steps.analyze.outputs.status }}';
+            const isFailure = '${{ steps.analyze.outputs.isFailure }}' === 'true';
+            const title = `${{ steps.analyze.outputs.title }}`;
+
+            // Chercher une issue existante pour ce workflow run
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'deployment-monitoring',
+              state: 'open',
+              per_page: 10
+            });
+
+            // Créer une nouvelle issue
+            const newIssue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: report,
+              labels: isFailure ? ['deployment-monitoring', 'deployment-failure', 'needs-fix'] : ['deployment-monitoring', 'deployment-success']
+            });
+
+            console.log(`Issue créée: ${newIssue.data.html_url}`);
+
+            // Si c'est un succès, fermer automatiquement après 1 minute
+            if (!isFailure) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: newIssue.data.number,
+                state: 'closed'
+              });
+            }
+
+      - name: 💬 Commentaire sur le Commit
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('deployment-report.md', 'utf8');
+
+            // Limiter la taille du commentaire (GitHub limite à 65536 caractères)
+            const maxLength = 60000;
+            const shortReport = report.length > maxLength
+              ? report.substring(0, maxLength) + '\n\n... (rapport tronqué, voir l\'Issue complète)'
+              : report;
+
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.payload.workflow_run.head_sha,
+              body: shortReport + `\n\n---\n_🤖 Rapport généré automatiquement par le Manager AI_`
+            });
+
+      - name: 📊 Upload du Rapport Complet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-report-${{ github.run_id }}
+          path: deployment-report.md
+          retention-days: 30
