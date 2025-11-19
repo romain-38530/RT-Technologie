@@ -44,7 +44,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: 🔍 Diagnostic
-        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'check-status'
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'check-status' || github.event_name == 'push'
         run: |
           echo "════════════════════════════════════════"
           echo "🔍 DIAGNOSTIC DE L'INFRASTRUCTURE"
@@ -68,7 +68,7 @@ jobs:
           aws ecs list-services --cluster ${{ env.CLUSTER_NAME }} --query 'length(serviceArns)' --output text
 
       - name: 🏗️ Build et Push Images Docker
-        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'build-only'
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'build-only' || github.event_name == 'push'
         run: |
           echo "════════════════════════════════════════"
           echo "🏗️ BUILD DES IMAGES DOCKER"
@@ -144,7 +144,7 @@ jobs:
           fi
 
       - name: 🚀 Déploiement sur ECS
-        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'deploy-ecs-only'
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'deploy-ecs-only' || github.event_name == 'push'
         run: |
           echo "════════════════════════════════════════"
           echo "🚀 DÉPLOIEMENT DES SERVICES SUR ECS"
@@ -240,7 +240,7 @@ jobs:
           echo "✅ Tous les services ont été déployés"
 
       - name: 🌐 Récupération des IPs Publiques
-        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'get-ips'
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'get-ips' || github.event_name == 'push'
         run: |
           echo "════════════════════════════════════════"
           echo "🌐 IPS PUBLIQUES DES SERVICES"
