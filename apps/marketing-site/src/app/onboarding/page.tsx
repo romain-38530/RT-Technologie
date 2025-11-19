@@ -128,10 +128,13 @@ export default function OnboardingPage() {
         {/* En-tête */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Inscription RT Technologie
+            Bienvenue chez RT Technologie
           </h1>
-          <p className="text-gray-600">
-            Créez votre compte en quelques minutes
+          <p className="text-xl text-gray-600 mb-2">
+            Créez votre compte professionnel en 5 minutes chrono
+          </p>
+          <p className="text-sm text-gray-500">
+            Vérification automatique • Données pré-remplies • Activation immédiate
           </p>
         </div>
 
@@ -170,10 +173,15 @@ export default function OnboardingPage() {
           {/* Étape 1 : Numéro de TVA */}
           {step === 1 && (
             <div>
-              <h2 className="text-2xl font-bold mb-6">Numéro de TVA</h2>
-              <p className="text-gray-600 mb-6">
-                Nous allons récupérer automatiquement les informations de votre entreprise
-              </p>
+              <h2 className="text-2xl font-bold mb-4">Vérification de votre entreprise</h2>
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+                <p className="text-indigo-900 font-medium mb-2">Comment ça marche ?</p>
+                <p className="text-indigo-700 text-sm leading-relaxed">
+                  Nous vérifions instantanément votre numéro de TVA via les API officielles européennes (VIES) et INSEE.
+                  Vos données d'entreprise (raison sociale, SIRET, adresse) seront automatiquement récupérées et pré-remplies.
+                  Aucune saisie manuelle nécessaire !
+                </p>
+              </div>
 
               <div className="space-y-4">
                 <div>
@@ -206,10 +214,19 @@ export default function OnboardingPage() {
           {/* Étape 2 : Données entreprise */}
           {step === 2 && (
             <div>
-              <h2 className="text-2xl font-bold mb-6">Informations de l'entreprise</h2>
-              <p className="text-gray-600 mb-6">
-                ✅ Données récupérées automatiquement - Vérifiez et complétez si nécessaire
-              </p>
+              <h2 className="text-2xl font-bold mb-4">Vérification des informations</h2>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+                <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-green-900 font-medium mb-1">Données récupérées avec succès !</p>
+                  <p className="text-green-700 text-sm">
+                    Les informations ci-dessous ont été automatiquement récupérées depuis les bases officielles.
+                    Vérifiez leur exactitude et complétez si nécessaire.
+                  </p>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
@@ -305,7 +322,11 @@ export default function OnboardingPage() {
           {/* Étape 3 : Représentant légal */}
           {step === 3 && (
             <div>
-              <h2 className="text-2xl font-bold mb-6">Représentant légal</h2>
+              <h2 className="text-2xl font-bold mb-4">Qui sera votre interlocuteur ?</h2>
+              <p className="text-gray-600 mb-6">
+                Renseignez les coordonnées du représentant légal qui signera le contrat d'abonnement.
+                Ces informations seront utilisées pour la communication et la facturation.
+              </p>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
@@ -378,7 +399,11 @@ export default function OnboardingPage() {
           {/* Étape 4 : Type d'abonnement */}
           {step === 4 && (
             <div>
-              <h2 className="text-2xl font-bold mb-6">Choix de l'abonnement</h2>
+              <h2 className="text-2xl font-bold mb-4">Choisissez votre formule</h2>
+              <p className="text-gray-600 mb-6">
+                Sélectionnez l'abonnement qui correspond à votre activité et profitez de remises sur les engagements longue durée.
+                Vous pourrez modifier votre formule à tout moment depuis votre espace client.
+              </p>
 
               <div className="space-y-4 mb-6">
                 <div>
@@ -495,7 +520,11 @@ export default function OnboardingPage() {
           {/* Étape 5 : Paiement & Validation */}
           {step === 5 && (
             <div>
-              <h2 className="text-2xl font-bold mb-6">Finalisation</h2>
+              <h2 className="text-2xl font-bold mb-4">Dernière étape !</h2>
+              <p className="text-gray-600 mb-6">
+                Vérifiez vos informations ci-dessous, choisissez votre mode de paiement, et nous générerons votre contrat personnalisé.
+                Vous recevrez un email avec le lien pour la signature électronique.
+              </p>
 
               <div className="bg-gray-50 p-6 rounded-lg mb-6">
                 <h3 className="font-bold mb-4">Récapitulatif</h3>

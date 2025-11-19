@@ -121,7 +121,7 @@ Si erreur "ResourceExistsException" : Les secrets existent deja, c'est OK.
 cd services/client-onboarding
 
 # Login vers ECR (CORRECTION : sans $ devant le numero de compte)
-aws ecr get-login-password --region $AWS_REGION | \
+aws ecr get-login-password --region eu-central-1 | \
   docker login --username AWS --password-stdin \
   004843574253.dkr.ecr.eu-west-1.amazonaws.com
 
@@ -130,7 +130,7 @@ docker build -t $ECR_REPO:latest .
 
 # Tag l'image
 docker tag $ECR_REPO:latest \
-  004843574253.dkr.ecr.eu-west-1.amazonaws.com/$ECR_REPO:latest
+  004843574253.dkr.ecr.eu-central-1.amazonaws.com/$ECR_REPO:latest
 
 # Push vers ECR
 docker push 004843574253.dkr.ecr.eu-west-1.amazonaws.com/$ECR_REPO:latest
