@@ -95,48 +95,89 @@ async function verifyVATFrance(vatNumber) {
     // Extraire le numéro SIREN (9 chiffres après FR + 2 chiffres clé)
     const siren = vatNumber.replace('FR', '').substring(2);
 
-    // API entreprise.data.gouv.fr
-    const response = await axios.get(
-      `https://entreprise.data.gouv.fr/api/sirene/v3/unites_legales/${siren}`,
-      { timeout: 10000 }
-    );
-
-    if (response.data && response.data.unite_legale) {
-      const company = response.data.unite_legale;
-      const siret = company.etablissements && company.etablissements[0]
-        ? company.etablissements[0].siret
-        : siren + '00000';
-
-      // Récupérer l'établissement siège
-      const etabResponse = await axios.get(
-        `https://entreprise.data.gouv.fr/api/sirene/v3/etablissements/${siret}`
+    // Méthode 1 : API recherche-entreprises.api.gouv.fr (plus fiable)
+    try {
+      const searchResponse = await axios.get(
+        `https://recherche-entreprises.api.gouv.fr/search?q=${siren}`,
+        {
+          timeout: 10000,
+          headers: { 'Accept': 'application/json' }
+        }
       );
 
-      const etab = etabResponse.data.etablissement;
+      if (searchResponse.data && searchResponse.data.results && searchResponse.data.results.length > 0) {
+        const company = searchResponse.data.results[0];
 
-      return {
-        valid: true,
-        countryCode: 'FR',
-        vatNumber: vatNumber,
-        siren: siren,
-        siret: siret,
-        companyName: company.denomination ||
-                     `${company.prenom_1 || ''} ${company.nom || ''}`.trim(),
-        legalForm: company.forme_juridique || '',
-        capital: company.capital_social || '',
-        companyAddress: etab ? formatAddress(etab) : '',
-        registrationCity: etab?.libelle_commune || '',
-        representative: company.prenom_1 ?
-          `${company.prenom_1} ${company.nom}` : '',
-        source: 'INSEE'
-      };
+        return {
+          valid: true,
+          countryCode: 'FR',
+          vatNumber: vatNumber,
+          siren: company.siren,
+          siret: company.siege?.siret || company.siren,
+          companyName: company.nom_complet || company.nom_raison_sociale,
+          legalForm: company.nature_juridique || '',
+          companyAddress: company.siege ? formatAddressFromSiege(company.siege) : '',
+          registrationCity: company.siege?.commune || '',
+          source: 'API Entreprise (recherche-entreprises)'
+        };
+      }
+    } catch (searchError) {
+      console.warn('⚠️ API recherche-entreprises failed, trying fallback:', searchError.message);
     }
 
-    return { valid: false, error: 'SIREN non trouvé' };
+    // Méthode 2 : Fallback vers annuaire-entreprises.data.gouv.fr
+    try {
+      const annuaireResponse = await axios.get(
+        `https://annuaire-entreprises.data.gouv.fr/api/siren/${siren}`,
+        {
+          timeout: 10000,
+          headers: { 'Accept': 'application/json' }
+        }
+      );
+
+      if (annuaireResponse.data) {
+        const data = annuaireResponse.data;
+
+        return {
+          valid: true,
+          countryCode: 'FR',
+          vatNumber: vatNumber,
+          siren: siren,
+          siret: data.siege?.siret || siren,
+          companyName: data.nom_complet || data.nom_raison_sociale,
+          legalForm: data.nature_juridique || '',
+          companyAddress: data.siege ? formatAddressFromSiege(data.siege) : '',
+          registrationCity: data.siege?.commune || '',
+          source: 'Annuaire Entreprises'
+        };
+      }
+    } catch (annuaireError) {
+      console.warn('⚠️ Annuaire entreprises failed, trying VIES:', annuaireError.message);
+    }
+
+    // Méthode 3 : Fallback vers VIES EU
+    return await verifyVATVIES(vatNumber);
+
   } catch (error) {
-    console.error('Erreur API Entreprise:', error.message);
+    console.error('Erreur vérification TVA France:', error.message);
     return { valid: false, error: error.message };
   }
+}
+
+/**
+ * Formate l'adresse depuis les données de siège (nouvelle API)
+ */
+function formatAddressFromSiege(siege) {
+  const parts = [];
+
+  if (siege.numero_voie) parts.push(siege.numero_voie);
+  if (siege.type_voie) parts.push(siege.type_voie);
+  if (siege.libelle_voie) parts.push(siege.libelle_voie);
+
+  const street = parts.join(' ');
+  const city = `${siege.code_postal || ''} ${siege.commune || ''}`.trim();
+
+  return street ? `${street}, ${city}` : city;
 }
 
 /**
