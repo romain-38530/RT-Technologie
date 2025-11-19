@@ -1,42 +1,203 @@
-name: Deploy Backoffice to Vercel
+name: 🎨 Déploiement Automatique Vercel
 
 on:
   push:
+    branches: [main, dockerfile]
     paths:
-      - 'apps/backoffice-admin/**'
+      - 'apps/**'
       - 'packages/**'
-      - 'pnpm-lock.yaml'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Application à déployer'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - web-industry
+          - web-transporter
+          - web-logistician
+          - web-recipient
+          - web-supplier
+          - web-forwarder
+          - backoffice-admin
+          - marketing-site
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
   deploy:
+    name: Déploiement Vercel
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node + PNPM
+      - name: 📦 Setup Node + PNPM
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - run: corepack enable && pnpm -v
+          node-version: '20'
 
-      - name: Install dependencies
+      - name: 🔧 Enable PNPM
+        run: corepack enable && pnpm -v
+
+      - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build (ensure monorepo integrity)
-        run: pnpm --filter @rt/backoffice-admin build || true
+      - name: 📦 Install Vercel CLI
+        run: npm install -g vercel@latest
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-args: '--prod'
-          working-directory: apps/backoffice-admin
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: 🔍 Détection des applications modifiées
+        if: github.event_name == 'push'
+        id: changed-apps
+        run: |
+          echo "Analyse des fichiers modifiés..."
+          CHANGED_APPS=""
+
+          # Vérifier chaque application
+          for APP in web-industry web-transporter web-logistician web-recipient web-supplier web-forwarder backoffice-admin marketing-site; do
+            if git diff --name-only HEAD~1 HEAD | grep -q "^apps/$APP/"; then
+              CHANGED_APPS="$CHANGED_APPS $APP"
+              echo "✅ $APP modifié"
+            fi
+          done
+
+          # Si packages modifiés, redéployer toutes les apps
+          if git diff --name-only HEAD~1 HEAD | grep -q "^packages/"; then
+            CHANGED_APPS="web-industry web-transporter web-logistician web-recipient web-supplier web-forwarder backoffice-admin marketing-site"
+            echo "📦 Packages modifiés - redéploiement complet"
+          fi
+
+          if [ -z "$CHANGED_APPS" ]; then
+            echo "Aucune application modifiée"
+            echo "apps=none" >> $GITHUB_OUTPUT
+          else
+            echo "Applications à déployer:$CHANGED_APPS"
+            echo "apps=$CHANGED_APPS" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🚀 Déploiement web-industry
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-industry')) ||
+          (github.event.inputs.app == 'web-industry') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🏭 Déploiement web-industry"
+          echo "════════════════════════════════════════"
+          cd apps/web-industry
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 🚀 Déploiement web-transporter
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-transporter')) ||
+          (github.event.inputs.app == 'web-transporter') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🚚 Déploiement web-transporter"
+          echo "════════════════════════════════════════"
+          cd apps/web-transporter
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 🚀 Déploiement web-logistician
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-logistician')) ||
+          (github.event.inputs.app == 'web-logistician') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "📦 Déploiement web-logistician"
+          echo "════════════════════════════════════════"
+          cd apps/web-logistician
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 🚀 Déploiement web-recipient
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-recipient')) ||
+          (github.event.inputs.app == 'web-recipient') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "📥 Déploiement web-recipient"
+          echo "════════════════════════════════════════"
+          cd apps/web-recipient
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 🚀 Déploiement web-supplier
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-supplier')) ||
+          (github.event.inputs.app == 'web-supplier') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🏪 Déploiement web-supplier"
+          echo "════════════════════════════════════════"
+          cd apps/web-supplier
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 🚀 Déploiement web-forwarder
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-forwarder')) ||
+          (github.event.inputs.app == 'web-forwarder') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "✈️ Déploiement web-forwarder"
+          echo "════════════════════════════════════════"
+          cd apps/web-forwarder
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 🚀 Déploiement backoffice-admin
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'backoffice-admin')) ||
+          (github.event.inputs.app == 'backoffice-admin') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "⚙️ Déploiement backoffice-admin"
+          echo "════════════════════════════════════════"
+          cd apps/backoffice-admin
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
         env:
           NEXT_PUBLIC_ADMIN_GATEWAY_URL: ${{ secrets.NEXT_PUBLIC_ADMIN_GATEWAY_URL }}
           NEXT_PUBLIC_AUTHZ_URL: ${{ secrets.NEXT_PUBLIC_AUTHZ_URL }}
           NEXT_PUBLIC_SUPPORT_URL: ${{ secrets.NEXT_PUBLIC_SUPPORT_URL }}
+
+      - name: 🚀 Déploiement marketing-site
+        if: |
+          (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'marketing-site')) ||
+          (github.event.inputs.app == 'marketing-site') ||
+          (github.event.inputs.app == 'all')
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🌐 Déploiement marketing-site"
+          echo "════════════════════════════════════════"
+          cd apps/marketing-site
+          pnpm build
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+
+      - name: 📊 Résumé Final
+        if: always()
+        run: |
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "📊 RÉSUMÉ DU DÉPLOIEMENT VERCEL"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "🔗 Dashboard Vercel:"
+          echo "   https://vercel.com/dashboard"
+          echo ""
+          echo "✅ Déploiement terminé !"
 
