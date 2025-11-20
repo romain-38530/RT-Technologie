@@ -101,7 +101,6 @@ export default function PalettesPage() {
 
   return (
     <div>
-      /* <TrainingButton toolName="Palettes" /> */
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
         Gestion des palettes
       </h2>
@@ -248,7 +247,7 @@ export default function PalettesPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>ID Chèque</p>
-                <p style={{ fontFamily: 'monospace', fontWeight: 600 }}>{scannedCheque.chequeId}</p>
+                <p style={{ fontFamily: 'monospace', fontWeight: 600 }}>{scannedCheque.id}</p>
               </div>
               <div>
                 <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Quantité</p>
@@ -307,7 +306,7 @@ export default function PalettesPage() {
               <p style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280' }}>
                 Vérifiez la conformité avant de valider
               </p>
-            </> */
+            </>
           )}
 
           {scannedCheque.status === 'RECEIVED' && (
@@ -407,7 +406,7 @@ export default function PalettesPage() {
                         height: '100%',
                         background: isNearCapacity ? '#f59e0b' : '#10b981',
                         transition: 'width 0.3s'
-                      }} /> */
+                      }} />
                     </div>
                   </div>
 
