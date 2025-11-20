@@ -1,6 +1,6 @@
 # 🎉 Récapitulatif du Déploiement RT-Technologie
 
-## ✅ Services Backend Déployés sur AWS ECS (10/11)
+## ✅ Services Backend Déployés sur AWS ECS (11/11) - COMPLET !
 
 | Service | URL | Status |
 |---------|-----|--------|
@@ -9,12 +9,12 @@
 | palette | http://63.178.219.102:3000 | ✅ Actif |
 | tracking-ia | http://3.121.234.119:3000 | ✅ Actif |
 | planning | http://3.64.192.189:3000 | ✅ Actif |
+| notifications | http://3.122.54.174:3000 | ✅ Actif |
 | admin-gateway | http://3.76.34.154:3000 | ✅ Actif |
 | authz | http://18.156.174.103:3000 | ✅ Actif |
 | training | http://18.194.53.124:3000 | ✅ Actif |
 | geo-tracking | http://18.199.90.38:3000 | ✅ Actif |
 | storage-market | http://35.158.200.161:3000 | ✅ Actif |
-| notifications | (En démarrage) | ⏳ Pending |
 
 ## 🎨 Prochaine Étape : Déploiement Frontend sur Vercel
 
