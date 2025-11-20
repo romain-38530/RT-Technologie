@@ -45,14 +45,14 @@ export default function PalettesPage() {
 
     try {
       const result = await palettesApi.depositCheque({
-        chequeId: scannedCheque.chequeId,
+        chequeId: scannedCheque.id,
         gps: currentGps,
       });
 
       if (result.success) {
         setDepositSuccess(true);
         // Reload cheque to get updated status
-        const updatedCheque = await palettesApi.getCheque(scannedCheque.chequeId);
+        const updatedCheque = await palettesApi.getCheque(scannedCheque.id);
         setScannedCheque(updatedCheque);
       }
     } catch (err: any) {
@@ -171,7 +171,7 @@ export default function PalettesPage() {
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">ID Chèque</p>
-                  <p className="font-mono font-semibold">{scannedCheque.chequeId}</p>
+                  <p className="font-mono font-semibold">{scannedCheque.id}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Quantité</p>
