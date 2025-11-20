@@ -14,7 +14,8 @@
       "Bash(tree:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(where.exe:*)"
     ],
     "deny": [],
     "ask": []

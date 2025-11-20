@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app';
-import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
 
 export default function App({ Component, pageProps }: AppProps) {
   const token = typeof window !== 'undefined' ? window.localStorage.getItem('admin_jwt') : null;
@@ -8,12 +9,14 @@ export default function App({ Component, pageProps }: AppProps) {
   const supportUrl = process.env.NEXT_PUBLIC_SUPPORT_URL || 'https://www.rt-technologie.com';
 
   return (
-    <ChatProvider
+    <>
+    {/* TEMPORAIRE: Chatbot désactivé pour déploiement Vercel */}
+    {/* <ChatProvider
       botType="helpbot"
       userId={userId || undefined}
       userName={userName || undefined}
       role="admin"
-    >
+    > */}
       <div style={{ fontFamily: 'system-ui, sans-serif', padding: 16 }}>
       <header style={{ marginBottom: 16 }}>
         <h1>RT Backoffice Admin</h1>
@@ -28,12 +31,13 @@ export default function App({ Component, pageProps }: AppProps) {
       </header>
       <Component {...pageProps} />
     </div>
-    <ChatWidget
+    {/* <ChatWidget
       botType="helpbot"
       userId={userId || undefined}
       userName={userName || undefined}
       role="admin"
-    />
-    </ChatProvider>
+    /> */}
+    {/* </ChatProvider> */}
+    </>
   );
 }

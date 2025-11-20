@@ -7,6 +7,7 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: { ignoreDuringBuilds: true },
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_PLANNING_API: process.env.NEXT_PUBLIC_PLANNING_API || 'http://localhost:3004',

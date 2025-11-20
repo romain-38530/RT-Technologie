@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Script de déploiement des applications frontend sur Vercel
-# RT-Technologie
+# RT-Technologie - Compatible Monorepo Turbo/pnpm
 # =============================================================================
 
 set -e
@@ -11,10 +11,7 @@ VERCEL_TOKEN="79eVweIfP4CXv9dGDuDRS5hz"
 # Applications frontend à déployer
 declare -A APPS=(
   ["marketing-site"]="marketing-site"
-  ["web-industry"]="web-industry"
   ["backoffice-admin"]="backoffice-admin"
-  ["web-logistician"]="web-logistician"
-  ["web-transporter"]="web-transporter"
 )
 
 echo "========================================="
@@ -85,44 +82,16 @@ for app in "${!APPS[@]}"; do
   echo ""
   echo "  → Déploiement: $APP_NAME"
 
-  cd "apps/$APP_NAME"
-
-  # Créer le fichier .env.production avec les URLs des services
-  cat > .env.production <<EOF
-# Backend Services
-NEXT_PUBLIC_API_URL=http://${CLIENT_ONBOARDING_IP}:3020
-NEXT_PUBLIC_ORDERS_API_URL=http://${CORE_ORDERS_IP}:3030
-NEXT_PUBLIC_AFFRET_API_URL=http://${AFFRET_IA_IP}:3010
-NEXT_PUBLIC_VIGILANCE_API_URL=http://${VIGILANCE_IP}:3040
-
-# Environment
-NODE_ENV=production
-EOF
-
-  # Ajouter la configuration next.config.js pour ignorer ESLint
-  if [ -f "next.config.js" ]; then
-    if ! grep -q "ignoreDuringBuilds" next.config.js; then
-      echo "  → Configuration ESLint bypass..."
-      # Backup du fichier original
-      cp next.config.js next.config.js.backup
-
-      # Ajouter eslint: { ignoreDuringBuilds: true }
-      # Note: Cette modification simple fonctionne pour la plupart des cas
-      sed -i 's/const nextConfig = {/const nextConfig = {\n  eslint: { ignoreDuringBuilds: true },/' next.config.js
-    fi
-  fi
-
-  # Déployer sur Vercel
-  echo "  → Push vers Vercel..."
+  # Déployer sur Vercel depuis le répertoire de l'app
+  # Les configurations sont dans apps/$APP_NAME/vercel.json
   vercel --token=$VERCEL_TOKEN --prod --yes \
+    --cwd="apps/$APP_NAME" \
     -e NEXT_PUBLIC_API_URL=http://${CLIENT_ONBOARDING_IP}:3020 \
     -e NEXT_PUBLIC_ORDERS_API_URL=http://${CORE_ORDERS_IP}:3030 \
     -e NEXT_PUBLIC_AFFRET_API_URL=http://${AFFRET_IA_IP}:3010 \
     -e NEXT_PUBLIC_VIGILANCE_API_URL=http://${VIGILANCE_IP}:3040 \
-    --name=$APP_NAME \
     --scope=rt-technologie || echo "    ⚠️  Erreur de déploiement, vérifier manuellement"
 
-  cd ../..
   echo "  ✓ $APP_NAME déployé"
 done
 

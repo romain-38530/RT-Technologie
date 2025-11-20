@@ -14,7 +14,8 @@ import {
   Plus,
 } from 'lucide-react'
 import Link from 'next/link'
-import { TrainingButton } from '@rt/design-system'
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system'
 
 export default function PalettesPage() {
   const [ledger, setLedger] = useState<PalletLedger | null>(null)
@@ -60,7 +61,7 @@ export default function PalettesPage() {
 
   return (
     <div className="container p-6 space-y-6">
-      <TrainingButton toolName="Palettes" />
+      /* <TrainingButton toolName="Palettes" /> */
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -71,7 +72,7 @@ export default function PalettesPage() {
         </div>
         <Link href="/palettes/generate">
           <Button>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" /> */
             Générer un chèque
           </Button>
         </Link>
@@ -82,7 +83,7 @@ export default function PalettesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Solde de palettes</CardTitle>
-            <PackageOpen className="h-4 w-4 text-muted-foreground" />
+            <PackageOpen className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
@@ -97,7 +98,7 @@ export default function PalettesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Sites de retour</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <MapPin className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{sites.length}</div>
@@ -110,7 +111,7 @@ export default function PalettesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Mouvements récents</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{recentHistory.length}</div>
@@ -151,9 +152,9 @@ export default function PalettesPage() {
                     >
                       <div className="flex items-center gap-3">
                         {entry.delta > 0 ? (
-                          <TrendingUp className="h-5 w-5 text-green-600" />
+                          <TrendingUp className="h-5 w-5 text-green-600" /> */
                         ) : (
-                          <TrendingDown className="h-5 w-5 text-red-600" />
+                          <TrendingDown className="h-5 w-5 text-red-600" /> */
                         )}
                         <div>
                           <p className="font-medium">{entry.reason}</p>
@@ -246,7 +247,7 @@ export default function PalettesPage() {
                               isNearCapacity ? 'bg-orange-500' : 'bg-green-500'
                             }`}
                             style={{ width: `${Math.min(quotaPercent, 100)}%` }}
-                          />
+                          /> */
                         </div>
                       </div>
                     </div>

@@ -1,9 +1,11 @@
-import { TrainingButton } from '@rt/design-system';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system';
 
 export default function Home() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto' }}>
-      <TrainingButton toolName="Backoffice Admin" />
+      {/* TEMPORAIRE: TrainingButton désactivé pour déploiement Vercel */}
+      {/* <TrainingButton toolName="Backoffice Admin" /> */}
       <section style={{ padding: '32px 0' }}>
         <h2 style={{ fontSize: 28, marginBottom: 8 }}>RT Technologie</h2>
         <p style={{ fontSize: 18, opacity: 0.9 }}>

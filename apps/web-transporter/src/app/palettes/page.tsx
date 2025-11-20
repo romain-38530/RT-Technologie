@@ -7,7 +7,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MapPin, Package, QrCode, Camera, AlertCircle, CheckCircle } from 'lucide-react';
-import { TrainingButton } from '@rt/design-system';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system';
 
 export default function PalettesPage() {
   const router = useRouter();
@@ -87,7 +88,8 @@ export default function PalettesPage() {
 
   return (
     <div className="space-y-6">
-      <TrainingButton toolName="Palettes" />
+      {/* TEMPORAIRE: TrainingButton désactivé pour déploiement Vercel */}
+      {/* <TrainingButton toolName="Palettes" /> */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Gestion des palettes</h1>
         <p className="text-gray-600 mt-1">

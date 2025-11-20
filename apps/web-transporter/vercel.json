@@ -4,13 +4,9 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install --include=dev",
-  "devCommand": "npm run dev",
   "outputDirectory": ".next",
   "regions": ["cdg1"],
   "env": {
-    "NEXT_PUBLIC_PLANNING_API": "${NEXT_PUBLIC_PLANNING_API}",
-    "NEXT_PUBLIC_ECMR_API": "${NEXT_PUBLIC_ECMR_API}",
-    "NEXT_PUBLIC_ORDERS_API": "${NEXT_PUBLIC_ORDERS_API}",
     "NEXT_PUBLIC_API_URL": "${NEXT_PUBLIC_API_URL}",
     "NEXT_PUBLIC_ORDERS_API_URL": "${NEXT_PUBLIC_ORDERS_API_URL}",
     "NEXT_PUBLIC_AFFRET_API_URL": "${NEXT_PUBLIC_AFFRET_API_URL}",
@@ -34,7 +30,7 @@
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-MD5, Content-Type, Date, X-Api-Version"
+          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
         }
       ]
     }

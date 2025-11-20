@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { TrainingButton } from '@rt/design-system';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system';
 
 interface Stats {
   docksOccupied: number;
@@ -55,7 +56,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <TrainingButton toolName="Logisticien" />
+      /* <TrainingButton toolName="Logisticien" /> */
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px' }}>Dashboard</h2>
 
       <div style={{
@@ -70,28 +71,28 @@ export default function Dashboard() {
           label="occupés"
           color="#3b82f6"
           onClick={() => router.push('/docks')}
-        />
+        /> */
         <StatCard
           title="Réceptions"
           value={stats.pendingReceptions}
           label="en attente"
           color="#8b5cf6"
           onClick={() => router.push('/receptions')}
-        />
+        /> */
         <StatCard
           title="Expéditions"
           value={stats.pendingExpeditions}
           label="à préparer"
           color="#10b981"
           onClick={() => router.push('/expeditions')}
-        />
+        /> */
         <StatCard
           title="Anomalies"
           value={stats.activeAnomalies}
           label="actives"
           color="#ef4444"
           onClick={() => router.push('/anomalies')}
-        />
+        /> */
       </div>
 
       <div style={{
@@ -104,19 +105,19 @@ export default function Dashboard() {
           description="Réception des chèques palettes et gestion des sites"
           icon="📦"
           onClick={() => router.push('/palettes')}
-        />
+        /> */
         <ActionCard
           title="E-CMR"
           description="Générer et signer des CMR électroniques"
           icon="📋"
           onClick={() => router.push('/ecmr')}
-        />
+        /> */
         <ActionCard
           title="Scanner"
           description="Scanner un code-barres pour traiter une commande"
           icon="📷"
           onClick={() => router.push('/scanner')}
-        />
+        /> */
       </div>
     </div>
   );

@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Package, FileText, TrendingUp, AlertCircle, Plus, Building2 } from 'lucide-react'
-import { TrainingButton } from '@rt/design-system'
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system'
 
 export default function StorageDashboardPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <TrainingButton toolName="Bourse de Stockage" />
+      /* <TrainingButton toolName="Bourse de Stockage" /> */
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Bourse de Stockage</h2>
@@ -20,7 +21,7 @@ export default function StorageDashboardPage() {
         </div>
         <Link href="/storage/needs/new">
           <Button size="lg">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" /> */
             Publier un besoin
           </Button>
         </Link>
@@ -31,7 +32,7 @@ export default function StorageDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Besoins actifs</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">3</div>
@@ -44,7 +45,7 @@ export default function StorageDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Contrats actifs</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <Building2 className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2</div>
@@ -57,7 +58,7 @@ export default function StorageDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Offres reçues</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
@@ -70,7 +71,7 @@ export default function StorageDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Alertes</CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-500" />
+            <AlertCircle className="h-4 w-4 text-orange-500" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1</div>
@@ -196,7 +197,7 @@ export default function StorageDashboardPage() {
           <Card className="hover:bg-accent cursor-pointer transition-colors">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+                <FileText className="h-5 w-5" /> */
                 Mes besoins
               </CardTitle>
               <CardDescription>
@@ -210,7 +211,7 @@ export default function StorageDashboardPage() {
           <Card className="hover:bg-accent cursor-pointer transition-colors">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+                <Building2 className="h-5 w-5" /> */
                 Mes contrats
               </CardTitle>
               <CardDescription>
@@ -224,7 +225,7 @@ export default function StorageDashboardPage() {
           <Card className="hover:bg-accent cursor-pointer transition-colors">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+                <TrendingUp className="h-5 w-5" /> */
                 Analytics
               </CardTitle>
               <CardDescription>

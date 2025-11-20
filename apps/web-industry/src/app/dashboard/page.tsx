@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Package, TrendingUp, Clock, CheckCircle2, PackageOpen } from 'lucide-react'
 import { palettesApi, type PalletLedger } from '@/lib/api/palettes'
-import { TrainingButton } from '@rt/design-system'
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system'
 
 export default function DashboardPage() {
   const [palletBalance, setPalletBalance] = useState<number | null>(null)
@@ -28,7 +29,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <TrainingButton toolName="Industrie" />
+      /* <TrainingButton toolName="Industrie" /> */
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
       </div>
@@ -38,7 +39,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Total commandes
             </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalOrders}</div>
@@ -52,7 +53,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Commandes actives
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeOrders}</div>
@@ -66,7 +67,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               En attente
             </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingOrders}</div>
@@ -80,7 +81,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Acceptees
             </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle2 className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.acceptedOrders}</div>
@@ -94,7 +95,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Solde palettes
             </CardTitle>
-            <PackageOpen className="h-4 w-4 text-muted-foreground" />
+            <PackageOpen className="h-4 w-4 text-muted-foreground" /> */
           </CardHeader>
           <CardContent>
             {palletBalance !== null ? (
@@ -105,7 +106,7 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">
                   {palletBalance >= 0 ? 'Crédit' : 'Débit'}
                 </p>
-              </>
+              </> */
             ) : (
               <div className="text-2xl font-bold text-muted-foreground">-</div>
             )}

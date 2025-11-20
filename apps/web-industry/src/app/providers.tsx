@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
-import { ChatProvider, ChatWidget } from '@rt/chatbot-widget'
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { ChatProvider, ChatWidget } from '@rt/chatbot-widget'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,20 +24,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ChatProvider
+      {/* TEMPORAIRE: Chatbot désactivé pour déploiement Vercel */}
+      {/* <ChatProvider
         botType="planif-ia"
         userId={userId || undefined}
         userName={userName || undefined}
         role="industriel"
-      >
+      > */}
         {children}
-        <ChatWidget
+        {/* <ChatWidget
           botType="planif-ia"
           userId={userId || undefined}
           userName={userName || undefined}
           role="industriel"
-        />
-      </ChatProvider>
+        /> */}
+      {/* </ChatProvider> */}
     </QueryClientProvider>
   )
 }

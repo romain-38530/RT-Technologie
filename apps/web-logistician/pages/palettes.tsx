@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { palettesApi, type PalletCheque, type PalletSite } from '../lib/api/palettes';
-import { TrainingButton } from '@rt/design-system';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system';
 
 export default function PalettesPage() {
   const router = useRouter();
@@ -101,7 +102,7 @@ export default function PalettesPage() {
 
   return (
     <div>
-      <TrainingButton toolName="Palettes" />
+      /* <TrainingButton toolName="Palettes" /> */
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
         Gestion des palettes
       </h2>
@@ -307,7 +308,7 @@ export default function PalettesPage() {
               <p style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280' }}>
                 Vérifiez la conformité avant de valider
               </p>
-            </>
+            </> */
           )}
 
           {scannedCheque.status === 'RECEIVED' && (
@@ -407,7 +408,7 @@ export default function PalettesPage() {
                         height: '100%',
                         background: isNearCapacity ? '#f59e0b' : '#10b981',
                         transition: 'width 0.3s'
-                      }} />
+                      }} /> */
                     </div>
                   </div>
 
