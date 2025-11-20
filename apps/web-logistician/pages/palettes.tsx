@@ -61,12 +61,10 @@ export default function PalettesPage() {
         receiverSignature: 'digital',
       });
 
-      if (result.success) {
-        setReceiveSuccess(true);
-        const updatedCheque = await palettesApi.getCheque(scannedCheque.id);
-        setScannedCheque(updatedCheque);
-        fetchSites(); // Refresh sites to update quotas
-      }
+      // result returns { cheque: PalletCheque }
+      setReceiveSuccess(true);
+      setScannedCheque(result.cheque);
+      fetchSites(); // Refresh sites to update quotas
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la réception');
     } finally {
