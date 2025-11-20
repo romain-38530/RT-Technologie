@@ -1,0 +1,314 @@
+name: 🚀 Déploiement Automatique AWS
+
+on:
+  push:
+    branches: [main, dockerfile]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action à effectuer'
+        required: true
+        default: 'deploy-all'
+        type: choice
+        options:
+          - deploy-all
+          - build-only
+          - deploy-ecs-only
+          - get-ips
+          - check-status
+
+env:
+  AWS_REGION: eu-central-1
+  ACCOUNT_ID: "004843574253"
+  CLUSTER_NAME: rt-technologie-cluster
+  INSTANCE_ID: i-0ece63fb077366323
+
+jobs:
+  deploy:
+    name: Déploiement RT-Technologie
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 🔍 Diagnostic
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'check-status' || github.event_name == 'push'
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🔍 DIAGNOSTIC DE L'INFRASTRUCTURE"
+          echo "════════════════════════════════════════"
+
+          # Vérifier cluster ECS
+          echo "Cluster ECS:"
+          aws ecs describe-clusters --clusters ${{ env.CLUSTER_NAME }} --query 'clusters[0].status' --output text
+
+          # Vérifier images ECR
+          echo ""
+          echo "Images ECR disponibles:"
+          for service in tms-sync erp-sync palette tracking-ia planning notifications admin-gateway authz training geo-tracking storage-market; do
+            COUNT=$(aws ecr describe-images --repository-name rt-$service --query 'length(imageIds)' --output text 2>/dev/null || echo "0")
+            echo "  rt-$service: $COUNT image(s)"
+          done
+
+          # Vérifier services ECS
+          echo ""
+          echo "Services ECS actifs:"
+          aws ecs list-services --cluster ${{ env.CLUSTER_NAME }} --query 'length(serviceArns)' --output text
+
+      - name: 🏗️ Build et Push Images Docker
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'build-only' || github.event_name == 'push'
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🏗️ BUILD DES IMAGES DOCKER"
+          echo "════════════════════════════════════════"
+
+          # Déclencher le build sur l'instance EC2
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids ${{ env.INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "cd /home/ec2-user",
+              "pkill -f deploy-complete || true",
+              "rm -f /tmp/build-*.log /tmp/push-*.log",
+              "nohup ./deploy-complete.sh > deploy.log 2>&1 &",
+              "sleep 5",
+              "ps aux | grep deploy-complete | grep -v grep"
+            ]' \
+            --output text \
+            --query 'Command.CommandId')
+
+          echo "Commande SSM lancée: $CMD_ID"
+          sleep 10
+
+          aws ssm get-command-invocation \
+            --command-id $CMD_ID \
+            --instance-id ${{ env.INSTANCE_ID }} \
+            --query 'StandardOutputContent' \
+            --output text
+
+          echo ""
+          echo "⏳ Attente du build (monitoring automatique)..."
+
+          # Monitoring des images
+          IMAGES_READY=0
+          ATTEMPTS=0
+          MAX_ATTEMPTS=40
+
+          while [ $IMAGES_READY -lt 11 ] && [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+            ((ATTEMPTS++))
+            echo ""
+            echo "[Tentative $ATTEMPTS/$MAX_ATTEMPTS] Vérification..."
+
+            IMAGES_READY=0
+            for service in tms-sync erp-sync palette tracking-ia planning notifications admin-gateway authz training geo-tracking storage-market; do
+              TAG=$(aws ecr describe-images \
+                --repository-name rt-$service \
+                --query 'images[0].imageTags[0]' \
+                --output text 2>/dev/null || echo "None")
+
+              if [ "$TAG" = "latest" ]; then
+                echo "  ✅ rt-$service"
+                ((IMAGES_READY++))
+              else
+                echo "  ⏳ rt-$service"
+              fi
+            done
+
+            echo ""
+            echo "📊 Progression: $IMAGES_READY/11 images prêtes"
+
+            if [ $IMAGES_READY -lt 11 ]; then
+              sleep 60
+            fi
+          done
+
+          if [ $IMAGES_READY -eq 11 ]; then
+            echo ""
+            echo "✅ Toutes les images sont prêtes !"
+          else
+            echo ""
+            echo "❌ Erreur: Seulement $IMAGES_READY/11 images prêtes après ${MAX_ATTEMPTS} tentatives"
+            exit 1
+          fi
+
+      - name: 🚀 Déploiement sur ECS
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'deploy-ecs-only' || github.event_name == 'push'
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🚀 DÉPLOIEMENT DES SERVICES SUR ECS"
+          echo "════════════════════════════════════════"
+
+          # Fonction de déploiement
+          deploy_service() {
+            SERVICE=$1
+            PORT=$2
+
+            echo ""
+            echo "📦 Déploiement de $SERVICE (port $PORT)..."
+
+            # Créer task definition
+            cat > /tmp/task-$SERVICE.json << EOF
+          {
+            "family": "rt-$SERVICE",
+            "networkMode": "awsvpc",
+            "requiresCompatibilities": ["FARGATE"],
+            "cpu": "256",
+            "memory": "512",
+            "executionRoleArn": "arn:aws:iam::${{ env.ACCOUNT_ID }}:role/ecsTaskExecutionRole",
+            "containerDefinitions": [{
+              "name": "$SERVICE",
+              "image": "${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/rt-$SERVICE:latest",
+              "portMappings": [{"containerPort": $PORT, "protocol": "tcp"}],
+              "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                  "awslogs-group": "/ecs/rt-$SERVICE",
+                  "awslogs-region": "${{ env.AWS_REGION }}",
+                  "awslogs-stream-prefix": "ecs",
+                  "awslogs-create-group": "true"
+                }
+              },
+              "environment": [
+                {"name": "NODE_ENV", "value": "production"},
+                {"name": "PORT", "value": "$PORT"}
+              ]
+            }]
+          }
+          EOF
+
+            # Enregistrer task definition
+            aws ecs register-task-definition \
+              --cli-input-json file:///tmp/task-$SERVICE.json \
+              --region ${{ env.AWS_REGION }} > /dev/null
+
+            # Créer ou mettre à jour le service
+            EXISTING=$(aws ecs describe-services \
+              --cluster ${{ env.CLUSTER_NAME }} \
+              --services rt-$SERVICE \
+              --query 'services[0].serviceName' \
+              --output text 2>/dev/null || echo "None")
+
+            if [ "$EXISTING" = "rt-$SERVICE" ]; then
+              echo "  ↻ Mise à jour du service existant..."
+              aws ecs update-service \
+                --cluster ${{ env.CLUSTER_NAME }} \
+                --service rt-$SERVICE \
+                --task-definition rt-$SERVICE \
+                --force-new-deployment \
+                --region ${{ env.AWS_REGION }} > /dev/null
+            else
+              echo "  ✨ Création du service..."
+              aws ecs create-service \
+                --cluster ${{ env.CLUSTER_NAME }} \
+                --service-name rt-$SERVICE \
+                --task-definition rt-$SERVICE \
+                --desired-count 1 \
+                --launch-type FARGATE \
+                --network-configuration "awsvpcConfiguration={subnets=[subnet-0cce60a3fe31c0d9e,subnet-0a6a2f8fd776906ee],securityGroups=[sg-0add3ac473775825a],assignPublicIp=ENABLED}" \
+                --region ${{ env.AWS_REGION }} > /dev/null
+            fi
+
+            echo "  ✅ $SERVICE déployé"
+          }
+
+          # Déployer tous les services
+          deploy_service tms-sync 3120
+          deploy_service erp-sync 3110
+          deploy_service palette 3090
+          deploy_service tracking-ia 3130
+          deploy_service planning 3070
+          deploy_service notifications 3050
+          deploy_service admin-gateway 3008
+          deploy_service authz 3007
+          deploy_service training 3180
+          deploy_service geo-tracking 3150
+          deploy_service storage-market 3170
+
+          echo ""
+          echo "✅ Tous les services ont été déployés"
+
+      - name: 🌐 Récupération des IPs Publiques
+        if: github.event.inputs.action == 'deploy-all' || github.event.inputs.action == 'get-ips' || github.event_name == 'push'
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🌐 IPS PUBLIQUES DES SERVICES"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "⏳ Attente du démarrage des tâches (2 minutes)..."
+          sleep 120
+
+          get_service_ip() {
+            SERVICE=$1
+            PORT=$2
+
+            TASK_ARN=$(aws ecs list-tasks \
+              --cluster ${{ env.CLUSTER_NAME }} \
+              --service-name rt-$SERVICE \
+              --query 'taskArns[0]' \
+              --output text 2>/dev/null)
+
+            if [ -n "$TASK_ARN" ] && [ "$TASK_ARN" != "None" ]; then
+              ENI=$(aws ecs describe-tasks \
+                --cluster ${{ env.CLUSTER_NAME }} \
+                --tasks $TASK_ARN \
+                --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
+                --output text 2>/dev/null)
+
+              if [ -n "$ENI" ]; then
+                IP=$(aws ec2 describe-network-interfaces \
+                  --network-interface-ids $ENI \
+                  --query 'NetworkInterfaces[0].Association.PublicIp' \
+                  --output text 2>/dev/null)
+
+                if [ -n "$IP" ] && [ "$IP" != "None" ]; then
+                  echo "✅ $SERVICE: http://$IP:$PORT"
+                else
+                  echo "⏳ $SERVICE: En cours de démarrage..."
+                fi
+              else
+                echo "⏳ $SERVICE: En cours de démarrage..."
+              fi
+            else
+              echo "❌ $SERVICE: Pas de tâche"
+            fi
+          }
+
+          get_service_ip tms-sync 3120
+          get_service_ip erp-sync 3110
+          get_service_ip palette 3090
+          get_service_ip tracking-ia 3130
+          get_service_ip planning 3070
+          get_service_ip notifications 3050
+          get_service_ip admin-gateway 3008
+          get_service_ip authz 3007
+          get_service_ip training 3180
+          get_service_ip geo-tracking 3150
+          get_service_ip storage-market 3170
+
+      - name: 📊 Résumé Final
+        if: always()
+        run: |
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "📊 RÉSUMÉ DU DÉPLOIEMENT"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "🔗 Console ECS:"
+          echo "   https://${{ env.AWS_REGION }}.console.aws.amazon.com/ecs/v2/clusters/${{ env.CLUSTER_NAME }}/services"
+          echo ""
+          echo "📦 Repositories ECR:"
+          echo "   https://${{ env.AWS_REGION }}.console.aws.amazon.com/ecr/repositories?region=${{ env.AWS_REGION }}"
+          echo ""
+          echo "✅ Déploiement terminé !"

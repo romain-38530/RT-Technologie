@@ -29,6 +29,7 @@
       "Bash(node infra/scripts/seed-mongo.js:*)",
       "Bash(dir:*)",
       "Bash(node infra/scripts/verify-db.js:*)"
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
