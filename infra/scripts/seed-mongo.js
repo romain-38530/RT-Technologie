@@ -1,4 +1,5 @@
 // Simple Mongo seeder using infra/seeds/*.json
+require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const { connect } = require('../../packages/data-mongo/src/index.js');
@@ -19,12 +20,13 @@ async function main() {
   const vigilance = (await loadJson(path.join(base, 'vigilance.json'))) || [];
   const planningSlots = (await loadJson(path.join(base, 'planning-slots.json'))) || [];
 
-  await db.collection('carriers').deleteMany({});
-  await db.collection('orders').deleteMany({});
-  await db.collection('invitations').deleteMany({});
-  await db.collection('dispatch_policies').deleteMany({});
-  await db.collection('vigilance').deleteMany({});
-  await db.collection('planning_slots').deleteMany({});
+  // Drop existing collections to remove conflicting indexes
+  await db.collection('carriers').drop().catch(() => {});
+  await db.collection('orders').drop().catch(() => {});
+  await db.collection('invitations').drop().catch(() => {});
+  await db.collection('dispatch_policies').drop().catch(() => {});
+  await db.collection('vigilance').drop().catch(() => {});
+  await db.collection('planning_slots').drop().catch(() => {});
 
   if (carriers.length) await db.collection('carriers').insertMany(carriers);
   if (orders.length) await db.collection('orders').insertMany(orders);
