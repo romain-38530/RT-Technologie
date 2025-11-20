@@ -8,11 +8,12 @@
 // Date: 2025-11-18
 // ============================================================================
 
+require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
 // Configuration
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:admin123@localhost:27017/rt-technologie?authSource=admin';
-const DB_NAME = 'rt-technologie';
+const DB_NAME = process.env.MONGODB_DB || 'rt-technologie';
 
 // Collections et indexes par service
 const COLLECTIONS_CONFIG = {

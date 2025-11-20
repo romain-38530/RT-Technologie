@@ -18,5 +18,9 @@
     "test": "turbo run test",
     "agents": "turbo run dev --parallel --filter=services/*",
     "gen:secrets": "node infra/scripts/gen-secrets.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "mongodb": "^7.0.0"
   }
 }
