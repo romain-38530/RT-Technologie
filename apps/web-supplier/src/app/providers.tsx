@@ -26,16 +26,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ChatProvider
         botType="expedition"
-        userId={userId || undefined}
-        userName={userName || undefined}
+        userId={userId || ''}
+        userName={userName || ''}
         role="fournisseur"
       >
         {children}
         <Toaster />
         <ChatWidget
           botType="expedition"
-          userId={userId || undefined}
-          userName={userName || undefined}
+          userId={userId || ''}
+          userName={userName || ''}
           role="fournisseur"
         />
       </ChatProvider>
