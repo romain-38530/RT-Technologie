@@ -21,7 +21,9 @@
       "Bash(npm run dev)",
       "Bash(find:*)",
       "Bash(git config:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(xargs sed -i \"s|from ''''@/components/ui/Button''''|from ''''@/components/ui/button''''|g\")",
+      "Bash(VERCEL_TOKEN=\"79eVweIfP4CXv9dGDuDRS5hz\" vercel --prod --yes)"
     ],
     "deny": [],
     "ask": []

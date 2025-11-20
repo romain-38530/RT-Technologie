@@ -6,7 +6,7 @@
 
 set -e
 
-VERCEL_TOKEN="79eVweIfP4CXv9dGDuDRS5hz"
+VERCEL_TOKEN="GS4mj4wERXIlUkPa6mpslbYU"
 
 # Applications frontend à déployer
 declare -A APPS=(
