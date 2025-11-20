@@ -3,7 +3,7 @@
 import { Mission } from '@/services/api';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/Card';
 import { Badge } from './ui/Badge';
-import { Button } from './ui/Button';
+import { Button } from './ui/button';
 import { getTimeRemaining, getSLAStatus } from '@/lib/utils';
 import { Clock, MapPin, Package } from 'lucide-react';
 import { useState, useEffect } from 'react';

@@ -1,7 +1,8 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { palettesApi, type PalletCheque, type PalletSite } from '../lib/api/palettes';
-import { TrainingButton } from '@rt/design-system';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system';
 
 export default function PalettesPage() {
   const router = useRouter();
@@ -55,16 +56,15 @@ export default function PalettesPage() {
 
     try {
       const result = await palettesApi.receiveCheque({
-        chequeId: scannedCheque.chequeId,
-        gps: currentGps,
+        chequeId: scannedCheque.id,
+        geolocation: currentGps,
+        receiverSignature: 'digital',
       });
 
-      if (result.success) {
-        setReceiveSuccess(true);
-        const updatedCheque = await palettesApi.getCheque(scannedCheque.chequeId);
-        setScannedCheque(updatedCheque);
-        fetchSites(); // Refresh sites to update quotas
-      }
+      // result returns { cheque: PalletCheque }
+      setReceiveSuccess(true);
+      setScannedCheque(result.cheque);
+      fetchSites(); // Refresh sites to update quotas
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la réception');
     } finally {
@@ -81,27 +81,26 @@ export default function PalettesPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      GENERATED: '#f59e0b',
-      DEPOSITED: '#3b82f6',
-      RECEIVED: '#10b981',
-      DISPUTED: '#ef4444',
+      EMIS: '#f59e0b',
+      DEPOSE: '#3b82f6',
+      RECU: '#10b981',
+      LITIGE: '#ef4444',
     };
     return colors[status] || '#6b7280';
   };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      GENERATED: 'Généré',
-      DEPOSITED: 'Déposé',
-      RECEIVED: 'Reçu',
-      DISPUTED: 'Litige',
+      EMIS: 'Émis',
+      DEPOSE: 'Déposé',
+      RECU: 'Reçu',
+      LITIGE: 'Litige',
     };
     return labels[status] || status;
   };
 
   return (
     <div>
-      <TrainingButton toolName="Palettes" />
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
         Gestion des palettes
       </h2>
@@ -248,7 +247,7 @@ export default function PalettesPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>ID Chèque</p>
-                <p style={{ fontFamily: 'monospace', fontWeight: 600 }}>{scannedCheque.chequeId}</p>
+                <p style={{ fontFamily: 'monospace', fontWeight: 600 }}>{scannedCheque.id}</p>
               </div>
               <div>
                 <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Quantité</p>
@@ -265,7 +264,7 @@ export default function PalettesPage() {
             </div>
           </div>
 
-          {scannedCheque.status === 'DEPOSITED' && (
+          {scannedCheque.status === 'DEPOSE' && (
             <>
               <div style={{
                 background: '#dbeafe',
@@ -310,7 +309,7 @@ export default function PalettesPage() {
             </>
           )}
 
-          {scannedCheque.status === 'RECEIVED' && (
+          {scannedCheque.status === 'RECU' && (
             <div style={{
               background: '#d1fae5',
               border: '2px solid #10b981',

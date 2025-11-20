@@ -1,10 +1,13 @@
 /**
  * Exemple d'intégration du Chatbot Widget dans l'app web-industry
  * Ce fichier montre comment intégrer le chatbot dans n'importe quelle app RT Technologie
+ *
+ * TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
  */
 
 import React from 'react';
-import { ChatWidget, ChatProvider } from '@rt/chatbot-widget';
+// TEMPORAIRE: Désactivé pour déploiement Vercel
+// import { ChatWidget, ChatProvider } from '@rt/chatbot-widget';
 
 interface ChatbotIntegrationProps {
   userId: string;
@@ -43,7 +46,10 @@ export const ChatbotIntegration: React.FC<ChatbotIntegrationProps> = ({
     alert(`Ticket créé: ${ticket.id}. Un technicien va vous contacter.`);
   };
 
-  return (
+  // TEMPORAIRE: Chatbot désactivé pour déploiement Vercel
+  return null;
+
+  /* return (
     <ChatProvider
       botType={botType}
       userId={userId}
@@ -63,7 +69,7 @@ export const ChatbotIntegration: React.FC<ChatbotIntegrationProps> = ({
         onEscalation={handleEscalation}
       />
     </ChatProvider>
-  );
+  ); */
 };
 
 /**

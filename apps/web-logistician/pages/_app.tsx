@@ -2,7 +2,8 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -32,12 +33,14 @@ export default function App({ Component, pageProps }: AppProps) {
   };
 
   return (
-    <ChatProvider
+    <>
+    {/* TEMPORAIRE: Chatbot désactivé pour déploiement Vercel */}
+    {/* <ChatProvider
       botType="quai-wms"
       userId={userId || undefined}
       userName={userName || undefined}
       role="logisticien"
-    >
+    > */}
       <Head>
         <title>RT Logistician</title>
         <meta name="description" content="Gestion d'entrepôt RT Technologie" />
@@ -121,13 +124,14 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </main>
       </div>
-      <ChatWidget
+      {/* <ChatWidget
         botType="quai-wms"
         userId={userId || undefined}
         userName={userName || undefined}
         role="logisticien"
-      />
-    </ChatProvider>
+      /> */}
+    {/* </ChatProvider> */}
+    </>
   );
 }
 

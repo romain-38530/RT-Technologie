@@ -7,7 +7,7 @@ import { getAcceptedMissions, Mission, proposeRDV } from '@/services/api';
 import { getCurrentCarrier } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Loader2, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 export default function AcceptedMissionsPage() {
   const router = useRouter();

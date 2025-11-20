@@ -20,15 +20,84 @@ export default function Login() {
     finally { setLoading(false); }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      login();
+    }
+  };
+
   return (
-    <main>
-      <h2>Connexion Admin</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
-        <input placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input placeholder="Admin Key" value={adminKey} onChange={e=>setAdminKey(e.target.value)} />
-        <button onClick={login} disabled={loading}>Se connecter</button>
+    <div style={{ maxWidth: '420px', margin: '3rem auto' }}>
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title" style={{ fontSize: '1.5rem' }}>Connexion Admin</h2>
+          <p className="card-subtitle">Accédez au backoffice d'administration</p>
+        </div>
+
+        {error && (
+          <div style={{
+            padding: '1rem',
+            background: '#fee2e2',
+            color: '#991b1b',
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="form-group">
+          <label className="form-label">Email</label>
+          <input
+            className="form-input"
+            type="email"
+            placeholder="admin@example.com"
+            value={email}
+            onChange={e=>setEmail(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={loading}
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Clé d'administration</label>
+          <input
+            className="form-input"
+            type="password"
+            placeholder="Entrez votre clé admin"
+            value={adminKey}
+            onChange={e=>setAdminKey(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={loading}
+          />
+        </div>
+
+        <button
+          className="btn btn-primary btn-lg"
+          onClick={login}
+          disabled={loading}
+          style={{ width: '100%' }}
+        >
+          {loading ? (
+            <span className="flex items-center" style={{ justifyContent: 'center' }}>
+              <span className="loading"></span>
+              <span style={{ marginLeft: '0.5rem' }}>Connexion...</span>
+            </span>
+          ) : (
+            'Se connecter'
+          )}
+        </button>
+
+        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+            Besoin d'aide ? <a href={process.env.NEXT_PUBLIC_SUPPORT_URL || 'https://www.rt-technologie.com'} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', fontWeight: 500 }}>Contactez le support</a>
+          </p>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

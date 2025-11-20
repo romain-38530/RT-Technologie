@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { palettesApi, type PalletCheque } from '@/lib/api/palettes';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import { MapPin, Package, QrCode, Camera, AlertCircle, CheckCircle } from 'lucide-react';
-import { TrainingButton } from '@rt/design-system';
+// TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
+// import { TrainingButton } from '@rt/design-system';
 
 export default function PalettesPage() {
   const router = useRouter();
@@ -44,16 +45,15 @@ export default function PalettesPage() {
 
     try {
       const result = await palettesApi.depositCheque({
-        chequeId: scannedCheque.chequeId,
-        gps: currentGps,
+        chequeId: scannedCheque.id,
+        geolocation: currentGps,
+        transporterSignature: 'digital',
       });
 
-      if (result.success) {
-        setDepositSuccess(true);
-        // Reload cheque to get updated status
-        const updatedCheque = await palettesApi.getCheque(scannedCheque.chequeId);
-        setScannedCheque(updatedCheque);
-      }
+      setDepositSuccess(true);
+      // Reload cheque to get updated status
+      const updatedCheque = await palettesApi.getCheque(scannedCheque.id);
+      setScannedCheque(updatedCheque);
     } catch (err: any) {
       setError(err.message || 'Erreur lors du dépôt');
     } finally {
@@ -69,25 +69,26 @@ export default function PalettesPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'success' | 'warning' | 'error'> = {
-      GENERATED: 'warning',
-      DEPOSITED: 'success',
-      RECEIVED: 'default',
-      DISPUTED: 'error',
+    const variants: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
+      EMIS: 'warning',
+      DEPOSE: 'success',
+      RECU: 'default',
+      LITIGE: 'danger',
     };
     return (
       <Badge variant={variants[status] || 'default'}>
-        {status === 'GENERATED' && 'Généré'}
-        {status === 'DEPOSITED' && 'Déposé'}
-        {status === 'RECEIVED' && 'Reçu'}
-        {status === 'DISPUTED' && 'Litige'}
+        {status === 'EMIS' && 'Émis'}
+        {status === 'DEPOSE' && 'Déposé'}
+        {status === 'RECU' && 'Reçu'}
+        {status === 'LITIGE' && 'Litige'}
       </Badge>
     );
   };
 
   return (
     <div className="space-y-6">
-      <TrainingButton toolName="Palettes" />
+      {/* TEMPORAIRE: TrainingButton désactivé pour déploiement Vercel */}
+      {/* <TrainingButton toolName="Palettes" /> */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Gestion des palettes</h1>
         <p className="text-gray-600 mt-1">
@@ -169,7 +170,7 @@ export default function PalettesPage() {
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <p className="text-sm text-gray-600">ID Chèque</p>
-                  <p className="font-mono font-semibold">{scannedCheque.chequeId}</p>
+                  <p className="font-mono font-semibold">{scannedCheque.id}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Quantité</p>
