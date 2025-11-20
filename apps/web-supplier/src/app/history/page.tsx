@@ -127,7 +127,7 @@ export default function HistoryPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
-                  A l'heure
+                  A l&apos;heure
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -186,7 +186,7 @@ export default function HistoryPage() {
                   {Math.round(kpis.averagePreparationTime / 60)} min
                 </div>
                 <p className="text-sm text-slate-500">
-                  Du debut de preparation jusqu'au statut "Pret"
+                  Du debut de preparation jusqu&apos;au statut &quot;Pret&quot;
                 </p>
               </CardContent>
             </Card>
@@ -254,7 +254,7 @@ export default function HistoryPage() {
               </div>
             ) : (
               <p className="text-sm text-slate-500 text-center py-8">
-                Aucun enlevement dans l'historique
+                Aucun enlevement dans l&apos;historique
               </p>
             )}
           </CardContent>

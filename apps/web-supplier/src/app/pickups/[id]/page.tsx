@@ -108,7 +108,7 @@ export default function PickupDetailPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-sm text-slate-900 mb-3">Adresse d'enlevement</h4>
+                  <h4 className="font-semibold text-sm text-slate-900 mb-3">Adresse d&apos;enlevement</h4>
                   <div className="flex items-start gap-2 text-sm">
                     <MapPin className="h-4 w-4 text-slate-500 mt-0.5" />
                     <div>

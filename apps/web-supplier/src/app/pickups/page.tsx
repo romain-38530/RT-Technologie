@@ -139,7 +139,7 @@ export default function PickupsPage() {
                     )}
                     {(pickup.status === 'confirmed' || pickup.status === 'in_preparation') && (
                       <Link href={`/preparation?pickupId=${pickup.id}`}>
-                        <Button size="sm">Preparer l'enlevement</Button>
+                        <Button size="sm">Preparer l&apos;enlevement</Button>
                       </Link>
                     )}
                     <Link href={`/pickups/${pickup.id}`}>

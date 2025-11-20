@@ -83,7 +83,7 @@ export default function PreparationPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Preparation de l'Enlevement</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Preparation de l&apos;Enlevement</h1>
           <p className="text-slate-600">Preparez et validez votre marchandise avant le pickup</p>
         </div>
 
@@ -278,7 +278,7 @@ export default function PreparationPage() {
                 ) : (
                   <div className="text-center py-4">
                     <p className="text-slate-600 mb-2">
-                      Pour marquer l'enlevement comme pret:
+                      Pour marquer l&apos;enlevement comme pret:
                     </p>
                     <ul className="text-sm text-slate-500 space-y-1">
                       {!allChecklistCompleted && (
