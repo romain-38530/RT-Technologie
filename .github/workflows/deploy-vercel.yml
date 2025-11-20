@@ -168,7 +168,7 @@ jobs:
           echo "════════════════════════════════════════"
           cd apps/web-forwarder
           pnpm build
-          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+          vercel --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement backoffice-admin
         continue-on-error: true
@@ -200,7 +200,7 @@ jobs:
           echo "════════════════════════════════════════"
           cd apps/marketing-site
           pnpm build
-          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+          vercel --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 📊 Résumé Final
         if: always()
