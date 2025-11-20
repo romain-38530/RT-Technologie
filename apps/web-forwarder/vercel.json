@@ -3,8 +3,5 @@
   "outputDirectory": ".next",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_AFFRET_IA_URL": "@affret_ia_url"
-  }
+  "framework": "nextjs"
 }
