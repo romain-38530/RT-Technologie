@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { getSlots, RDVSlot } from '@/services/api';
 import { getCurrentCarrier } from '@/lib/auth';
 import { useRouter } from 'next/navigation';

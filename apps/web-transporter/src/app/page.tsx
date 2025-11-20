@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/Layout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { getCurrentCarrier } from '@/lib/auth';
 import { Clock, CheckCircle, Calendar, FileText, TrendingUp, AlertCircle } from 'lucide-react';
 // TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)

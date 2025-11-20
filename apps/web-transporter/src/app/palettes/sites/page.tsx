@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { palettesApi, type PalletSite } from '@/lib/api/palettes';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import { MapPin, Clock, Calendar, Package, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';

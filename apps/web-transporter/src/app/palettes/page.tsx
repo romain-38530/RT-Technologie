@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { palettesApi, type PalletCheque } from '@/lib/api/palettes';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/Badge';
 import { MapPin, Package, QrCode, Camera, AlertCircle, CheckCircle } from 'lucide-react';
 // TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
