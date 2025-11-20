@@ -46,7 +46,8 @@ export default function PalettesPage() {
     try {
       const result = await palettesApi.depositCheque({
         chequeId: scannedCheque.id,
-        gps: currentGps,
+        geolocation: currentGps,
+        transporterSignature: 'digital',
       });
 
       if (result.success) {
