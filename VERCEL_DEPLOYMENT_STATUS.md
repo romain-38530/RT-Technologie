@@ -9,14 +9,16 @@
 
 | Application | Status | URL de Production | Notes |
 |-------------|--------|-------------------|-------|
-| web-industry | 🔄 En cours | - | Plateforme industrielle |
-| web-transporter | 🔄 En cours | - | Espace transporteur |
-| web-logistician | 🔄 En cours | - | Espace logisticien |
-| web-recipient | 🔄 En cours | - | Espace destinataire |
-| web-supplier | 🔄 En cours | - | Espace fournisseur |
-| web-forwarder | 🔄 En cours | - | Espace transitaire |
-| backoffice-admin | 🔄 En cours | - | Administration backoffice |
-| marketing-site | 🔄 En cours | - | Site marketing |
+| web-industry | ✅ Déployé | https://web-industry-rt-technologie.vercel.app | Plateforme industrielle |
+| web-transporter | ✅ Déployé | https://web-transporter-rt-technologie.vercel.app | Espace transporteur |
+| web-logistician | ✅ Déployé | https://web-logistician-rt-technologie.vercel.app | Espace logisticien |
+| web-recipient | ❌ À déployer | - | Espace destinataire |
+| web-supplier | ❌ À déployer | - | Espace fournisseur |
+| web-forwarder | ❌ À déployer | - | Espace transitaire |
+| backoffice-admin | ✅ Déployé | https://backoffice-admin-rt-technologie.vercel.app | Administration backoffice |
+| marketing-site | ✅ Déployé | https://marketing-site-rt-technologie.vercel.app | Site marketing |
+
+**Résumé:** 5/8 applications déployées ✅ | 3 restantes ⏳
 
 ---
 
