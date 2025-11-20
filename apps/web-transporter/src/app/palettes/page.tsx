@@ -50,12 +50,10 @@ export default function PalettesPage() {
         transporterSignature: 'digital',
       });
 
-      if (result.success) {
-        setDepositSuccess(true);
-        // Reload cheque to get updated status
-        const updatedCheque = await palettesApi.getCheque(scannedCheque.id);
-        setScannedCheque(updatedCheque);
-      }
+      setDepositSuccess(true);
+      // Reload cheque to get updated status
+      const updatedCheque = await palettesApi.getCheque(scannedCheque.id);
+      setScannedCheque(updatedCheque);
     } catch (err: any) {
       setError(err.message || 'Erreur lors du dépôt');
     } finally {
@@ -71,18 +69,18 @@ export default function PalettesPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'success' | 'warning' | 'error'> = {
-      GENERATED: 'warning',
-      DEPOSITED: 'success',
-      RECEIVED: 'default',
-      DISPUTED: 'error',
+    const variants: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
+      EMIS: 'warning',
+      DEPOSE: 'success',
+      RECU: 'default',
+      LITIGE: 'danger',
     };
     return (
       <Badge variant={variants[status] || 'default'}>
-        {status === 'GENERATED' && 'Généré'}
-        {status === 'DEPOSITED' && 'Déposé'}
-        {status === 'RECEIVED' && 'Reçu'}
-        {status === 'DISPUTED' && 'Litige'}
+        {status === 'EMIS' && 'Émis'}
+        {status === 'DEPOSE' && 'Déposé'}
+        {status === 'RECU' && 'Reçu'}
+        {status === 'LITIGE' && 'Litige'}
       </Badge>
     );
   };
