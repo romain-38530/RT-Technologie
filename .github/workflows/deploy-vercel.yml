@@ -88,6 +88,7 @@ jobs:
           fi
 
       - name: 🚀 Déploiement web-industry
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-industry')) ||
           (github.event.inputs.app == 'web-industry') ||
@@ -101,6 +102,7 @@ jobs:
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement web-transporter
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-transporter')) ||
           (github.event.inputs.app == 'web-transporter') ||
@@ -114,6 +116,7 @@ jobs:
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement web-logistician
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-logistician')) ||
           (github.event.inputs.app == 'web-logistician') ||
@@ -127,6 +130,7 @@ jobs:
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement web-recipient
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-recipient')) ||
           (github.event.inputs.app == 'web-recipient') ||
@@ -140,6 +144,7 @@ jobs:
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement web-supplier
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-supplier')) ||
           (github.event.inputs.app == 'web-supplier') ||
@@ -153,6 +158,7 @@ jobs:
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement web-forwarder
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'web-forwarder')) ||
           (github.event.inputs.app == 'web-forwarder') ||
@@ -166,6 +172,7 @@ jobs:
           vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: 🚀 Déploiement backoffice-admin
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'backoffice-admin')) ||
           (github.event.inputs.app == 'backoffice-admin') ||
@@ -183,6 +190,7 @@ jobs:
           NEXT_PUBLIC_SUPPORT_URL: ${{ secrets.NEXT_PUBLIC_SUPPORT_URL }}
 
       - name: 🚀 Déploiement marketing-site
+        continue-on-error: true
         if: |
           (github.event_name == 'push' && contains(steps.changed-apps.outputs.apps, 'marketing-site')) ||
           (github.event.inputs.app == 'marketing-site') ||
