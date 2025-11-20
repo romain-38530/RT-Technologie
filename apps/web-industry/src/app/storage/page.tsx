@@ -11,7 +11,7 @@ import { Package, FileText, TrendingUp, AlertCircle, Plus, Building2 } from 'luc
 export default function StorageDashboardPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      /* <TrainingButton toolName="Bourse de Stockage" /> */
+      {/* <TrainingButton toolName="..." /> */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Bourse de Stockage</h2>

@@ -56,13 +56,14 @@ export default function PalettesPage() {
 
     try {
       const result = await palettesApi.receiveCheque({
-        chequeId: scannedCheque.chequeId,
-        gps: currentGps,
+        chequeId: scannedCheque.id,
+        geolocation: currentGps,
+        receiverSignature: 'digital',
       });
 
       if (result.success) {
         setReceiveSuccess(true);
-        const updatedCheque = await palettesApi.getCheque(scannedCheque.chequeId);
+        const updatedCheque = await palettesApi.getCheque(scannedCheque.id);
         setScannedCheque(updatedCheque);
         fetchSites(); // Refresh sites to update quotas
       }

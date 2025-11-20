@@ -12,6 +12,9 @@ VERCEL_TOKEN="79eVweIfP4CXv9dGDuDRS5hz"
 declare -A APPS=(
   ["marketing-site"]="marketing-site"
   ["backoffice-admin"]="backoffice-admin"
+  ["web-industry"]="web-industry"
+  ["web-transporter"]="web-transporter"
+  ["web-logistician"]="web-logistician"
 )
 
 echo "========================================="

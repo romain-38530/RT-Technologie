@@ -61,7 +61,7 @@ export default function PalettesPage() {
 
   return (
     <div className="container p-6 space-y-6">
-      /* <TrainingButton toolName="Palettes" /> */
+      {/* <TrainingButton toolName="..." /> */}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

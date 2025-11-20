@@ -56,7 +56,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      /* <TrainingButton toolName="Logisticien" /> */
+      {/* <TrainingButton toolName="Logisticien" /> */}
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px' }}>Dashboard</h2>
 
       <div style={{
