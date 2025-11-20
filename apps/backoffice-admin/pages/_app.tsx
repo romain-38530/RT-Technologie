@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import '../styles/globals.css';
 // TEMPORAIRE: Désactivé pour déploiement Vercel (dépendance workspace non disponible)
 // import { ChatProvider, ChatWidget } from '@rt/chatbot-widget';
 
@@ -17,20 +18,38 @@ export default function App({ Component, pageProps }: AppProps) {
       userName={userName || undefined}
       role="admin"
     > */}
-      <div style={{ fontFamily: 'system-ui, sans-serif', padding: 16 }}>
-      <header style={{ marginBottom: 16 }}>
-        <h1>RT Backoffice Admin</h1>
-        <nav style={{ display: 'flex', gap: 12 }}>
-          <a href="/orgs">Organisations</a>
-          <a href="/pricing">Tarifs</a>
-          <a href="/palettes">Palettes</a>
-          <a href="/health">Etat</a>
-          {!token ? <a href="/login">Se connecter</a> : <a href="#" onClick={(e)=>{e.preventDefault(); localStorage.removeItem('admin_jwt'); location.href='/';}}>Se déconnecter</a>}
-          <a href={supportUrl} target="_blank" rel="noreferrer">Support</a>
-        </nav>
-      </header>
-      <Component {...pageProps} />
-    </div>
+      <div className="app-container">
+        <header className="app-header">
+          <div className="header-content">
+            <a href="/" className="logo">
+              <div className="logo-icon">RT</div>
+              <span>Backoffice Admin</span>
+            </a>
+            <nav className="main-nav">
+              <a href="/" className="nav-link">Accueil</a>
+              <a href="/orgs" className="nav-link">Organisations</a>
+              <a href="/pricing" className="nav-link">Tarifs</a>
+              <a href="/palettes" className="nav-link">Palettes</a>
+              <a href="/health" className="nav-link">État</a>
+              <a href={supportUrl} target="_blank" rel="noreferrer" className="nav-link">Support</a>
+              {!token ? (
+                <a href="/login" className="btn btn-primary btn-sm">Se connecter</a>
+              ) : (
+                <a
+                  href="#"
+                  className="nav-link logout"
+                  onClick={(e)=>{e.preventDefault(); localStorage.removeItem('admin_jwt'); location.href='/';}}
+                >
+                  Se déconnecter
+                </a>
+              )}
+            </nav>
+          </div>
+        </header>
+        <main className="main-content">
+          <Component {...pageProps} />
+        </main>
+      </div>
     {/* <ChatWidget
       botType="helpbot"
       userId={userId || undefined}
