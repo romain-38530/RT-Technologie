@@ -81,20 +81,20 @@ export default function PalettesPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      GENERATED: '#f59e0b',
-      DEPOSITED: '#3b82f6',
-      RECEIVED: '#10b981',
-      DISPUTED: '#ef4444',
+      EMIS: '#f59e0b',
+      DEPOSE: '#3b82f6',
+      RECU: '#10b981',
+      LITIGE: '#ef4444',
     };
     return colors[status] || '#6b7280';
   };
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      GENERATED: 'Généré',
-      DEPOSITED: 'Déposé',
-      RECEIVED: 'Reçu',
-      DISPUTED: 'Litige',
+      EMIS: 'Émis',
+      DEPOSE: 'Déposé',
+      RECU: 'Reçu',
+      LITIGE: 'Litige',
     };
     return labels[status] || status;
   };
@@ -264,7 +264,7 @@ export default function PalettesPage() {
             </div>
           </div>
 
-          {scannedCheque.status === 'DEPOSITED' && (
+          {scannedCheque.status === 'DEPOSE' && (
             <>
               <div style={{
                 background: '#dbeafe',
@@ -309,7 +309,7 @@ export default function PalettesPage() {
             </>
           )}
 
-          {scannedCheque.status === 'RECEIVED' && (
+          {scannedCheque.status === 'RECU' && (
             <div style={{
               background: '#d1fae5',
               border: '2px solid #10b981',
