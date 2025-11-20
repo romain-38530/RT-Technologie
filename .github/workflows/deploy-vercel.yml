@@ -58,18 +58,25 @@ jobs:
           echo "Analyse des fichiers modifiés..."
           CHANGED_APPS=""
 
-          # Vérifier chaque application
-          for APP in web-industry web-transporter web-logistician web-recipient web-supplier web-forwarder backoffice-admin marketing-site; do
-            if git diff --name-only HEAD~1 HEAD | grep -q "^apps/$APP/"; then
-              CHANGED_APPS="$CHANGED_APPS $APP"
-              echo "✅ $APP modifié"
-            fi
-          done
+          # Vérifier si on peut comparer avec HEAD~1
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            # Vérifier chaque application
+            for APP in web-industry web-transporter web-logistician web-recipient web-supplier web-forwarder backoffice-admin marketing-site; do
+              if git diff --name-only HEAD~1 HEAD | grep -q "^apps/$APP/"; then
+                CHANGED_APPS="$CHANGED_APPS $APP"
+                echo "✅ $APP modifié"
+              fi
+            done
 
-          # Si packages modifiés, redéployer toutes les apps
-          if git diff --name-only HEAD~1 HEAD | grep -q "^packages/"; then
+            # Si packages modifiés, redéployer toutes les apps
+            if git diff --name-only HEAD~1 HEAD | grep -q "^packages/"; then
+              CHANGED_APPS="web-industry web-transporter web-logistician web-recipient web-supplier web-forwarder backoffice-admin marketing-site"
+              echo "📦 Packages modifiés - redéploiement complet"
+            fi
+          else
+            # Premier commit sur cette branche - déployer toutes les apps
             CHANGED_APPS="web-industry web-transporter web-logistician web-recipient web-supplier web-forwarder backoffice-admin marketing-site"
-            echo "📦 Packages modifiés - redéploiement complet"
+            echo "🆕 Premier déploiement - toutes les applications"
           fi
 
           if [ -z "$CHANGED_APPS" ]; then
