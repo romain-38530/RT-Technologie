@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
 
-  // Désactiver standalone - AWS Amplify va gérer le runtime
-  // output: 'standalone',
+  // Mode standalone OBLIGATOIRE pour AWS Amplify (génère required-server-files.json)
+  output: 'standalone',
 
   // Désactiver ESLint pendant le build pour déployer rapidement
   eslint: {

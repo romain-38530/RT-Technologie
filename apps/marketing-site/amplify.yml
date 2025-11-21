@@ -12,12 +12,21 @@ applications:
         build:
           commands:
             - pnpm run build
+            # Créer le dossier de déploiement
+            - mkdir -p deploy
+            # Copier la structure standalone (serveur + dépendances)
+            - cp -r .next/standalone/apps/marketing-site/* deploy/
+            - cp -r .next/standalone/apps/marketing-site/.next deploy/
+            # Copier les fichiers statiques dans la structure
+            - cp -r .next/static deploy/.next/static
+            # Copier les fichiers publics
+            - cp -r public deploy/public || true
+            # Vérifier la présence du fichier critique
+            - test -f deploy/.next/required-server-files.json && echo "✓ required-server-files.json présent" || echo "✗ ERREUR: required-server-files.json manquant"
       artifacts:
-        baseDirectory: .
+        baseDirectory: deploy
         files:
-          - '.next/**/*'
-          - 'public/**/*'
-          - 'package.json'
+          - '**/*'
       cache:
         paths:
           - ../../node_modules/**/*
