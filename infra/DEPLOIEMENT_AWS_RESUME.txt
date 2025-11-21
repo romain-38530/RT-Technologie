@@ -1,0 +1,154 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║          🚀 DÉPLOIEMENT AWS FRONTEND - RT-TECHNOLOGIE                    ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📦 APPLICATIONS CONCERNÉES:
+   • backoffice-admin    (Administration)
+   • marketing-site      (Site public)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 DÉMARRAGE RAPIDE (3 COMMANDES):
+
+   1. Valider la configuration:
+      $ cd infra
+      $ ./validate-aws-setup.sh
+
+   2. Déployer:
+      $ ./setup-amplify-with-git.sh        (AWS Amplify - RECOMMANDÉ)
+      OU
+      $ ./deploy-frontends-aws.sh          (S3 + CloudFront - Simple)
+
+   3. Suivre le déploiement:
+      Console AWS Amplify (URL affichée par le script)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 COMPARAISON DES SOLUTIONS:
+
+┌────────────────────┬────────────────┬──────────────────┬────────────────┐
+│ Critère            │ S3+CloudFront  │ AWS Amplify      │ Vercel         │
+├────────────────────┼────────────────┼──────────────────┼────────────────┤
+│ Coût/mois          │ 5-10€          │ 10-20€           │ 20-50€         │
+│ Setup              │ ★★★☆☆          │ ★★★★☆            │ ★★★★★          │
+│ SSR Support        │ ❌             │ ✅               │ ✅             │
+│ Performance        │ ★★★★★          │ ★★★★☆            │ ★★★★☆          │
+│ CI/CD Auto         │ ❌             │ ✅               │ ✅             │
+│ Scalabilité        │ ★★★★★          │ ★★★★★            │ ★★★★★          │
+└────────────────────┴────────────────┴──────────────────┴────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION DISPONIBLE:
+
+   Guide Complet (15 pages):
+   └─ docs/DEPLOYMENT_AWS_FRONTEND.md
+
+   Quick Start (5 min):
+   └─ DEPLOIEMENT_AWS_QUICK_START.md
+
+   Guide Scripts:
+   └─ infra/README-AWS-FRONTEND.md
+
+   Changelog:
+   └─ CHANGELOG_AWS_MIGRATION.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🛠️ SCRIPTS CRÉÉS:
+
+   ✅ validate-aws-setup.sh          - Validation configuration
+   ✅ setup-amplify-with-git.sh      - Configuration Amplify avec Git (RECOMMANDÉ)
+   ✅ deploy-frontends-aws.sh        - Déploiement S3 + CloudFront
+   ✅ update-frontend-urls.sh        - Gestion des URLs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚙️ CONFIGURATION:
+
+   Fichiers modifiés:
+   • apps/backoffice-admin/.env.production
+   • apps/marketing-site/.env.production
+   • README.md
+
+   Fichiers créés:
+   • apps/backoffice-admin/amplify.yml
+   • apps/marketing-site/amplify.yml
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 PRÉREQUIS:
+
+   ✓ AWS CLI installé et configuré (aws configure)
+   ✓ Permissions IAM: S3, CloudFront, Amplify, ECS, EC2
+   ✓ Node.js 18+ et pnpm installés
+   ✓ Services backend déployés sur ECS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 RECOMMANDATION:
+
+   Pour déploiements automatiques depuis Git:
+   👉 Utilisez setup-amplify-with-git.sh (RECOMMANDÉ - CI/CD intégré)
+
+   Pour déploiements manuels économiques:
+   👉 Utilisez deploy-frontends-aws.sh (S3 + CloudFront)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 BESOIN D'AIDE?
+
+   Documentation:
+   $ cat docs/DEPLOYMENT_AWS_FRONTEND.md | less
+
+   Quick Start:
+   $ cat DEPLOIEMENT_AWS_QUICK_START.md | less
+
+   Support AWS:
+   https://docs.aws.amazon.com/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📈 ÉCONOMIES ESTIMÉES:
+
+   Vercel actuel:    20-50€/mois
+   S3 + CloudFront:   5-10€/mois  (Économie: 60-75%)
+   AWS Amplify:      10-20€/mois  (Économie: 40-50%)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ CHECKLIST:
+
+   Avant déploiement:
+   □ AWS CLI configuré
+   □ Permissions vérifiées
+   □ Scripts exécutables
+   □ Documentation lue
+
+   Déploiement:
+   □ Validation OK
+   □ Script lancé
+   □ URLs récupérées
+   □ Applications testées
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 RÉSULTAT ATTENDU:
+
+   ✓ Applications déployées sur AWS
+   ✓ URLs CloudFront/Amplify obtenues
+   ✓ Coûts réduits de 40-75%
+   ✓ Performance optimisée
+   ✓ Infrastructure contrôlée
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📅 Date de création: 2025-01-21
+📌 Version: 1.0.0
+👤 Créé par: Claude Code
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                      Prêt à déployer sur AWS ! 🚀                        ║
+╚═══════════════════════════════════════════════════════════════════════════╝

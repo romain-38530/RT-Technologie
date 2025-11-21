@@ -28,7 +28,8 @@
       "Bash(pnpm add:*)",
       "Bash(node infra/scripts/seed-mongo.js:*)",
       "Bash(dir:*)",
-      "Bash(node infra/scripts/verify-db.js:*)"
+      "Bash(node infra/scripts/verify-db.js:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

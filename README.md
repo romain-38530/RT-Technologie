@@ -9,7 +9,7 @@ Ce dépôt contient la plateforme modulable multi-agents (Industry, Carrier, Log
 | Composant | Déployé | Total | Status |
 |-----------|---------|-------|--------|
 | Services Backend (AWS ECS) | 11 | 21 | 🟡 52% |
-| Applications Frontend (Vercel) | 5 | 8 | 🟡 62% |
+| Applications Frontend (AWS/Vercel) | 5 | 8 | 🟡 62% |
 | Base de Données (MongoDB) | 1 | 1 | ✅ 100% |
 
 **Progress global :** 60% | [Guide de complétion](SERVICES_MANQUANTS.md)
@@ -26,15 +26,17 @@ Ce dépôt contient la plateforme modulable multi-agents (Industry, Carrier, Log
 
 ---
 
-## 🚀 Applications Frontend Déployées
+## 🚀 Applications Frontend
 
-| Application | URL | Utilisateurs |
-|-------------|-----|--------------|
-| web-industry | https://web-industry-rt-technologie.vercel.app | Industriels |
-| web-transporter | https://web-transporter-rt-technologie.vercel.app | Transporteurs |
-| web-logistician | https://web-logistician-rt-technologie.vercel.app | Logisticiens |
-| backoffice-admin | https://backoffice-admin-rt-technologie.vercel.app | Administrateurs |
-| marketing-site | https://marketing-site-rt-technologie.vercel.app | Public |
+| Application | Hébergement | Utilisateurs |
+|-------------|-------------|--------------|
+| web-industry | Vercel | Industriels |
+| web-transporter | Vercel | Transporteurs |
+| web-logistician | Vercel | Logisticiens |
+| backoffice-admin | AWS (CloudFront/Amplify) | Administrateurs |
+| marketing-site | AWS (CloudFront/Amplify) | Public |
+
+**Note:** Les applications backoffice-admin et marketing-site peuvent être déployées sur AWS. Voir [infra/README-AWS-FRONTEND.md](infra/README-AWS-FRONTEND.md) pour les instructions de déploiement AWS.
 
 ---
 
@@ -43,7 +45,7 @@ Ce dépôt contient la plateforme modulable multi-agents (Industry, Carrier, Log
 - **Backend:** Node 20 + TypeScript + Express
 - **Frontend:** Next.js 14 + React 18 + TailwindCSS
 - **Monorepo:** pnpm workspaces + Turborepo
-- **Infrastructure:** AWS ECS Fargate + Vercel Edge
+- **Infrastructure:** AWS ECS Fargate + CloudFront/Amplify + Vercel Edge
 - **Database:** MongoDB Atlas
 - **Messaging:** NATS (Pub/Sub)
 - **Cache:** Redis
@@ -53,11 +55,39 @@ Ce dépôt contient la plateforme modulable multi-agents (Industry, Carrier, Log
 
 ## 📚 Documentation
 
-- [STATUS_DEPLOIEMENT_2025-11-20.md](STATUS_DEPLOIEMENT_2025-11-20.md) - Status complet et détaillé
-- [INFRASTRUCTURE_COMPLETE.md](INFRASTRUCTURE_COMPLETE.md) - Vue d'ensemble de l'infrastructure
-- [SERVICES_MANQUANTS.md](SERVICES_MANQUANTS.md) - Services AWS à déployer
-- [ERREURS_DEPLOIEMENT_VERCEL.md](ERREURS_DEPLOIEMENT_VERCEL.md) - Corrections Vercel nécessaires
-- [RECAPITULATIF_DEPLOIEMENT.md](RECAPITULATIF_DEPLOIEMENT.md) - Récapitulatif général
+**📖 [Documentation Complète →](docs/README.md)** | **🗂️ [Index Navigation →](docs/INDEX.md)**
+
+### Démarrage Rapide
+- 🚀 [Guide de Démarrage](docs/getting-started/README.md) - Commencez ici !
+- ⚡ [Quick Start](docs/getting-started/quickstart.md) - Installation et premier lancement
+
+### Architecture
+- 🏗️ [Diagrammes d'Architecture UML](docs/architecture-diagram.md) - Vue complète du système
+- 🗄️ [Schéma Base de Données (ERD)](docs/database-schema.md) - 40+ collections MongoDB
+- 📊 [Diagrammes de Flux UML](docs/flow-diagrams.md) - Séquences et activités métier
+
+### Déploiement
+- 🚢 [Guide Complet Déploiement](docs/deployment/README.md) - Vue d'ensemble
+- ☁️ [Déploiement AWS ECS](docs/deployment/aws/aws-deployment.md) - Backend sur Fargate
+- 🌐 [Déploiement Vercel](docs/deploy/vercel-setup.md) - Frontend Next.js
+- 💾 [Configuration MongoDB Atlas](docs/deployment/mongodb-atlas.md) - Base de données
+
+### Services & Apps
+- 📦 [Services Backend (20 microservices)](docs/services/README.md)
+- 🎨 [Applications Frontend (10 apps)](docs/apps/README.md)
+- 🔧 [Packages Partagés (17 libs)](docs/packages/README.md)
+
+### Rapports
+- 📈 [Statut Déploiement Actuel](docs/reports/deployment-status.md)
+- 📄 [Rapport Final Projet](docs/reports/rapport-final.md)
+- 🎯 [Démo End-to-End](docs/E2E-demo.md)
+
+### Support
+- 🐛 [Troubleshooting](docs/troubleshooting/common-issues.md) - Résolution de problèmes
+- 🛠️ [Outils & Scripts](docs/tools/README.md) - Utilitaires de déploiement
+
+> **Note:** L'ancienne documentation à la racine sera déplacée progressivement vers `docs/`.
+> Consultez [docs/ORGANIZE_DOCS.md](docs/ORGANIZE_DOCS.md) pour le plan de migration.
 
 ---
 
