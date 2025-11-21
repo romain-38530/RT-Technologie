@@ -12,8 +12,11 @@ applications:
           commands:
             - cd apps/marketing-site
             - pnpm run build
+            - cp -r .next/standalone/apps/marketing-site ./standalone-output
+            - cp -r .next/static ./standalone-output/.next/static
+            - cp -r public ./standalone-output/public || true
       artifacts:
-        baseDirectory: .next
+        baseDirectory: standalone-output
         files:
           - '**/*'
       cache:

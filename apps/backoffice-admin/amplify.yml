@@ -12,8 +12,11 @@ applications:
           commands:
             - cd apps/backoffice-admin
             - pnpm run build
+            - cp -r .next/standalone/apps/backoffice-admin ./standalone-output
+            - cp -r .next/static ./standalone-output/.next/static
+            - cp -r public ./standalone-output/public || true
       artifacts:
-        baseDirectory: .next
+        baseDirectory: standalone-output
         files:
           - '**/*'
       cache:
