@@ -34,7 +34,12 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"organize-documentation.ps1\")",
       "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Set-Location ''c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\infra\\scripts''; .\\organize-documentation.ps1\")",
       "Bash(powershell:*)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Set-Location ''c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\infra\\scripts''; .\\cleanup-root-docs.ps1\")"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Set-Location ''c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\infra\\scripts''; .\\cleanup-root-docs.ps1\")",
+      "Bash(bash infra/test-amplify-build-local.sh:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm --filter @rt/backoffice-admin build:*)",
+      "Bash(nul)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

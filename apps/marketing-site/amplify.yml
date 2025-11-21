@@ -11,11 +11,19 @@ applications:
         build:
           commands:
             - cd apps/marketing-site
-            # Créer un lien symbolique vers node_modules racine
-            - ln -s ../../node_modules ./node_modules
             - pnpm run build
+            # Créer un dossier de sortie propre
+            - mkdir -p ./build-output
+            # Copier .next
+            - cp -r .next ./build-output/.next
+            # Copier node_modules à la racine du build-output
+            - cp -r ../../node_modules ./build-output/node_modules
+            # Copier package.json
+            - cp package.json ./build-output/package.json
+            # Copier public si existe
+            - cp -r public ./build-output/public 2>/dev/null || true
       artifacts:
-        baseDirectory: .next
+        baseDirectory: build-output
         files:
           - '**/*'
       cache:

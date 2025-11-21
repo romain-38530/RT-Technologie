@@ -1,1 +1,15 @@
-{"/_app":"pages/_app.js","/health":"pages/health.html","/orgs/[id]":"pages/orgs/[id].html","/":"pages/index.html","/login":"pages/login.html","/orgs/[id]/invitations":"pages/orgs/[id]/invitations.html","/orgs":"pages/orgs.html","/storage-market":"pages/storage-market.html","/palettes":"pages/palettes.html","/pricing":"pages/pricing.html","/storage-market/logisticians":"pages/storage-market/logisticians.html","/_error":"pages/_error.js","/_document":"pages/_document.js","/404":"pages/404.html"}
+{
+  "/_app": "pages/_app.js",
+  "/": "pages/index.js",
+  "/health": "pages/health.js",
+  "/login": "pages/login.js",
+  "/orgs/[id]": "pages/orgs/[id].js",
+  "/orgs/[id]/invitations": "pages/orgs/[id]/invitations.js",
+  "/orgs": "pages/orgs.js",
+  "/pricing": "pages/pricing.js",
+  "/storage-market/logisticians": "pages/storage-market/logisticians.js",
+  "/storage-market": "pages/storage-market.js",
+  "/palettes": "pages/palettes.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js"
+}
