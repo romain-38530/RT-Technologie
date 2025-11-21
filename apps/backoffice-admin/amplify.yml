@@ -12,19 +12,14 @@ applications:
         build:
           commands:
             - pnpm run build
-            # Créer le dossier de déploiement
             - mkdir -p deploy
-            # Copier la structure standalone (serveur + dépendances)
             - cp -r .next/standalone/apps/backoffice-admin/* deploy/
             - cp -r .next/standalone/apps/backoffice-admin/.next deploy/
-            # Copier les fichiers statiques dans la structure
             - cp -r .next/static deploy/.next/static
-            # Copier les fichiers publics
             - cp -r public deploy/public || true
-            # Vérifier la présence du fichier critique
             - ls -la deploy/
             - ls -la deploy/.next/
-            - test -f deploy/.next/required-server-files.json && echo "✓ required-server-files.json présent" || echo "✗ ERREUR: required-server-files.json manquant"
+            - test -f deploy/.next/required-server-files.json && echo "required-server-files.json present" || echo "ERROR required-server-files.json missing"
       artifacts:
         baseDirectory: deploy
         files:
