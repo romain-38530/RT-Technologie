@@ -6,16 +6,17 @@ applications:
         preBuild:
           commands:
             - npm install -g pnpm
+            - cd ../..
             - pnpm install
         build:
           commands:
             - cd apps/backoffice-admin
             - pnpm run build
       artifacts:
-        baseDirectory: apps/backoffice-admin/.next
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
         paths:
-          - node_modules/**/*
-          - apps/backoffice-admin/.next/cache/**/*
+          - ../../node_modules/**/*
+          - .next/cache/**/*
