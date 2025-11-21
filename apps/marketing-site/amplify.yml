@@ -8,17 +8,16 @@ applications:
             - npm install -g pnpm
             - cd ../..
             - pnpm install
+            - cd apps/marketing-site
         build:
           commands:
-            - cd apps/marketing-site
             - pnpm run build
       artifacts:
-        baseDirectory: apps/marketing-site
+        baseDirectory: .
         files:
           - '.next/**/*'
           - 'public/**/*'
           - 'package.json'
-          - 'node_modules/**/*'
       cache:
         paths:
           - ../../node_modules/**/*

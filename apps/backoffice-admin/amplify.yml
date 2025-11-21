@@ -8,17 +8,16 @@ applications:
             - npm install -g pnpm
             - cd ../..
             - pnpm install
+            - cd apps/backoffice-admin
         build:
           commands:
-            - cd apps/backoffice-admin
             - pnpm run build
       artifacts:
-        baseDirectory: apps/backoffice-admin
+        baseDirectory: .
         files:
           - '.next/**/*'
           - 'public/**/*'
           - 'package.json'
-          - 'node_modules/**/*'
       cache:
         paths:
           - ../../node_modules/**/*
