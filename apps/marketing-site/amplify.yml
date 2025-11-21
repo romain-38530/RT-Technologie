@@ -13,15 +13,18 @@ applications:
             - cd apps/marketing-site
             - pnpm run build
             # Créer le dossier de sortie
-            - mkdir -p ./standalone-output
-            # Copier le standalone output (contient node_modules)
-            - cp -r .next/standalone/. ./standalone-output/
+            - mkdir -p ./deploy-output
+            # Copier tout le standalone
+            - cp -r .next/standalone/. ./deploy-output/
             # Copier les fichiers static
-            - cp -r .next/static ./standalone-output/apps/marketing-site/.next/static
-            # Copier le dossier public
-            - cp -r public ./standalone-output/apps/marketing-site/public || true
+            - mkdir -p ./deploy-output/apps/marketing-site/.next/static
+            - cp -r .next/static ./deploy-output/apps/marketing-site/.next/static
+            # Copier required-server-files.json depuis .next
+            - cp .next/required-server-files.json ./deploy-output/apps/marketing-site/.next/ || true
+            # Copier le dossier public si existe
+            - cp -r public ./deploy-output/apps/marketing-site/public || true
       artifacts:
-        baseDirectory: standalone-output/apps/marketing-site
+        baseDirectory: deploy-output/apps/marketing-site
         files:
           - '**/*'
       cache:
