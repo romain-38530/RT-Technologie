@@ -19,8 +19,9 @@ applications:
             # Copier les fichiers static
             - mkdir -p ./deploy-output/apps/marketing-site/.next/static
             - cp -r .next/static ./deploy-output/apps/marketing-site/.next/static
-            # Copier required-server-files.json depuis .next
-            - cp .next/required-server-files.json ./deploy-output/apps/marketing-site/.next/ || true
+            # Copier required-server-files.json aux deux endroits
+            - cp .next/required-server-files.json ./deploy-output/apps/marketing-site/.next/
+            - cp .next/required-server-files.json ./deploy-output/apps/marketing-site/
             # Copier le dossier public si existe
             - cp -r public ./deploy-output/apps/marketing-site/public || true
       artifacts:

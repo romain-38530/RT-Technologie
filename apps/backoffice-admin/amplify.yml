@@ -12,12 +12,6 @@ applications:
           commands:
             - cd apps/backoffice-admin
             - pnpm run build
-            # Debug - voir la structure générée
-            - echo "=== Structure de .next/standalone ==="
-            - ls -la .next/standalone/ || true
-            - ls -la .next/standalone/apps/ || true
-            - ls -la .next/standalone/apps/backoffice-admin/ || true
-            - ls -la .next/standalone/apps/backoffice-admin/.next/ || true
             # Créer le dossier de sortie
             - mkdir -p ./deploy-output
             # Copier tout le standalone
@@ -25,13 +19,14 @@ applications:
             # Copier les fichiers static
             - mkdir -p ./deploy-output/apps/backoffice-admin/.next/static
             - cp -r .next/static ./deploy-output/apps/backoffice-admin/.next/static
-            # Copier required-server-files.json depuis .next
-            - cp .next/required-server-files.json ./deploy-output/apps/backoffice-admin/.next/ || true
+            # Copier required-server-files.json aux deux endroits
+            - cp .next/required-server-files.json ./deploy-output/apps/backoffice-admin/.next/
+            - cp .next/required-server-files.json ./deploy-output/apps/backoffice-admin/
             # Copier le dossier public si existe
             - cp -r public ./deploy-output/apps/backoffice-admin/public || true
-            # Vérifier le résultat
-            - echo "=== Structure finale ==="
-            - ls -la ./deploy-output/apps/backoffice-admin/.next/
+            # Vérifier
+            - echo "=== Fichiers à la racine ==="
+            - ls -la ./deploy-output/apps/backoffice-admin/ | grep required
       artifacts:
         baseDirectory: deploy-output/apps/backoffice-admin
         files:
