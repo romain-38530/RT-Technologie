@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone',
+  // Désactiver standalone pour AWS Amplify
+  // output: 'standalone',
 
   // Désactiver ESLint pendant le build pour déployer rapidement
   eslint: {

@@ -12,21 +12,8 @@ applications:
           commands:
             - cd apps/marketing-site
             - pnpm run build
-            # Copier directement à la racine de deploy-output
-            - mkdir -p ./deploy-output
-            - cp -r .next/standalone/apps/marketing-site/. ./deploy-output/
-            - cp -r .next/standalone/node_modules ./deploy-output/ || true
-            - cp -r .next/standalone/package.json ./deploy-output/ || true
-            # Copier les fichiers static
-            - mkdir -p ./deploy-output/.next/static
-            - cp -r .next/static ./deploy-output/.next/static
-            # Copier required-server-files.json
-            - cp .next/required-server-files.json ./deploy-output/.next/
-            - cp .next/required-server-files.json ./deploy-output/
-            # Copier le dossier public si existe
-            - cp -r public ./deploy-output/public || true
       artifacts:
-        baseDirectory: deploy-output
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
