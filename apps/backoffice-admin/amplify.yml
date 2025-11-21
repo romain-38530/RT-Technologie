@@ -12,23 +12,25 @@ applications:
           commands:
             - cd apps/backoffice-admin
             - pnpm run build
-            # Créer le dossier de sortie
+            # Copier directement à la racine de deploy-output
             - mkdir -p ./deploy-output
-            # Copier tout le standalone
-            - cp -r .next/standalone/. ./deploy-output/
+            - cp -r .next/standalone/apps/backoffice-admin/. ./deploy-output/
+            - cp -r .next/standalone/node_modules ./deploy-output/ || true
+            - cp -r .next/standalone/package.json ./deploy-output/ || true
             # Copier les fichiers static
-            - mkdir -p ./deploy-output/apps/backoffice-admin/.next/static
-            - cp -r .next/static ./deploy-output/apps/backoffice-admin/.next/static
-            # Copier required-server-files.json aux deux endroits
-            - cp .next/required-server-files.json ./deploy-output/apps/backoffice-admin/.next/
-            - cp .next/required-server-files.json ./deploy-output/apps/backoffice-admin/
+            - mkdir -p ./deploy-output/.next/static
+            - cp -r .next/static ./deploy-output/.next/static
+            # Copier required-server-files.json
+            - cp .next/required-server-files.json ./deploy-output/.next/
+            - cp .next/required-server-files.json ./deploy-output/
             # Copier le dossier public si existe
-            - cp -r public ./deploy-output/apps/backoffice-admin/public || true
-            # Vérifier
-            - echo "=== Fichiers à la racine ==="
-            - ls -la ./deploy-output/apps/backoffice-admin/ | grep required
+            - cp -r public ./deploy-output/public || true
+            # Vérifier la structure
+            - echo "=== Structure finale ==="
+            - ls -la ./deploy-output/
+            - ls -la ./deploy-output/.next/ | head -20
       artifacts:
-        baseDirectory: deploy-output/apps/backoffice-admin
+        baseDirectory: deploy-output
         files:
           - '**/*'
       cache:
