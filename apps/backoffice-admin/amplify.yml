@@ -11,6 +11,8 @@ applications:
         build:
           commands:
             - cd apps/backoffice-admin
+            # Créer un lien symbolique vers node_modules racine
+            - ln -s ../../node_modules ./node_modules
             - pnpm run build
       artifacts:
         baseDirectory: .next
