@@ -12,11 +12,16 @@ applications:
           commands:
             - cd apps/backoffice-admin
             - pnpm run build
-            - cp -r .next/standalone/apps/backoffice-admin ./standalone-output
-            - cp -r .next/static ./standalone-output/.next/static
-            - cp -r public ./standalone-output/public || true
+            # Créer le dossier de sortie
+            - mkdir -p ./standalone-output
+            # Copier le standalone output (contient node_modules)
+            - cp -r .next/standalone/. ./standalone-output/
+            # Copier les fichiers static
+            - cp -r .next/static ./standalone-output/apps/backoffice-admin/.next/static
+            # Copier le dossier public
+            - cp -r public ./standalone-output/apps/backoffice-admin/public || true
       artifacts:
-        baseDirectory: standalone-output
+        baseDirectory: standalone-output/apps/backoffice-admin
         files:
           - '**/*'
       cache:

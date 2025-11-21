@@ -12,11 +12,16 @@ applications:
           commands:
             - cd apps/marketing-site
             - pnpm run build
-            - cp -r .next/standalone/apps/marketing-site ./standalone-output
-            - cp -r .next/static ./standalone-output/.next/static
-            - cp -r public ./standalone-output/public || true
+            # Créer le dossier de sortie
+            - mkdir -p ./standalone-output
+            # Copier le standalone output (contient node_modules)
+            - cp -r .next/standalone/. ./standalone-output/
+            # Copier les fichiers static
+            - cp -r .next/static ./standalone-output/apps/marketing-site/.next/static
+            # Copier le dossier public
+            - cp -r public ./standalone-output/apps/marketing-site/public || true
       artifacts:
-        baseDirectory: standalone-output
+        baseDirectory: standalone-output/apps/marketing-site
         files:
           - '**/*'
       cache:
