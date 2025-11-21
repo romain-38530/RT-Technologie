@@ -29,7 +29,12 @@
       "Bash(node infra/scripts/seed-mongo.js:*)",
       "Bash(dir:*)",
       "Bash(node infra/scripts/verify-db.js:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"organize-documentation.ps1\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Set-Location ''c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\infra\\scripts''; .\\organize-documentation.ps1\")",
+      "Bash(powershell:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -Command \"Set-Location ''c:\\Users\\jspitaleri\\OneDrive - Cesi\\Bureau\\RT-Technologie\\infra\\scripts''; .\\cleanup-root-docs.ps1\")"
     ],
     "deny": [],
     "ask": []
